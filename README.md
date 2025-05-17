@@ -1,36 +1,64 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Mentei App
 
-## Getting Started
+Uma plataforma para compartilhar e votar em histórias falsas divertidas. Mentei é uma rede social onde os usuários podem criar histórias inventadas e competir por reações.
 
-First, run the development server:
+## Funcionalidades
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- Autenticação de usuários com Firebase
+- Criação e visualização de postagens falsas
+- Sistema de reações (Quase Acreditei, Hahaha, Mentira Épica)
+- Chat global em tempo real com Ably
+- Modo "Fake Post" para compartilhar mentiras baseadas em imagens
+- PWA (Progressive Web App) para instalação em dispositivos móveis
+- Perfis de usuário com níveis, conquistas e emblemas
+- Suporte a offline com service worker
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Tecnologias
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Frontend**: Next.js, React, TypeScript, Tailwind CSS
+- **Backend**: Firebase (Autenticação), PostgreSQL/Drizzle ORM (Banco de dados)
+- **Real-time**: Ably para chat e funcionalidades tempo real
+- **Deployment**: Vercel (recomendado)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Configuração
 
-## Learn More
+1. Clone o repositório
+2. Instale as dependências com `npm install`
+3. Crie um arquivo `.env.local` com base no `.env.local.example`:
+   ```
+   NEXT_PUBLIC_FIREBASE_API_KEY=your-firebase-api-key
+   NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your-project-id.firebaseapp.com
+   NEXT_PUBLIC_FIREBASE_PROJECT_ID=your-project-id
+   NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your-project-id.appspot.com
+   NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your-messaging-sender-id
+   NEXT_PUBLIC_FIREBASE_APP_ID=your-app-id
+   NEXT_PUBLIC_ABLY_API_KEY=your-ably-api-key
+   ABLY_API_KEY=your-ably-api-key
+   
+   # Configuração do PostgreSQL
+   DATABASE_URL=postgresql://username:password@localhost:5432/mentei
+   # OU use as variáveis do Vercel Postgres se estiver no ambiente Vercel
+   ```
+4. Configure o banco de dados:
+   - Para desenvolvimento local: `npm run db:generate` para gerar as migrações
+   - Em seguida: `npm run db:migrate` para aplicar as migrações
+   - Para visualizar o banco de dados: `npm run db:studio`
+5. Adicione os ícones para PWA na pasta `public/icons` (siga o guia em `public/icons/placeholder.txt`)
+6. Execute o servidor de desenvolvimento: `npm run dev`
+7. Acesse `http://localhost:3000`
 
-To learn more about Next.js, take a look at the following resources:
+## Estrutura do Projeto
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `/src/app` - Páginas e rotas da aplicação
+- `/src/components` - Componentes reutilizáveis
+- `/src/lib` - Bibliotecas e configurações (Firebase, Ably)
+- `/src/utils` - Funções utilitárias
+- `/public` - Arquivos estáticos e ícones para PWA
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Deployment
 
-## Deploy on Vercel
+A maneira mais fácil de fazer o deploy deste app é usando a [Plataforma Vercel](https://vercel.com/new).
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Licença
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+MIT

@@ -1,0 +1,257 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Modelo de usuário
+model User {
+  id             String    @id @default(cuid())
+  name           String?
+  email          String    @unique
+  emailVerified  DateTime?
+  password       String
+  image          String?
+  bio            String?
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+  lastLogin      DateTime? @map("last_login")
+  level          Int       @default(1)
+  score          Int       @default(0)
+  isOnline       Boolean   @default(false) @map("is_online")
+  isPro          Boolean   @default(false) @map("is_pro")
+  nivelMentiroso Int       @default(1) @map("nivel_mentiroso")
+  pontuacaoTotal Int       @default(0) @map("pontuacao_total")
+
+  accounts         Account[]
+  sessions         Session[]
+  posts            Post[]
+  comments         Comment[]
+  reactions        Reaction[]
+  badges           UserBadge[]
+  sentMessages     Message[]     @relation("SentMessages")
+  receivedMessages Message[]     @relation("ReceivedMessages")
+  reportsMade      Report[]      @relation("ReportsMade")
+  achievements     Achievement[]
+  stats            UserStats?
+
+  @@map("users")
+}
+
+// Modelo de conta (para login com provedores externos)
+model Account {
+  id                String  @id @default(cuid())
+  userId            String  @map("user_id")
+  type              String
+  provider          String
+  providerAccountId String  @map("provider_account_id")
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+// Modelo de sessão
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique @map("session_token")
+  userId       String   @map("user_id")
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+// Modelo para token de verificação
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// Modelo de post (histórias falsas)
+model Post {
+  id        String   @id @default(cuid())
+  title     String
+  content   String
+  imageUrl  String?  @map("image_url")
+  authorId  String   @map("author_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  isActive  Boolean  @default(true) @map("is_active")
+  views     Int      @default(0)
+
+  author    User       @relation(fields: [authorId], references: [id])
+  comments  Comment[]
+  reactions Reaction[]
+  reports   Report[]
+  tags      PostTag[]
+
+  @@map("posts")
+}
+
+// Modelo de comentário
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  postId    String   @map("post_id")
+  authorId  String   @map("author_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author User @relation(fields: [authorId], references: [id])
+
+  @@map("comments")
+}
+
+// Modelo de reação
+model Reaction {
+  id        String   @id @default(cuid())
+  type      String // "quase_acreditei", "hahaha", "mentira_epica", "😂", "🤯", "👑", "😲"
+  postId    String   @map("post_id")
+  userId    String   @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([postId, userId, type])
+  @@map("reactions")
+}
+
+// Modelo de emblema
+model Badge {
+  id          String   @id @default(cuid())
+  name        String
+  description String
+  imageUrl    String   @map("image_url")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  users UserBadge[]
+
+  @@map("badges")
+}
+
+// Modelo de relação entre usuário e emblema
+model UserBadge {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  badgeId   String   @map("badge_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user  User  @relation(fields: [userId], references: [id])
+  badge Badge @relation(fields: [badgeId], references: [id])
+
+  @@unique([userId, badgeId])
+  @@map("user_badges")
+}
+
+// Modelo de mensagens (chat global e privado)
+model Message {
+  id         String    @id @default(cuid())
+  content    String
+  senderId   String    @map("sender_id")
+  receiverId String?   @map("receiver_id")
+  isGlobal   Boolean   @default(false) @map("is_global")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  readAt     DateTime? @map("read_at")
+
+  sender   User  @relation("SentMessages", fields: [senderId], references: [id])
+  receiver User? @relation("ReceivedMessages", fields: [receiverId], references: [id])
+
+  @@map("messages")
+}
+
+// Modelo de tags
+model Tag {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  useCount  Int      @default(0) @map("use_count")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  posts PostTag[]
+
+  @@map("tags")
+}
+
+// Modelo de relação entre posts e tags
+model PostTag {
+  id        String   @id @default(cuid())
+  postId    String   @map("post_id")
+  tagId     String   @map("tag_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  tag  Tag  @relation(fields: [tagId], references: [id])
+
+  @@unique([postId, tagId])
+  @@map("post_tags")
+}
+
+// Modelo de estatísticas do usuário
+model UserStats {
+  id            String   @id @default(cuid())
+  userId        String   @unique @map("user_id")
+  pontosDiarios Int      @default(0) @map("pontos_diarios")
+  pontosMensais Int      @default(0) @map("pontos_mensais")
+  totalPontos   Int      @default(0) @map("total_pontos")
+  qtdPosts      Int      @default(0) @map("qtd_posts")
+  qtdReacoes    Int      @default(0) @map("qtd_reacoes")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_stats")
+}
+
+// Modelo de conquistas
+model Achievement {
+  id          String   @id @default(cuid())
+  userId      String   @map("user_id")
+  description String
+  nivel       Int      @default(1)
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("achievements")
+}
+
+// Modelo de denúncias
+model Report {
+  id         String    @id @default(cuid())
+  reporterId String    @map("reporter_id")
+  postId     String    @map("post_id")
+  reason     String
+  createdAt  DateTime  @default(now()) @map("created_at")
+  resolved   Boolean   @default(false)
+  resolvedAt DateTime? @map("resolved_at")
+  resolution String?
+
+  reporter User @relation("ReportsMade", fields: [reporterId], references: [id])
+  post     Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@map("reports")
+}

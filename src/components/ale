@@ -1,0 +1,3 @@
+API: cd mentei/api && npm run dev
+Frontend: cd mentei && npm start
+npx nodemon server.js

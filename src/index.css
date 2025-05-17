@@ -1,0 +1,135 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .btn {
+    @apply py-2 px-4 rounded-lg font-semibold transition duration-200;
+  }
+  
+  .btn-primary {
+    @apply bg-primary text-white hover:bg-opacity-90;
+  }
+  
+  .btn-secondary {
+    @apply bg-secondary text-white hover:bg-opacity-90;
+  }
+  
+  .card {
+    @apply bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 hover:shadow-lg transition duration-200;
+  }
+  
+  .input {
+    @apply block w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-700 dark:text-white;
+  }
+  
+  .btn-creativity {
+    @apply flex items-center px-3 py-1.5 rounded-full border-2 transition duration-200;
+  }
+  
+  .btn-creativity-pro {
+    @apply text-secondary hover:text-primary border-secondary hover:border-primary;
+  }
+  
+  .btn-creativity-disabled {
+    @apply text-gray-400 cursor-not-allowed border-gray-300 bg-gray-50;
+  }
+}
+
+:root {
+  --color-primary: #FF6B6B;
+  --color-primary-dark: #FF5252;
+  --color-secondary: #4ECDC4;
+  --color-background: #F7FFF7;
+  --color-text: #2F2F2F;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #F8F9FA;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+.dark-toggle {
+  @apply relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary;
+}
+
+.dark-toggle-slider {
+  @apply pointer-events-none inline-block h-5 w-5 rounded-full bg-white transform ring-0 transition ease-in-out duration-200;
+}
+
+/* Estilos para toggles nas configurações */
+.toggle-checkbox {
+  right: 0;
+  z-index: 5;
+  opacity: 0;
+  transition: all 0.3s ease-in-out;
+}
+
+.toggle-label {
+  width: 100%;
+  transition: background-color 0.3s ease-in-out;
+}
+
+.toggle-checkbox:checked + .toggle-label {
+  background-color: var(--color-primary);
+}
+
+.toggle-checkbox:checked {
+  right: 0;
+  border-color: var(--color-primary);
+}
+
+.toggle-checkbox:focus + .toggle-label,
+.toggle-checkbox:active + .toggle-label {
+  box-shadow: 0 0 0 2px rgba(255, 107, 107, 0.3);
+}
+
+/* Animação de fade-out para os storyments */
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+/* Animação de flutuação para as reações */
+@keyframes float {
+  0% { 
+    transform: translateY(0) scale(1); 
+    opacity: 1;
+  }
+  100% { 
+    transform: translateY(-50px) scale(0.6); 
+    opacity: 0;
+  }
+}
+
+.animate-float {
+  animation: float 1s ease-out forwards;
+}
+
+.animate-fade-out {
+  animation: fadeOut 1.5s forwards;
+}
+
+.animate-pulse-once {
+  animation: pulse 0.5s ease-in-out 1;
+}
+
+.transition-width {
+  transition: width 0.1s linear;
+}
