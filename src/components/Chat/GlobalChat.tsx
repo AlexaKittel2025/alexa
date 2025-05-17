@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FaComment, FaPaperPlane, FaSmile } from 'react-icons/fa';
 import { useAuth } from '@/providers/AuthProvider';
+import { loadChatMessages, saveChatMessages } from '@/utils/persistenceUtils';
 
 interface Message {
   id: string;
@@ -29,43 +30,51 @@ const GlobalChat: React.FC = () => {
     }
   }, [messages, isOpen]);
 
-  // Mock data
+  // Load messages from localStorage
   useEffect(() => {
     if (isOpen) {
-      const mockMessages: Message[] = [
-        {
-          id: '1',
-          content: 'Olá pessoal! Acabei de postar uma mentira boa sobre ter encontrado o Neymar no mercadinho!',
-          sender: { id: 'user1', name: 'Carlos', image: 'https://randomuser.me/api/portraits/men/32.jpg' },
-          createdAt: new Date(Date.now() - 3600000).toISOString()
-        },
-        {
-          id: '2',
-          content: 'Hahaha Carlos, você sempre inventa cada coisa! Vou lá curtir.',
-          sender: { id: 'user2', name: 'Ana', image: 'https://randomuser.me/api/portraits/women/44.jpg' },
-          createdAt: new Date(Date.now() - 1800000).toISOString()
-        },
-        {
-          id: '3',
-          content: 'Pessoal, vocês viram minha postagem sobre ter sido abduzido? Já tem mais de 500 curtidas!',
-          sender: { id: 'user3', name: 'Pedro', image: 'https://randomuser.me/api/portraits/men/23.jpg' },
-          createdAt: new Date(Date.now() - 900000).toISOString()
-        },
-        {
-          id: '4',
-          content: 'Pedro, suas histórias de abdução sempre são as melhores! 👽',
-          sender: { id: 'user4', name: 'Juliana', image: 'https://randomuser.me/api/portraits/women/12.jpg' },
-          createdAt: new Date(Date.now() - 600000).toISOString()
-        },
-        {
-          id: '5',
-          content: 'Alguém tem dicas para criar histórias mais criativas? Estou sem inspiração.',
-          sender: { id: 'user5', name: 'Rodrigo', image: 'https://randomuser.me/api/portraits/men/67.jpg' },
-          createdAt: new Date(Date.now() - 300000).toISOString()
-        }
-      ];
+      const savedMessages = loadChatMessages('global');
       
-      setMessages(mockMessages);
+      if (savedMessages.length > 0) {
+        setMessages(savedMessages);
+      } else {
+        // Initialize with mock data if no saved messages
+        const mockMessages: Message[] = [
+          {
+            id: '1',
+            content: 'Olá pessoal! Acabei de postar uma mentira boa sobre ter encontrado o Neymar no mercadinho!',
+            sender: { id: 'user1', name: 'Carlos', image: 'https://randomuser.me/api/portraits/men/32.jpg' },
+            createdAt: new Date(Date.now() - 3600000).toISOString()
+          },
+          {
+            id: '2',
+            content: 'Hahaha Carlos, você sempre inventa cada coisa! Vou lá curtir.',
+            sender: { id: 'user2', name: 'Ana', image: 'https://randomuser.me/api/portraits/women/44.jpg' },
+            createdAt: new Date(Date.now() - 1800000).toISOString()
+          },
+          {
+            id: '3',
+            content: 'Pessoal, vocês viram minha postagem sobre ter sido abduzido? Já tem mais de 500 curtidas!',
+            sender: { id: 'user3', name: 'Pedro', image: 'https://randomuser.me/api/portraits/men/23.jpg' },
+            createdAt: new Date(Date.now() - 900000).toISOString()
+          },
+          {
+            id: '4',
+            content: 'Pedro, suas histórias de abdução sempre são as melhores! 👽',
+            sender: { id: 'user4', name: 'Juliana', image: 'https://randomuser.me/api/portraits/women/12.jpg' },
+            createdAt: new Date(Date.now() - 600000).toISOString()
+          },
+          {
+            id: '5',
+            content: 'Alguém tem dicas para criar histórias mais criativas? Estou sem inspiração.',
+            sender: { id: 'user5', name: 'Rodrigo', image: 'https://randomuser.me/api/portraits/men/67.jpg' },
+            createdAt: new Date(Date.now() - 300000).toISOString()
+          }
+        ];
+        
+        setMessages(mockMessages);
+        saveChatMessages('global', mockMessages);
+      }
     }
   }, [isOpen]);
 
@@ -86,7 +95,9 @@ const GlobalChat: React.FC = () => {
       createdAt: new Date().toISOString()
     };
     
-    setMessages([...messages, newMessage]);
+    const updatedMessages = [...messages, newMessage];
+    setMessages(updatedMessages);
+    saveChatMessages('global', updatedMessages);
     setMessage('');
   };
 

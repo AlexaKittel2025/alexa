@@ -92,6 +92,31 @@ export const useCurrentUser = () => {
 
   // Buscar dados do usuário quando a sessão estiver disponível
   useEffect(() => {
+    // Verificar mock user em desenvolvimento
+    if (process.env.NODE_ENV !== 'production') {
+      const mockUserStr = localStorage.getItem('mockUser');
+      if (mockUserStr) {
+        try {
+          const mockUser = JSON.parse(mockUserStr);
+          setUser({
+            id: mockUser.id,
+            username: mockUser.username,
+            displayName: mockUser.name,
+            email: mockUser.email,
+            photoURL: mockUser.image,
+            points: mockUser.points || 0,
+            level: mockUser.level || 1,
+            isPro: mockUser.isPro || false,
+            createdAt: mockUser.created_at || new Date().toISOString(),
+          } as User);
+          setLoading(false);
+          return;
+        } catch (e) {
+          console.error('Erro ao carregar mock user:', e);
+        }
+      }
+    }
+    
     if (!sessionLoading) {
       fetchUserData();
     }

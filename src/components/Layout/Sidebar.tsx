@@ -2,7 +2,9 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { signOut } from 'next-auth/react';
+import { useState, useEffect } from 'react';
 import {
   FaHome,
   FaSearch,
@@ -27,14 +29,68 @@ const menuItems = [
   { label: 'Criar', href: '/nova-mentira', icon: FaPlus },
   { label: 'Notificações', href: '/notificacoes', icon: FaHeart, activeIcon: FaHeart },
   { label: 'Mensagens', href: '/chat', icon: FaComment },
-  { label: 'Perfil', href: '/perfil', icon: FaUser, activeIcon: FaUser },
+  { label: 'Configurações', href: '/configuracoes', icon: FaCog, activeIcon: FaCog },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const [userProfile, setUserProfile] = useState({
+    avatar: '/images/avatar-placeholder.jpg',
+    username: 'usuario',
+    id: 'user-1'
+  });
+
+  // Carregar e monitorar mudanças no perfil do usuário
+  useEffect(() => {
+    const loadUserProfile = () => {
+      const savedProfile = localStorage.getItem('userProfile');
+      if (savedProfile) {
+        try {
+          const profile = JSON.parse(savedProfile);
+          setUserProfile({
+            avatar: profile.avatar || '/images/avatar-placeholder.jpg',
+            username: profile.username || 'usuario',
+            id: profile.id || 'user-1'
+          });
+        } catch (error) {
+          console.error('Erro ao carregar perfil:', error);
+        }
+      }
+    };
+
+    // Carregar inicialmente
+    loadUserProfile();
+
+    // Escutar mudanças no localStorage
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'userProfile') {
+        loadUserProfile();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    // Criar um event listener customizado para mudanças no mesmo tab
+    const handleProfileUpdate = () => {
+      loadUserProfile();
+    };
+    
+    window.addEventListener('profileUpdated', handleProfileUpdate);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('profileUpdated', handleProfileUpdate);
+    };
+  }, []);
+
+  const handleSignOut = async () => {
+    await signOut({ redirect: false });
+    router.push('/login');
+  };
 
   return (
-    <aside className="hidden md:block fixed left-0 top-0 z-40 w-[72px] lg:w-[244px] xl:w-[275px] h-full bg-white border-r border-gray-200">
+    <aside className="hidden md:block fixed left-0 top-0 z-40 w-[72px] lg:w-[244px] xl:w-[275px] h-full bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700">
       <div className="flex flex-col h-full px-3 py-7">
         {/* Logo */}
         <div className="px-3 mb-7">
@@ -60,13 +116,13 @@ export default function Sidebar() {
                     className={`flex items-center gap-4 p-3 rounded-lg transition-all duration-200 group ${
                       isActive
                         ? 'font-semibold'
-                        : 'hover:bg-gray-100'
+                        : 'hover:bg-gray-100 dark:hover:bg-gray-800'
                     }`}
                   >
                     <Icon className={`w-6 h-6 ${
-                      isActive ? 'text-gray-900' : 'text-gray-700 group-hover:scale-105'
+                      isActive ? 'text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-300 group-hover:scale-105'
                     }`} />
-                    <span className="hidden lg:block">{item.label}</span>
+                    <span className="hidden lg:block dark:text-white">{item.label}</span>
                   </Link>
                 </li>
               );
@@ -77,26 +133,37 @@ export default function Sidebar() {
         {/* User Profile & Settings */}
         <div className="space-y-1">
           <Link
-            href="/perfil"
-            className="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-100 transition-all duration-200"
+            href="/meu-perfil"
+            className="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200"
           >
-            <div className="w-10 h-10 rounded-full overflow-hidden">
-              <Image
-                src="/images/avatar-placeholder.jpg"
-                alt="Profile"
-                width={40}
-                height={40}
-                className="w-full h-full object-cover"
-              />
+            <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700">
+              {userProfile.avatar.startsWith('data:') || userProfile.avatar.startsWith('http') ? (
+                <img
+                  src={userProfile.avatar}
+                  alt="Profile"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <Image
+                  src={userProfile.avatar}
+                  alt="Profile"
+                  width={40}
+                  height={40}
+                  className="w-full h-full object-cover"
+                />
+              )}
             </div>
             <div className="hidden lg:block">
               <p className="font-medium text-sm">Meu Perfil</p>
-              <p className="text-xs text-gray-500">@usuario</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">@{userProfile.username}</p>
             </div>
           </Link>
           
-          <button className="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-100 transition-all duration-200 w-full">
-            <FaSignOutAlt className="w-6 h-6 text-gray-700" />
+          <button 
+            onClick={handleSignOut}
+            className="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 w-full"
+          >
+            <FaSignOutAlt className="w-6 h-6 text-gray-700 dark:text-gray-300" />
             <span className="hidden lg:block">Sair</span>
           </button>
         </div>

@@ -4,6 +4,9 @@ import { useState, useEffect } from 'react';
 import { FaCrown, FaThumbsUp, FaTrophy } from 'react-icons/fa';
 import Link from 'next/link';
 import { ExtendedPost } from '@/types/prisma';
+import { useRouter } from 'next/navigation';
+import { useCurrentUser } from '@/hooks/useCurrentUser';
+import { saveBattleVote, getBattleVote, saveUserStats, loadUserStats } from '@/utils/persistenceUtils';
 
 interface Post {
   id: string;
@@ -26,6 +29,8 @@ export default function BattleMentiras() {
   const [voted, setVoted] = useState(false);
   const [winner, setWinner] = useState<string | null>(null);
   const [battlesCompleted, setBattlesCompleted] = useState(0);
+  const router = useRouter();
+  const { user, loading: userLoading } = useCurrentUser();
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -33,7 +38,9 @@ export default function BattleMentiras() {
         const response = await fetch('/api/posts?limit=20');
         if (response.ok) {
           const data = await response.json();
-          setPosts(data.posts);
+          // Se data for um array, use diretamente. Se não, use data.posts
+          const postsData = Array.isArray(data) ? data : data.posts || [];
+          setPosts(postsData);
         } else {
           console.error('Erro ao buscar posts:', await response.text());
         }
@@ -41,12 +48,18 @@ export default function BattleMentiras() {
         console.error('Erro na requisição:', error);
       } finally {
         setIsLoading(false);
-        setupNewBattle();
       }
     };
 
     fetchPosts();
   }, []);
+
+  // Configurar nova batalha quando os posts forem carregados
+  useEffect(() => {
+    if (!isLoading && posts.length > 0) {
+      setupNewBattle();
+    }
+  }, [posts, isLoading]);
 
   const setupNewBattle = () => {
     if (posts.length < 2) {
@@ -72,15 +85,60 @@ export default function BattleMentiras() {
     setCurrentBattle([post1, post2]);
   };
 
+  // Função para calcular nível baseado em vitórias
+  const calculateLevel = (wins: number) => {
+    if (wins >= 100) return 'Mestre Mentiroso';
+    if (wins >= 75) return 'Mentiroso Épico';
+    if (wins >= 50) return 'Fabulista Pro';
+    if (wins >= 25) return 'Contador de Histórias';
+    if (wins >= 10) return 'Mentiroso Experiente';
+    return 'Mentiroso Iniciante';
+  };
+
   const handleVote = async (winnerIndex: number) => {
     if (!currentBattle || voted) return;
+    
+    // Verificar se o usuário está logado
+    if (!user) {
+      alert('Você precisa estar logado para votar!');
+      router.push('/login');
+      return;
+    }
     
     const winnerPost = currentBattle[winnerIndex];
     const loserPost = currentBattle[winnerIndex === 0 ? 1 : 0];
     
+    // Salvar voto no localStorage
+    const battleId = `${winnerPost.id}-${loserPost.id}`;
+    saveBattleVote(battleId, winnerIndex === 0 ? 'left' : 'right');
+    
     setVoted(true);
     setWinner(winnerPost.id);
     setBattlesCompleted(prev => prev + 1);
+    
+    // Atualizar estatísticas do usuário votante
+    const currentUser = JSON.parse(localStorage.getItem('userProfile') || '{}');
+    if (currentUser.id) {
+      const stats = loadUserStats(currentUser.id) || {};
+      saveUserStats(currentUser.id, {
+        ...stats,
+        totalBattlesVoted: (stats.totalBattlesVoted || 0) + 1,
+        lastBattleVote: new Date().toISOString()
+      });
+    }
+    
+    // Atualizar estatísticas do autor vencedor
+    if (winnerPost.author?.id) {
+      const winnerStats = loadUserStats(winnerPost.author.id) || {};
+      const newWins = (winnerStats.battleWins || 0) + 1;
+      saveUserStats(winnerPost.author.id, {
+        ...winnerStats,
+        name: winnerPost.author.name || 'Unknown',
+        avatar: winnerPost.author.image || '',
+        battleWins: newWins,
+        level: calculateLevel(newWins)
+      });
+    }
     
     try {
       // Atualizar pontuação de batalha via API
@@ -207,7 +265,7 @@ export default function BattleMentiras() {
         <div className="mt-4 flex justify-center">
           <button 
             className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
-            onClick={setupNewBattle}
+            onClick={() => setupNewBattle()}
           >
             Próxima batalha
           </button>

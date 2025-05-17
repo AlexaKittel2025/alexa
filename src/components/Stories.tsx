@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import StorymentModal from './StorymentModal';
 import { User, Storyment } from '../types';
 import { PlusIcon } from '@heroicons/react/outline';
+import { generateRealPersonAvatar } from '@/utils/avatarUtils';
 
 // Componente para o círculo de adicionar story
 const AddStoryCircle: React.FC<{
@@ -71,7 +72,7 @@ const Stories: React.FC = () => {
     username: 'usuarioatual',
     displayName: 'Usuário Atual',
     email: 'usuario@exemplo.com',
-    photoURL: 'https://randomuser.me/api/portraits/men/1.jpg',
+    photoURL: generateRealPersonAvatar(),
     points: 120,
     level: 5,
     isPro: false,
@@ -88,37 +89,37 @@ const Stories: React.FC = () => {
       id: '1',
       username: 'joaosilva',
       display_name: 'João Silva',
-      photo_url: 'https://randomuser.me/api/portraits/men/1.jpg',
+      photo_url: generateRealPersonAvatar('men'),
     },
     {
       id: '2',
       username: 'mariasantos',
       display_name: 'Maria Santos',
-      photo_url: 'https://randomuser.me/api/portraits/women/2.jpg',
+      photo_url: generateRealPersonAvatar('women'),
     },
     {
       id: '3',
       username: 'analucia',
       display_name: 'Ana Lucia',
-      photo_url: 'https://randomuser.me/api/portraits/women/3.jpg',
+      photo_url: generateRealPersonAvatar('women'),
     },
     {
       id: 'user5',
       username: 'mariasilva',
       display_name: 'Maria Silva',
-      photo_url: 'https://randomuser.me/api/portraits/women/33.jpg',
+      photo_url: generateRealPersonAvatar('women'),
     },
     {
       id: 'user6',
       username: 'joaocarlos',
       display_name: 'João Carlos',
-      photo_url: 'https://randomuser.me/api/portraits/men/41.jpg',
+      photo_url: generateRealPersonAvatar('men'),
     },
     {
       id: 'user7',
       username: 'julianacosta',
       display_name: 'Juliana Costa',
-      photo_url: 'https://randomuser.me/api/portraits/women/63.jpg',
+      photo_url: generateRealPersonAvatar('women'),
     }
   ];
   

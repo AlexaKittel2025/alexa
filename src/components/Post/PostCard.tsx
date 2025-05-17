@@ -3,18 +3,51 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { FaThumbsUp, FaComment, FaShare, FaExclamationTriangle, FaClock } from 'react-icons/fa';
+import { FaThumbsUp, FaComment, FaShare, FaExclamationTriangle, FaClock, FaBookmark } from 'react-icons/fa';
 import { ExtendedPost } from '@/types/prisma';
+import { useRouter } from 'next/navigation';
 
 interface PostCardProps {
   post: ExtendedPost;
+  onLike?: (postId: string) => void;
+  onSave?: (postId: string) => void;
+  onShare?: (postId: string) => void;
 }
 
-export default function PostCard({ post }: PostCardProps) {
+export default function PostCard({ post, onLike, onSave, onShare }: PostCardProps) {
   const [showActions, setShowActions] = useState(false);
+  const [liked, setLiked] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [likesCount, setLikesCount] = useState(post.reactions?.filter(r => r.type === 'LIKE')?.length || 0);
+  const router = useRouter();
 
   const handleReportClick = () => {
     setShowActions(!showActions);
+  };
+
+  const handleLikeClick = async () => {
+    setLiked(!liked);
+    setLikesCount(prev => liked ? prev - 1 : prev + 1);
+    if (onLike) {
+      onLike(post.id);
+    }
+  };
+
+  const handleSaveClick = async () => {
+    setSaved(!saved);
+    if (onSave) {
+      onSave(post.id);
+    }
+  };
+
+  const handleShareClick = () => {
+    if (onShare) {
+      onShare(post.id);
+    }
+  };
+
+  const handleCommentClick = () => {
+    router.push(`/post/${post.id}`);
   };
 
   // Calcular tempo formatado
@@ -95,17 +128,33 @@ export default function PostCard({ post }: PostCardProps) {
       
       <div className="flex justify-between border-t pt-3 dark:border-gray-700">
         <div className="flex space-x-4">
-          <button className="flex items-center space-x-1 text-gray-600 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400">
+          <button 
+            className={`flex items-center space-x-1 transition ${liked ? 'text-purple-600 dark:text-purple-400' : 'text-gray-600 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400'}`}
+            onClick={handleLikeClick}
+          >
             <FaThumbsUp />
-            <span>{reactionCount}</span>
+            <span>{likesCount}</span>
           </button>
-          <Link href={`/post/${post.id}`} className="flex items-center space-x-1 text-gray-600 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400">
+          <button 
+            onClick={handleCommentClick}
+            className="flex items-center space-x-1 text-gray-600 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400"
+          >
             <FaComment />
             <span>{commentCount}</span>
-          </Link>
-          <button className="flex items-center space-x-1 text-gray-600 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400">
+          </button>
+          <button 
+            onClick={handleShareClick}
+            className="flex items-center space-x-1 text-gray-600 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400"
+          >
             <FaShare />
             <span>Compartilhar</span>
+          </button>
+          <button 
+            onClick={handleSaveClick}
+            className={`flex items-center space-x-1 transition ${saved ? 'text-purple-600 dark:text-purple-400' : 'text-gray-600 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400'}`}
+          >
+            <FaBookmark />
+            <span>{saved ? 'Salvo' : 'Salvar'}</span>
           </button>
         </div>
         

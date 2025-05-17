@@ -13,7 +13,7 @@ const PROTECTED_ROUTES = [
   '/chat',
   '/nova-mentira',
   '/plano-pro',
-  '/configuracoes',
+  // '/configuracoes', // Temporariamente desabilitado para testes
 ];
 
 // Rotas de API que necessitam de proteção CSRF

@@ -25,7 +25,46 @@ export default function LoginForm() {
     try {
       setIsLoading(true);
       
-      // Autenticar com NextAuth
+      // Em desenvolvimento, verificar credenciais mock diretamente
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('Tentando mock login...');
+        
+        // Verificar credenciais mock hardcoded
+        if ((email === 'teste@mentei.com' && password === 'teste123') ||
+            (email === 'demo@mentei.com' && password === 'Demo123!')) {
+          
+          console.log('Credenciais mock válidas');
+          
+          // Criar usuário mock
+          const mockUser = email === 'teste@mentei.com' ? {
+            id: 'test-user-1',
+            username: 'teste',
+            name: 'Usuário Teste',
+            email: 'teste@mentei.com',
+            image: 'https://randomuser.me/api/portraits/men/1.jpg',
+            isPro: true,
+            level: 15,
+            points: 2500
+          } : {
+            id: 'test-user-2',
+            username: 'demo',
+            name: 'Demo User',
+            email: 'demo@mentei.com',
+            image: 'https://randomuser.me/api/portraits/women/1.jpg',
+            isPro: false,
+            level: 5,
+            points: 500
+          };
+          
+          // Salvar no localStorage
+          localStorage.setItem('mockUser', JSON.stringify(mockUser));
+          router.push('/');
+          router.refresh();
+          return;
+        }
+      }
+      
+      // Se não for desenvolvimento ou mock falhar, tentar NextAuth
       const result = await signIn('credentials', {
         redirect: false,
         email,

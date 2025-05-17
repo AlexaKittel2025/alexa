@@ -14,18 +14,16 @@ import {
   EmojiHappyIcon,
   PhotographIcon,
   PaperAirplaneIcon,
+  BellOff as BellSlashIcon,
+  UserAddIcon,
+  UserRemoveIcon,
+  FlagIcon,
+  DotsHorizontalIcon,
+  LocationMarkerIcon,
+  PencilIcon,
+  CameraIcon,
+  BanIcon
 } from '@heroicons/react/outline';
-
-// Importar ícones individualmente para resolver problemas de compatibilidade
-import NoSymbolIcon from '@heroicons/react/outline/NoSymbolIcon';
-import BellSlashIcon from '@heroicons/react/outline/BellSlashIcon';
-import UserAddIcon from '@heroicons/react/outline/UserAddIcon';
-import UserRemoveIcon from '@heroicons/react/outline/UserRemoveIcon';
-import FlagIcon from '@heroicons/react/outline/FlagIcon';
-import DotsHorizontalIcon from '@heroicons/react/outline/DotsHorizontalIcon';
-import LocationMarkerIcon from '@heroicons/react/outline/LocationMarkerIcon';
-import PencilIcon from '@heroicons/react/outline/PencilIcon';
-import CameraIcon from '@heroicons/react/outline/CameraIcon';
 import { toggleFollowUser, checkIfFollowing, updateUserInfo } from '../services/userService';
 import { getPostsByUserId } from '../services/postService';
 
@@ -178,7 +176,7 @@ const OptionsModal: React.FC<{
             onClick={() => { onBlock(); onClose(); }}
             className="flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
           >
-            <NoSymbolIcon className="h-5 w-5 text-gray-500" />
+            <BanIcon className="h-5 w-5 text-gray-500" />
             <span>Bloquear usuário</span>
           </button>
           

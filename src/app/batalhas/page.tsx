@@ -1,46 +1,77 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import MainLayout from '@/components/Layout/MainLayout';
 import BattleMentiras from '@/components/Game/BattleMentiras';
 import { FaCrown, FaTrophy, FaChartLine, FaUsers } from 'react-icons/fa';
+import { generateRealPersonAvatar } from '@/utils/avatarUtils';
+import { loadUserStats, saveUserStats } from '@/utils/persistenceUtils';
 
 export default function BatalhasPage() {
   const [activeTab, setActiveTab] = useState<'battle' | 'ranking'>('battle');
+  const [userStats, setUserStats] = useState<any>(null);
+  const [rankingData, setRankingData] = useState<any[]>([]);
   
-  const topBattleWinners = [
+  // Carregar dados do usuário
+  useEffect(() => {
+    const currentUser = JSON.parse(localStorage.getItem('userProfile') || '{}');
+    if (currentUser.id) {
+      const stats = loadUserStats(currentUser.id);
+      if (stats) {
+        setUserStats(stats);
+      }
+    }
+    
+    // Carregar dados de ranking
+    const loadRanking = () => {
+      const allStats = JSON.parse(localStorage.getItem('mentei_user_stats') || '{}');
+      const rankingArray = Object.values(allStats)
+        .map((stats: any) => ({
+          ...stats,
+          wins: stats.battleWins || 0
+        }))
+        .sort((a: any, b: any) => (b.wins || 0) - (a.wins || 0))
+        .slice(0, 10);
+      
+      setRankingData(rankingArray);
+    };
+    
+    loadRanking();
+  }, []);
+  
+  const topBattleWinners = rankingData.length > 0 ? rankingData : [
     {
       id: 'user1',
       name: 'Carlos Mendes',
-      avatar: 'https://randomuser.me/api/portraits/men/32.jpg',
+      avatar: generateRealPersonAvatar('men'),
       wins: 124,
       level: 'Mestre Mentiroso'
     },
     {
       id: 'user2',
       name: 'Ana Beatriz',
-      avatar: 'https://randomuser.me/api/portraits/women/44.jpg',
+      avatar: generateRealPersonAvatar('women'),
       wins: 98,
       level: 'Mentirosa Épica'
     },
     {
       id: 'user3',
       name: 'Rodrigo Lima',
-      avatar: 'https://randomuser.me/api/portraits/men/67.jpg',
+      avatar: generateRealPersonAvatar('men'),
       wins: 86,
       level: 'Fabulista Pro'
     },
     {
       id: 'user4',
       name: 'Juliana Costa',
-      avatar: 'https://randomuser.me/api/portraits/women/12.jpg',
+      avatar: generateRealPersonAvatar('women'),
       wins: 72,
       level: 'Contadora de Histórias'
     },
     {
       id: 'user5',
       name: 'Pedro Almeida',
-      avatar: 'https://randomuser.me/api/portraits/men/23.jpg',
+      avatar: generateRealPersonAvatar('men'),
       wins: 65,
       level: 'Mentiroso Experiente'
     }
@@ -167,6 +198,15 @@ export default function BatalhasPage() {
                   <span>O ranking é atualizado diariamente</span>
                 </li>
               </ul>
+              
+              <div className="mt-4">
+                <button
+                  onClick={() => window.location.href = '/ranking'}
+                  className="w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                >
+                  Ver ranking completo
+                </button>
+              </div>
             </div>
           </div>
         )}

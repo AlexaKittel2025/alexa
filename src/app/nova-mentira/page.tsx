@@ -10,6 +10,7 @@ import MainLayout from '@/components/Layout/MainLayout';
 import { FaImage, FaTimesCircle, FaTags, FaExclamationTriangle } from 'react-icons/fa';
 import AuthCheck from '@/components/Auth/AuthCheck';
 import { v4 as uuidv4 } from 'uuid';
+import { savePostDraft, loadPostDraft, clearPostDraft } from '@/utils/persistenceUtils';
 
 const MAX_CHAR_LIMIT = 1000;
 const MAX_TAG_LIMIT = 5;
@@ -26,6 +27,7 @@ export default function NovaMentira() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showAnonymousWarning, setShowAnonymousWarning] = useState(false);
+  const [draftSaved, setDraftSaved] = useState(false);
   
   // Para usuários não autenticados
   const [guestName, setGuestName] = useState('');
@@ -41,7 +43,35 @@ export default function NovaMentira() {
     if (!loading && !user) {
       setShowAnonymousWarning(true);
     }
+    
+    // Carregar rascunho salvo
+    const draft = loadPostDraft();
+    if (draft) {
+      setContent(draft.content);
+      setTags(draft.tags);
+      if (draft.imagePreview) {
+        setImagePreview(draft.imagePreview);
+      }
+    }
   }, [user, loading]);
+  
+  // Auto-save do rascunho
+  useEffect(() => {
+    const saveTimer = setTimeout(() => {
+      if (content || tags.length > 0) {
+        savePostDraft({
+          content,
+          tags,
+          imagePreview: imagePreview || undefined,
+          savedAt: new Date().toISOString()
+        });
+        setDraftSaved(true);
+        setTimeout(() => setDraftSaved(false), 2000);
+      }
+    }, 1000); // Auto-save após 1 segundo de inatividade
+    
+    return () => clearTimeout(saveTimer);
+  }, [content, tags, imagePreview]);
   
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newContent = e.target.value;
@@ -184,6 +214,9 @@ export default function NovaMentira() {
         }
       }
       
+      // Limpar rascunho após publicação bem-sucedida
+      clearPostDraft();
+      
       router.push('/');
     } catch (error) {
       console.error('Erro ao publicar mentira:', error);
@@ -239,7 +272,10 @@ export default function NovaMentira() {
                 className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent min-h-[150px]"
                 required
               ></textarea>
-              <div className="mt-1 flex justify-end">
+              <div className="mt-1 flex justify-between">
+                <span className={`text-xs text-green-500 ${draftSaved ? 'opacity-100' : 'opacity-0'} transition-opacity duration-500`}>
+                  Rascunho salvo
+                </span>
                 <span className={`text-xs ${content.length > MAX_CHAR_LIMIT * 0.8 ? (content.length > MAX_CHAR_LIMIT * 0.95 ? 'text-red-500' : 'text-yellow-500') : 'text-gray-500'}`}>
                   {content.length}/{MAX_CHAR_LIMIT}
                 </span>

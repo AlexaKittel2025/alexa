@@ -30,8 +30,8 @@ export default function MobileNav() {
           <FaHeart className="w-6 h-6 text-gray-700" />
         </Link>
         
-        <Link href="/perfil" className="p-3">
-          {pathname === '/perfil' ? (
+        <Link href="/meu-perfil" className="p-3">
+          {pathname === '/meu-perfil' ? (
             <FaUser className="w-6 h-6 text-gray-900" />
           ) : (
             <FaUser className="w-6 h-6 text-gray-700" />

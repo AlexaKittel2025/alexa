@@ -43,7 +43,6 @@ export default function RootLayout({
       <head>
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        {/* Script para evitar flash de tema incorreto */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -57,6 +56,18 @@ export default function RootLayout({
                   document.documentElement.classList.remove('dark');
                 }
               })();
+            `,
+          }}
+        />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              // Force reload on chunk load error
+              window.addEventListener('error', (e) => {
+                if (e.message?.includes('Loading chunk') || e.message?.includes('ChunkLoadError')) {
+                  window.location.reload();
+                }
+              });
             `,
           }}
         />

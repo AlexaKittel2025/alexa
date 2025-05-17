@@ -7,27 +7,29 @@ import Post from '../components/Post';
 import ProfileStats from '../components/ProfileStats';
 import ProBadge from '../components/ProBadge';
 import { getCurrentUserProStatus } from '../services/userService';
-import CalendarIcon from '@heroicons/react/outline/CalendarIcon';
-import LocationMarkerIcon from '@heroicons/react/outline/LocationMarkerIcon';
-import LinkIcon from '@heroicons/react/outline/LinkIcon';
-import BriefcaseIcon from '@heroicons/react/outline/BriefcaseIcon';
-import PencilIcon from '@heroicons/react/outline/PencilIcon';
-import BellIcon from '@heroicons/react/outline/BellIcon';
-import BellSlashIcon from '@heroicons/react/outline/BellSlashIcon';
-import DotsHorizontalIcon from '@heroicons/react/outline/DotsHorizontalIcon';
-import UserAddIcon from '@heroicons/react/outline/UserAddIcon';
-import UserRemoveIcon from '@heroicons/react/outline/UserRemoveIcon';
-import ChatAlt2Icon from '@heroicons/react/outline/ChatAlt2Icon';
-import PhotographIcon from '@heroicons/react/outline/PhotographIcon';
-import RefreshIcon from '@heroicons/react/outline/RefreshIcon';
-import BookmarkIcon from '@heroicons/react/outline/BookmarkIcon';
-import ShieldCheckIcon from '@heroicons/react/outline/ShieldCheckIcon';
-import HeartIcon from '@heroicons/react/outline/HeartIcon';
-import PaperAirplaneIcon from '@heroicons/react/outline/PaperAirplaneIcon';
-import XIcon from '@heroicons/react/outline/XIcon';
-import EmojiHappyIcon from '@heroicons/react/outline/EmojiHappyIcon';
-import ShareIcon from '@heroicons/react/outline/ShareIcon';
-import CameraIcon from '@heroicons/react/outline/CameraIcon';
+import {
+  CalendarIcon,
+  LocationMarkerIcon,
+  LinkIcon,
+  BriefcaseIcon,
+  PencilIcon,
+  BellIcon,
+  BellOff as BellSlashIcon,
+  DotsHorizontalIcon,
+  UserAddIcon,
+  UserRemoveIcon,
+  ChatAlt2Icon,
+  PhotographIcon,
+  RefreshIcon,
+  BookmarkIcon,
+  ShieldCheckIcon,
+  HeartIcon,
+  PaperAirplaneIcon,
+  XIcon,
+  EmojiHappyIcon,
+  ShareIcon,
+  CameraIcon
+} from '@heroicons/react/outline';
 import 'react-image-crop/dist/ReactCrop.css';
 import ReactCrop, { Crop } from 'react-image-crop';
 import { updateUserInfo } from '../services/userService';

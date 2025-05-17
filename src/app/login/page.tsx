@@ -1,9 +1,10 @@
 'use client';
 
-import LoginForm from '@/components/Auth/LoginForm';
+import SimpleLoginForm from '@/components/Auth/SimpleLoginForm';
 import Link from 'next/link';
 import { FaArrowLeft } from 'react-icons/fa';
 import MainLayout from '@/components/Layout/MainLayout';
+import TestCredentials from '@/components/Auth/TestCredentials';
 
 export default function LoginPage() {
   return (
@@ -27,7 +28,8 @@ export default function LoginPage() {
               <FaArrowLeft className="mr-1" />
               <span>Voltar</span>
             </Link>
-            <LoginForm />
+            <SimpleLoginForm />
+            <TestCredentials />
           </div>
         </div>
       </div>

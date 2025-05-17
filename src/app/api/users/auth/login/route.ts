@@ -1,62 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/api/prisma';
-import { comparePasswords, generateToken, sanitizeUser } from '@/app/api/shared/auth-utils';
+import { AuthApiService } from '@/services/AuthApiService';
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    console.log('Recebida solicitação de login:', body);
+    console.log('Recebida solicitação de login');
     
-    const { email, password } = body;
-    
-    // Validar campos obrigatórios
-    if (!email || !password) {
-      console.log('Erro de validação: email ou senha ausentes');
-      return NextResponse.json(
-        { success: false, error: 'Email e senha são obrigatórios' },
-        { status: 400 }
-      );
-    }
-    
-    // Buscar usuário pelo email usando Prisma
-    const user = await prisma.user.findUnique({
-      where: { email }
+    const { user, token } = await AuthApiService.login({
+      username: body.email, // Aceita email como username também
+      password: body.password
     });
     
-    if (!user) {
-      console.log('Erro de autenticação: usuário não encontrado');
-      return NextResponse.json(
-        { success: false, error: 'Email ou senha incorretos' },
-        { status: 401 }
-      );
-    }
+    console.log('Login bem-sucedido para:', body.email);
     
-    // Verificar se a senha está correta usando bcrypt
-    const isPasswordValid = await comparePasswords(password, user.password_hash);
-    
-    if (!isPasswordValid) {
-      console.log('Erro de autenticação: senha inválida');
-      return NextResponse.json(
-        { success: false, error: 'Email ou senha incorretos' },
-        { status: 401 }
-      );
-    }
-    
-    console.log('Login bem-sucedido para:', email);
-    
-    // Gerar um token JWT usando a função de utilitário
-    const token = generateToken(user);
-    
-    // Remover dados sensíveis do objeto de resposta
-    const safeUser = sanitizeUser(user);
-    
-    // Criar resposta com cookie seguro
+    // Criar resposta
     const response = NextResponse.json({
       success: true,
-      user: safeUser,
+      user,
     }, { status: 200 });
     
-    // Definir cookie HTTPOnly com o token em vez de retorná-lo na resposta
+    // Definir cookie HTTPOnly com o token
     response.cookies.set({
       name: 'mentei_auth_token',
       value: token,
@@ -71,9 +34,25 @@ export async function POST(request: NextRequest) {
     
   } catch (error) {
     console.error('Erro ao processar login:', error);
+    
+    if (error instanceof Error) {
+      const message = error.message;
+      
+      // Determinar status code baseado no tipo de erro
+      let statusCode = 500;
+      if (message.includes('obrigatórios') || message.includes('Credenciais inválidas')) {
+        statusCode = 401;
+      }
+      
+      return NextResponse.json(
+        { success: false, error: message },
+        { status: statusCode }
+      );
+    }
+    
     return NextResponse.json(
       { success: false, error: 'Erro interno do servidor' },
       { status: 500 }
     );
   }
-} 
+}
