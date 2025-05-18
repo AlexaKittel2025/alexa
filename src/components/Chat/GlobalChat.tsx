@@ -4,6 +4,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { FaComment, FaPaperPlane, FaSmile } from 'react-icons/fa';
 import { useAuth } from '@/providers/AuthProvider';
 import { loadChatMessages, saveChatMessages } from '@/utils/persistenceUtils';
+import { getAblyClient } from '@/lib/ably';
+import * as Ably from 'ably';
 
 interface Message {
   id: string;
@@ -20,8 +22,10 @@ const GlobalChat: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
+  const [connected, setConnected] = useState(false);
   const { user } = useAuth();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const channelRef = useRef<Ably.Types.RealtimeChannelPromise | null>(null);
 
   // Scroll para o final das mensagens quando receber novas
   useEffect(() => {
@@ -30,9 +34,57 @@ const GlobalChat: React.FC = () => {
     }
   }, [messages, isOpen]);
 
-  // Load messages from localStorage
+  // Conectar ao Ably quando o chat abrir
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && user) {
+      let isMounted = true;
+      
+      const initializeAbly = async () => {
+        try {
+          const ably = getAblyClient();
+          const channel = ably.channels.get('chat:global');
+          channelRef.current = channel;
+          
+          // Inscrever-se para receber mensagens
+          await channel.subscribe('message', (message: Ably.Types.Message) => {
+            if (isMounted) {
+              const newMessage = message.data as Message;
+              setMessages(prev => [...prev, newMessage]);
+            }
+          });
+          
+          // Buscar mensagens recentes da API
+          const response = await fetch('/api/chat');
+          if (response.ok) {
+            const recentMessages = await response.json();
+            setMessages(recentMessages);
+          }
+          
+          setConnected(true);
+        } catch (error) {
+          
+          // Fallback para localStorage se falhar
+          const savedMessages = loadChatMessages('global');
+          if (savedMessages.length > 0) {
+            setMessages(savedMessages);
+          }
+        }
+      };
+      
+      initializeAbly();
+      
+      return () => {
+        isMounted = false;
+        if (channelRef.current) {
+          channelRef.current.unsubscribe();
+        }
+      };
+    }
+  }, [isOpen, user]);
+  
+  // Load messages from localStorage como fallback
+  useEffect(() => {
+    if (isOpen && !connected) {
       const savedMessages = loadChatMessages('global');
       
       if (savedMessages.length > 0) {
@@ -78,22 +130,43 @@ const GlobalChat: React.FC = () => {
     }
   }, [isOpen]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!message.trim() || !user) return;
     
-    // Em produção, enviaria para a API
     const newMessage: Message = {
       id: `msg-${Date.now()}`,
       content: message,
       sender: { 
         id: user.id || 'guest', 
         name: user.display_name || 'Convidado',
-        image: user.photo_url
+        image: user.avatar
       },
       createdAt: new Date().toISOString()
     };
+    
+    try {
+      if (channelRef.current && connected) {
+        // Enviar mensagem via Ably
+        await channelRef.current.publish('message', newMessage);
+      } else {
+        // Fallback para API se Ably não estiver conectado
+        const response = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newMessage)
+        });
+        
+        if (response.ok) {
+          setMessages(prev => [...prev, newMessage]);
+        }
+      }
+    } catch (error) {
+      
+      // Salvar localmente como fallback
+      setMessages(prev => [...prev, newMessage]);
+    }
     
     const updatedMessages = [...messages, newMessage];
     setMessages(updatedMessages);

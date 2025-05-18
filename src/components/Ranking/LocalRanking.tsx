@@ -98,7 +98,7 @@ export default function LocalRanking() {
       
       setIsLoading(false);
     } catch (error) {
-      console.error('Erro ao buscar rankings locais:', error);
+      
       setIsLoading(false);
     }
   };

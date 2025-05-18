@@ -87,7 +87,7 @@ const ContentSettings: React.FC<ContentSettingsProps> = ({ currentUser }) => {
         }, 3000);
       }
     } catch (error) {
-      console.error('Erro ao salvar configurações de conteúdo:', error);
+      
       setMessage('Erro ao salvar as configurações. Tente novamente.');
     } finally {
       setIsLoading(false);

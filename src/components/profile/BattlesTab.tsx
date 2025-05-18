@@ -36,7 +36,7 @@ const BattlesTab: React.FC<BattlesTabProps> = ({ userId, isCurrentUser }) => {
       setHasMore(data.hasMore);
       setPage(pageNum);
     } catch (err) {
-      console.error('Erro ao buscar batalhas:', err);
+      
       setError(err instanceof Error ? err.message : 'Erro ao carregar batalhas');
     } finally {
       setLoading(false);

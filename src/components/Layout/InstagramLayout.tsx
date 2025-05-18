@@ -1,8 +1,8 @@
 'use client';
 
 import { ReactNode } from 'react';
-import Header from './Header';
 import Sidebar from './Sidebar';
+import Header from './Header';
 import MobileNav from './MobileNav';
 
 interface InstagramLayoutProps {
@@ -11,7 +11,7 @@ interface InstagramLayoutProps {
 
 export default function InstagramLayout({ children }: InstagramLayoutProps) {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Sidebar - Desktop */}
       <Sidebar />
       

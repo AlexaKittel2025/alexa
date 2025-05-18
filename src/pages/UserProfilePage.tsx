@@ -1,30 +1,13 @@
+;
+
+;
+import { BanIcon, BellIcon, CalendarIcon, CameraIcon, ChatAlt2Icon, DotsHorizontalIcon, EmojiHappyIcon, FlagIcon, LocationMarkerIcon, PaperAirplaneIcon, PencilIcon, PhotographIcon, ShareIcon, UserAddIcon, UserIcon, UserRemoveIcon, XIcon } from '@heroicons/react/outline';
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { mockUsers, mockPosts } from '../services/mockData';
 import { User, Post as PostType } from '../types';
-import Post from '../components/Post';
-import { 
-  UserIcon, 
-  CalendarIcon,
-  ChatAlt2Icon,
-  BellIcon,
-  ShareIcon,
-  XIcon,
-  EmojiHappyIcon,
-  PhotographIcon,
-  PaperAirplaneIcon,
-  BellOff as BellSlashIcon,
-  UserAddIcon,
-  UserRemoveIcon,
-  FlagIcon,
-  DotsHorizontalIcon,
-  LocationMarkerIcon,
-  PencilIcon,
-  CameraIcon,
-  BanIcon
-} from '@heroicons/react/outline';
-import { toggleFollowUser, checkIfFollowing, updateUserInfo } from '../services/userService';
+import Post from '../components/Post';import { toggleFollowUser, checkIfFollowing, updateUserInfo } from '../services/userService';
 import { getPostsByUserId } from '../services/postService';
 
 // Componente de Chat Flutuante
@@ -526,7 +509,7 @@ const UserProfilePage: React.FC = () => {
       setFollowers(mockFollowers);
       setFollowing(mockFollowing);
     } catch (error) {
-      console.error("Error fetching user data:", error);
+      
     } finally {
       setIsLoading(false);
     }
@@ -552,12 +535,12 @@ const UserProfilePage: React.FC = () => {
       // Recarregar dados do usuário
       fetchUserData();
     } catch (error) {
-      console.error("Erro ao atualizar perfil:", error);
+      
     }
   };
 
   const handleReaction = (postId: string, reactionType: 'quaseAcreditei' | 'hahaha' | 'mentiraEpica') => {
-    console.log(`Reação ${reactionType} no post ${postId}`);
+    
   };
   
   useEffect(() => {
@@ -570,11 +553,11 @@ const UserProfilePage: React.FC = () => {
   }, [username, userId, currentUser]);
   
   const handleJudgement = (postId: string, judgementType: 'crivel' | 'inventiva' | 'totalmentePirada') => {
-    console.log(`Julgamento ${judgementType} no post ${postId}`);
+    
   };
 
   const handleReport = (postId: string, reason: string) => {
-    console.log(`Post ${postId} reportado: ${reason}`);
+    
     // Em uma aplicação real, aqui seria feita uma chamada à API
     alert(`Denúncia recebida: ${reason}`);
   };
@@ -618,7 +601,7 @@ const UserProfilePage: React.FC = () => {
       // Se der erro, reverte o estado
       setIsFollowing(!optimisticIsFollowing);
       setFollowersCount(prev => !optimisticIsFollowing ? prev + 1 : Math.max(0, prev - 1));
-      console.error('Erro ao seguir/deixar de seguir:', error);
+      
     } finally {
       setIsLoadingFollow(false);
     }
@@ -636,7 +619,7 @@ const UserProfilePage: React.FC = () => {
         alert(`Link do perfil de ${user.displayName} copiado para a área de transferência!`);
       })
       .catch(err => {
-        console.error('Erro ao copiar link:', err);
+        
         alert('Não foi possível copiar o link. Por favor, copie manualmente a URL.');
       });
   };
@@ -646,8 +629,7 @@ const UserProfilePage: React.FC = () => {
     if (!user) return;
     
     // Aqui você implementaria a lógica real de bloqueio
-    console.log(`Bloqueando usuário ${user.username}`);
-    
+
     // Mostrar confirmação
     alert(`Usuário ${user.displayName} foi bloqueado. Você não verá mais conteúdo deste usuário.`);
     
@@ -663,7 +645,7 @@ const UserProfilePage: React.FC = () => {
     const reason = prompt(`Por que você está denunciando ${user.displayName}?`);
     
     if (reason) {
-      console.log(`Denúncia contra ${user.username}: ${reason}`);
+      
       alert('Sua denúncia foi enviada. Obrigado por ajudar a manter a comunidade segura!');
     }
   };

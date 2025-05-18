@@ -88,7 +88,7 @@ export default function CoinSystem({ userId }: CoinSystemProps) {
       setLoading(false);
       
     } catch (error) {
-      console.error('Erro ao buscar dados de moedas:', error);
+      
       setLoading(false);
     }
   };

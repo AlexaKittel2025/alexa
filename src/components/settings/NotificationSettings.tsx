@@ -1,12 +1,10 @@
+;
+
+;
+import { BellIcon } from '@heroicons/react/outline';
 import React, { useState, useEffect } from 'react';
 import { User } from '../../types';
-import { useAuth } from '../../context/AuthContext';
-import { BellIcon } from '@heroicons/react/outline';
-import ChatAlt2Icon from '@heroicons/react/outline/ChatAlt2Icon';
-import TagIcon from '@heroicons/react/outline/TagIcon';
-import UserGroupIcon from '@heroicons/react/outline/UserGroupIcon';
-import UserIcon from '@heroicons/react/outline/UserIcon';
-import * as userApi from '../../services/userApi';
+import { useAuth } from '../../context/AuthContext';;import * as userApi from '../../services/userApi';
 
 interface NotificationSettingsProps {
   currentUser: User;

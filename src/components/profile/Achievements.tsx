@@ -141,7 +141,7 @@ export default function Achievements({ userId }: AchievementsProps) {
       setLoading(false);
       
     } catch (error) {
-      console.error('Erro ao buscar conquistas:', error);
+      
       setLoading(false);
     }
   };

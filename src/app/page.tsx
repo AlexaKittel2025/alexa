@@ -1,11 +1,13 @@
 'use client';
 
-import InstagramPost from '@/components/Post/InstagramPost';
-import UserCard from '@/components/UserCard';
-import SuggestionCard from '@/components/SuggestionCard';
-import Stories from '@/components/Stories';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import { generateRealPersonAvatar, generatePostImage } from '@/utils/avatarUtils';
+import InstagramPost from '@/components/Post/InstagramPost';
+import Stories from '@/components/Stories';
+import UserCard from '@/components/UserCard';
+import SuggestionsSection from '@/components/SuggestionsSection';
+import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import CreatePostInline from '@/components/CreatePostInline';
 
 // Mock data com imagens reais
 const mockPosts = [
@@ -21,7 +23,7 @@ const mockPosts = [
     image: generatePostImage(),
     likes: 0,
     comments: 0,
-    createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 horas atrás
+    createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
     likedByMe: false,
     saved: false
   },
@@ -37,7 +39,7 @@ const mockPosts = [
     image: generatePostImage(),
     likes: 0,
     comments: 0,
-    createdAt: new Date(Date.now() - 4 * 60 * 60 * 1000), // 4 horas atrás
+    createdAt: new Date(Date.now() - 4 * 60 * 60 * 1000),
     likedByMe: false,
     saved: false
   },
@@ -53,7 +55,7 @@ const mockPosts = [
     image: generatePostImage(),
     likes: 0,
     comments: 0,
-    createdAt: new Date(Date.now() - 6 * 60 * 60 * 1000), // 6 horas atrás
+    createdAt: new Date(Date.now() - 6 * 60 * 60 * 1000),
     likedByMe: false,
     saved: false
   },
@@ -69,7 +71,7 @@ const mockPosts = [
     image: generatePostImage(),
     likes: 0,
     comments: 0,
-    createdAt: new Date(Date.now() - 8 * 60 * 60 * 1000), // 8 horas atrás
+    createdAt: new Date(Date.now() - 8 * 60 * 60 * 1000),
     likedByMe: false,
     saved: false
   },
@@ -85,223 +87,210 @@ const mockPosts = [
     image: generatePostImage(),
     likes: 0,
     comments: 0,
-    createdAt: new Date(Date.now() - 10 * 60 * 60 * 1000), // 10 horas atrás
+    createdAt: new Date(Date.now() - 10 * 60 * 60 * 1000),
     likedByMe: false,
     saved: false
   }
 ];
 
-// Mock de usuários sugeridos com avatares reais
+// Mock de usuários sugeridos
 const suggestedUsers = [
   {
     id: '6',
     name: 'Juliana Pereira',
     username: 'jupereira',
     avatar: generateRealPersonAvatar('women'),
-    bio: 'Contadora de histórias improváveis e eventos que definitivamente aconteceram',
-    isFollowing: false,
-    level: 12,
-    points: 2845
+    bio: 'Exploradora de mentiras criativas',
+    isFollowing: false
   },
   {
     id: '7',
-    name: 'Roberto Alves',
-    username: 'robertoalves',
+    name: 'Rafael Mendes',
+    username: 'rafamendes',
     avatar: generateRealPersonAvatar('men'),
-    bio: 'Especialista em mentiras criativas e verdades alternativas',
-    isFollowing: false,
-    level: 8,
-    points: 1567
+    bio: 'Mestre em inventar histórias',
+    isFollowing: false
   },
   {
     id: '8',
-    name: 'Fernanda Lima',
-    username: 'fernandalima',
+    name: 'Beatriz Lima',
+    username: 'bealima',
     avatar: generateRealPersonAvatar('women'),
-    bio: 'Inventora de fatos alternativos e realidades paralelas',
-    isFollowing: false,
-    level: 15,
-    points: 3421
-  },
-  {
-    id: '9',
-    name: 'Lucas Ferreira',
-    username: 'lucasferreira',
-    avatar: generateRealPersonAvatar('men'),
-    bio: 'Mestre em histórias impossíveis que aconteceram comigo ontem',
-    isFollowing: false,
-    level: 10,
-    points: 2103
-  },
-  {
-    id: '10',
-    name: 'Beatriz Costa',
-    username: 'beatrizcosta',
-    avatar: generateRealPersonAvatar('women'),
-    bio: 'Criadora de mundos imaginários onde tudo é verdade',
-    isFollowing: false,
-    level: 9,
-    points: 1789
+    bio: 'Especialista em ficção criativa',
+    isFollowing: false
   }
 ];
 
 export default function HomePage() {
   const [posts, setPosts] = useState(mockPosts);
-  const [users, setUsers] = useState(suggestedUsers);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  const handleLike = (postId: string) => {
-    setPosts(prevPosts => 
-      prevPosts.map(post => 
-        post.id === postId 
-          ? { 
-              ...post, 
-              likedByMe: !post.likedByMe,
-              likes: post.likedByMe ? post.likes - 1 : post.likes + 1
-            }
-          : post
-      )
-    );
-  };
-
-  const handleComment = (postId: string, comment: string) => {
-    console.log(`Comentário no post ${postId}: ${comment}`);
-    // Aqui você implementaria a lógica para adicionar o comentário
-    setPosts(prevPosts => 
-      prevPosts.map(post => 
-        post.id === postId 
-          ? { ...post, comments: post.comments + 1 }
-          : post
-      )
-    );
-  };
-
-  const handleSave = (postId: string) => {
-    setPosts(prevPosts => 
-      prevPosts.map(post => 
-        post.id === postId 
-          ? { ...post, saved: !post.saved }
-          : post
-      )
-    );
-  };
-
-  const handleFollow = (userId: string) => {
-    setUsers(prevUsers =>
-      prevUsers.map(user =>
-        user.id === userId
-          ? { ...user, isFollowing: !user.isFollowing }
-          : user
-      )
-    );
-  };
-
-  const handleShare = (postId: string) => {
-    console.log(`Compartilhar post ${postId}`);
-    // Implementar lógica de compartilhamento
-  };
-
-  // Recuperar dados do usuário do localStorage
-  const [currentUser, setCurrentUser] = useState({
-    id: 'current',
-    name: 'Você',
-    username: 'seuusername',
-    avatar: generateRealPersonAvatar(),
-    email: 'usuario@mentei.com',
-    level: 1,
-    score: 0,
-    bio: 'Contador de histórias incríveis',
-    isOnline: true
-  });
-
-  // Carregar dados do perfil do localStorage
-  useEffect(() => {
+  // Função para carregar dados do usuário
+  const loadUserData = () => {
     const savedProfile = localStorage.getItem('userProfile');
     if (savedProfile) {
-      const profile = JSON.parse(savedProfile);
-      setCurrentUser(prev => ({
-        ...prev,
-        name: profile.name || prev.name,
-        username: profile.username || prev.username,
-        avatar: profile.avatar || prev.avatar,
-        level: profile.level || prev.level,
-        score: profile.points || prev.score,
-        bio: profile.bio || prev.bio,
-      }));
+      try {
+        const parsedUser = JSON.parse(savedProfile);
+        setCurrentUser({
+          id: parsedUser.id || 'user-1',
+          name: parsedUser.name || parsedUser.username || 'Usuário',
+          username: parsedUser.username || 'usuario',
+          photoUrl: parsedUser.avatar || parsedUser.photoUrl || generateRealPersonAvatar('men'),
+          avatar: parsedUser.avatar || parsedUser.photoUrl || generateRealPersonAvatar('men'),
+          level: parsedUser.level || 1,
+          score: parsedUser.score || 0,
+          bio: parsedUser.bio || 'Mentiroso iniciante'
+        });
+      } catch (error) {
+        console.error('Error parsing user profile:', error);
+        // Criar usuário padrão em caso de erro
+        setCurrentUser({
+          id: 'user-1',
+          name: 'Usuário',
+          username: 'usuario',
+          photoUrl: generateRealPersonAvatar('men'),
+          avatar: generateRealPersonAvatar('men'),
+          level: 1,
+          score: 0,
+          bio: 'Mentiroso iniciante'
+        });
+      }
+    } else {
+      // Criar usuário padrão
+      const defaultUser = {
+        id: 'user-1',
+        name: 'Usuário',
+        username: 'usuario',
+        photoUrl: generateRealPersonAvatar('men'),
+        avatar: generateRealPersonAvatar('men'),
+        level: 1,
+        score: 0,
+        bio: 'Mentiroso iniciante'
+      };
+      setCurrentUser(defaultUser);
     }
+    setLoading(false);
+  };
 
-    // Adicionar listener para atualizações do perfil
-    const handleProfileUpdate = () => {
-      const updatedProfile = localStorage.getItem('userProfile');
-      if (updatedProfile) {
-        const profile = JSON.parse(updatedProfile);
-        setCurrentUser(prev => ({
-          ...prev,
-          name: profile.name || prev.name,
-          username: profile.username || prev.username,
-          avatar: profile.avatar || prev.avatar,
-          level: profile.level || prev.level,
-          score: profile.points || prev.score,
-          bio: profile.bio || prev.bio,
-        }));
+  useEffect(() => {
+    // Carregar dados inicialmente
+    loadUserData();
+
+    // Escutar mudanças no localStorage
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'userProfile') {
+        loadUserData();
       }
     };
 
+    // Escutar evento customizado para mudanças no mesmo tab
+    const handleProfileUpdate = () => {
+      loadUserData();
+    };
+
+    window.addEventListener('storage', handleStorageChange);
     window.addEventListener('profileUpdated', handleProfileUpdate);
-    return () => window.removeEventListener('profileUpdated', handleProfileUpdate);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('profileUpdated', handleProfileUpdate);
+    };
   }, []);
 
+  const handlePostUpdate = useCallback((updatedPost: any) => {
+    setPosts(prevPosts => 
+      prevPosts.map(post => 
+        post.id === updatedPost.id ? updatedPost : post
+      )
+    );
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <LoadingSpinner size="large" />
+      </div>
+    );
+  }
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-        {/* Feed de Posts */}
-        <div className="lg:col-span-3">
+    <div className="px-4 py-6 md:py-8 max-w-6xl mx-auto">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Feed Principal */}
+        <div className="lg:col-span-2">
           {/* Stories */}
-          <div className="mb-8">
+          <Suspense fallback={<div className="h-24 bg-gray-100 dark:bg-gray-800 animate-pulse rounded-lg mb-6" />}>
             <Stories />
-          </div>
+          </Suspense>
+          
+          {/* Campo de criar postagem */}
+          <CreatePostInline 
+            onPostCreated={() => {
+              // Recarregar posts quando uma nova postagem for criada
+              window.location.reload();
+            }}
+          />
           
           {/* Posts */}
-          <div className="space-y-8">
-            {posts.map(post => (
-              <InstagramPost
-                key={post.id}
-                post={post}
-                currentUser={currentUser}
-                onLike={() => handleLike(post.id)}
-                onComment={(comment) => handleComment(post.id, comment)}
-                onSave={() => handleSave(post.id)}
-                onShare={() => handleShare(post.id)}
-              />
+          <div className="space-y-4">
+            {posts.map((post, index) => (
+              <Suspense 
+                key={post.id} 
+                fallback={<div className="h-96 bg-gray-100 dark:bg-gray-800 animate-pulse rounded-lg" />}
+              >
+                <InstagramPost
+                  post={post}
+                  index={index}
+                  onUpdate={handlePostUpdate}
+                />
+              </Suspense>
             ))}
           </div>
         </div>
 
-        {/* Sidebar - Sugestões */}
-        <div className="lg:col-span-2">
-          <div className="sticky top-4">
-            {/* Perfil do Usuário Atual */}
+        {/* Barra Lateral */}
+        <div className="hidden lg:block">
+          {/* Perfil do usuário atual */}
+          {currentUser && (
             <div className="mb-6">
-              <UserCard
-                user={currentUser}
-                showFollowButton={false}
-                onFollow={() => {}}
-              />
+              <Suspense fallback={<div className="h-16 bg-gray-100 dark:bg-gray-800 animate-pulse rounded-lg" />}>
+                <UserCard
+                  user={currentUser}
+                  showFollowButton={false}
+                />
+              </Suspense>
             </div>
+          )}
 
-            {/* Sugestões para Seguir */}
-            <div className="bg-neutral-50 dark:bg-slate-800 rounded-lg p-6">
-              <h3 className="text-sm font-semibold text-neutral-500 dark:text-neutral-400 mb-4">
+          {/* Sugestões */}
+          <Suspense fallback={<div className="h-40 bg-gray-100 dark:bg-gray-800 animate-pulse rounded-lg" />}>
+            <SuggestionsSection />
+          </Suspense>
+          
+          {/* Usuários sugeridos */}
+          <div className="mt-6">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-sm font-semibold text-gray-600 dark:text-gray-400">
                 Sugestões para você
               </h3>
-              <div className="grid grid-cols-1 gap-4">
-                {users.map(user => (
-                  <SuggestionCard
-                    key={user.id}
+              <a href="#" className="text-xs font-semibold text-gray-900 dark:text-white hover:text-gray-600 dark:hover:text-gray-300">
+                Ver todos
+              </a>
+            </div>
+            
+            <div className="space-y-3">
+              {suggestedUsers.map(user => (
+                <Suspense 
+                  key={user.id} 
+                  fallback={<div className="h-16 bg-gray-100 dark:bg-gray-800 animate-pulse rounded-lg" />}
+                >
+                  <UserCard
                     user={user}
-                    onFollow={() => handleFollow(user.id)}
+                    showFollowButton={true}
                   />
-                ))}
-              </div>
+                </Suspense>
+              ))}
             </div>
           </div>
         </div>

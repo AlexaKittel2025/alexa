@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { XIcon, SparklesIcon, FireIcon } from '@heroicons/react/outline';
-import { getCurrentUserProStatus } from '../services/userService';
+;
+
+;
+import { FireIcon, SparklesIcon, XIcon } from '@heroicons/react/outline';
+import React, { useState, useEffect } from 'react';import { getCurrentUserProStatus } from '../services/userService';
 import { Post as PostType, Battle as BattleType } from '../types';
 import { battleService, BattleWithPosts } from '../services/battleService';
 import ProPaymentModal from './ProPaymentModal';
@@ -32,7 +34,7 @@ const ProBattlesModal: React.FC<ProBattlesModalProps> = ({ isOpen, onClose, user
       const proStatus = await getCurrentUserProStatus(userId);
       setIsPro(proStatus);
     } catch (error) {
-      console.error('Erro ao verificar status PRO:', error);
+      
       setIsPro(false);
     }
   };
@@ -44,7 +46,7 @@ const ProBattlesModal: React.FC<ProBattlesModalProps> = ({ isOpen, onClose, user
       const data = await battleService.getProBattles();
       setBattles(data);
     } catch (error) {
-      console.error('Erro ao carregar batalhas:', error);
+      
       setError('Não foi possível carregar as batalhas. Tente novamente mais tarde.');
     } finally {
       setIsLoading(false);
@@ -61,7 +63,7 @@ const ProBattlesModal: React.FC<ProBattlesModalProps> = ({ isOpen, onClose, user
       const updatedBattle = await battleService.voteInBattle(battleId, postId);
       setBattles(battles.map(b => b.id === battleId ? updatedBattle : b));
     } catch (error) {
-      console.error('Erro ao votar:', error);
+      
       // Mostrar mensagem de erro ao usuário
     }
   };

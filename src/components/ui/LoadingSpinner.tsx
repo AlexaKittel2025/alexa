@@ -1,58 +1,53 @@
-'use client';
-
 import React from 'react';
 
 interface LoadingSpinnerProps {
-  size?: 'sm' | 'md' | 'lg';
-  color?: 'primary' | 'secondary' | 'white' | 'dark';
+  size?: 'small' | 'medium' | 'large';
+  message?: string;
   className?: string;
 }
 
 const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({ 
-  size = 'md', 
-  color = 'primary',
-  className = ''
+  size = 'medium', 
+  message,
+  className = '' 
 }) => {
-  // Mapear tamanhos
-  const sizeMap = {
-    sm: 'w-4 h-4',
-    md: 'w-8 h-8',
-    lg: 'w-12 h-12'
+  const sizeClasses = {
+    small: 'w-6 h-6',
+    medium: 'w-10 h-10',
+    large: 'w-16 h-16'
   };
-
-  // Mapear cores
-  const colorMap = {
-    primary: 'text-purple-600 dark:text-purple-400',
-    secondary: 'text-pink-500 dark:text-pink-400',
-    white: 'text-white',
-    dark: 'text-gray-800 dark:text-gray-200'
-  };
-
-  const sizeClass = sizeMap[size];
-  const colorClass = colorMap[color];
 
   return (
-    <div className={`inline-block ${className}`} role="status" aria-label="Carregando">
-      <svg 
-        className={`animate-spin ${sizeClass} ${colorClass}`} 
-        xmlns="http://www.w3.org/2000/svg" 
-        fill="none" 
-        viewBox="0 0 24 24"
-      >
-        <circle 
-          className="opacity-25" 
-          cx="12" 
-          cy="12" 
-          r="10" 
-          stroke="currentColor" 
-          strokeWidth="4"
-        ></circle>
-        <path 
-          className="opacity-75" 
-          fill="currentColor" 
-          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-        ></path>
-      </svg>
+    <div className={`flex flex-col items-center justify-center ${className}`}>
+      <div className={`relative ${sizeClasses[size]}`}>
+        <div className={`absolute inset-0 border-4 border-gray-200 dark:border-gray-700 rounded-full`}></div>
+        <div className={`absolute inset-0 border-4 border-primary border-t-transparent rounded-full animate-spin`}></div>
+      </div>
+      {message && (
+        <p className="mt-4 text-sm text-gray-600 dark:text-gray-400">{message}</p>
+      )}
+    </div>
+  );
+};
+
+// Componente de página de carregamento
+export const LoadingPage: React.FC<{ message?: string }> = ({ message = 'Carregando...' }) => {
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <LoadingSpinner size="large" message={message} />
+    </div>
+  );
+};
+
+// Componente de overlay de carregamento
+export const LoadingOverlay: React.FC<{ isLoading: boolean; message?: string }> = ({ isLoading, message }) => {
+  if (!isLoading) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+      <div className="bg-white dark:bg-gray-800 rounded-lg p-6">
+        <LoadingSpinner size="medium" message={message} />
+      </div>
     </div>
   );
 };

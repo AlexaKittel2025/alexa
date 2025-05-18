@@ -1,17 +1,6 @@
+import { BellIcon, CheckIcon, ClockIcon, ExclamationIcon, EyeIcon, HeartIcon, SearchIcon, TagIcon, UserGroupIcon, UserIcon, XIcon } from '@heroicons/react/outline';
+
 // Importação direta de ícones disponíveis
-import {
-  ClockIcon,
-  TagIcon,
-  HeartIcon,
-  SearchIcon,
-  CheckIcon,
-  EyeIcon,
-  ExclamationIcon,
-  UserGroupIcon,
-  UserIcon,
-  BellIcon,
-  XIcon,
-} from '@heroicons/react/outline';
 
 // Reexportando ícones com nomes alternativos
 export { ClockIcon, TagIcon, HeartIcon, SearchIcon, CheckIcon, EyeIcon };

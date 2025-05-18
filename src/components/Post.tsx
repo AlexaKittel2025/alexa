@@ -1,26 +1,8 @@
+import { BookmarkIcon, ChatIcon, CheckCircleIcon, DotsHorizontalIcon, EmojiHappyIcon, ExclamationIcon, FireIcon, HeartIcon, LightningBoltIcon, PaperAirplaneIcon, PencilIcon, ShareIcon, ThumbUpIcon, TrashIcon, UserIcon, XIcon } from '@heroicons/react/outline';
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Post as PostType, Comment as CommentType, judgementLabels } from '../types';
 import { useAuth } from '../context/AuthContext';
-import {
-  EmojiHappyIcon as EmojiHappyIcon,
-  FireIcon,
-  ChatIcon,
-  ShareIcon,
-  CheckCircleIcon,
-  BoltIcon as LightningBoltIcon,
-  ExclamationIcon as ExclamationIcon,
-  XIcon,
-  UserIcon,
-  PaperAirplaneIcon,
-  HandThumbUpIcon as ThumbUpIcon,
-  HeartIcon,
-} from '@heroicons/react/outline';
-import { HeartIcon as HeartIconSolid } from '@heroicons/react/solid';
-import BookmarkIcon from '@heroicons/react/outline/BookmarkIcon';
-import DotsHorizontalIcon from '@heroicons/react/outline/DotsHorizontalIcon';
-import PencilIcon from '@heroicons/react/outline/PencilIcon';
-import TrashIcon from '@heroicons/react/outline/TrashIcon';
 import PostReactions from './PostReactions';
 import UserProfileLink from './UserProfileLink';
 import { mockUsers } from '../services/mockData';
@@ -134,13 +116,13 @@ const Post: React.FC<PostProps> = ({
           setHearts(data.reactions.quaseAcreditei || 0);
         })
         .catch(error => {
-          console.error('Erro ao reagir ao post:', error);
+          
           // Reverter estado em caso de erro
           setLiked(!newLikedState);
           setHearts(hearts); // Reverter para o valor original
         });
       } catch (error) {
-        console.error('Erro ao enviar reação:', error);
+        
         setLiked(!newLikedState);
         setHearts(hearts); // Reverter para o valor original
       }
@@ -204,7 +186,7 @@ const Post: React.FC<PostProps> = ({
             post.content = editContent;
           }
         } catch (parseError) {
-          console.error('Erro ao processar resposta JSON:', parseError);
+          
           // Aplicar mudança localmente mesmo se houver erro de parsing
           post.content = editContent;
           setIsEditing(false);
@@ -221,7 +203,7 @@ const Post: React.FC<PostProps> = ({
         // Manter modo de edição ativo para que o usuário possa corrigir
       }
     } catch (error) {
-      console.error('Erro ao editar post:', error);
+      
       alert('Erro ao editar post. Verifique sua conexão e tente novamente.');
     }
   };
@@ -253,7 +235,7 @@ const Post: React.FC<PostProps> = ({
           alert('Falha ao excluir post. Tente novamente.');
         }
       } catch (error) {
-        console.error('Erro ao excluir post:', error);
+        
         alert('Erro ao excluir post. Tente novamente.');
       }
     }
@@ -282,7 +264,7 @@ const Post: React.FC<PostProps> = ({
     navigator.clipboard.writeText(postUrl).then(() => {
       alert('Link copiado para a área de transferência!');
     }).catch(err => {
-      console.error('Erro ao copiar o link: ', err);
+      
     });
   };
 
@@ -320,7 +302,7 @@ const Post: React.FC<PostProps> = ({
         return userFromId.username;
       }
     } catch (error) {
-      console.error("Erro ao buscar username:", error);
+      
     }
     
     return post.userId || 'usuario';
@@ -337,7 +319,7 @@ const Post: React.FC<PostProps> = ({
         return userFromId.photoURL;
       }
     } catch (error) {
-      console.error("Erro ao buscar foto do usuário:", error);
+      
     }
     
     return "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80";
@@ -354,7 +336,7 @@ const Post: React.FC<PostProps> = ({
         return userFromId.displayName;
       }
     } catch (error) {
-      console.error("Erro ao buscar nome do usuário:", error);
+      
     }
     
     return "Usuário Mentiroso";
@@ -381,7 +363,7 @@ const Post: React.FC<PostProps> = ({
 
   const handleReactionCountChange = (count: number) => {
     setReactionCounts(count);
-    console.log(`Total de reações: ${count}`);
+    
   };
 
   const navigateToUserProfile = (userId: string) => {
@@ -422,11 +404,10 @@ const Post: React.FC<PostProps> = ({
       if (!response.ok) {
         // Se falhar, reverter o estado visual
         setPostIsSaved(!newSavedState);
-        console.error('Erro ao salvar post:', await response.text());
         alert('Não foi possível salvar o post. Tente novamente.');
       }
     } catch (error) {
-      console.error('Erro ao processar salvamento:', error);
+      
       setPostIsSaved(!newSavedState); // Reverter estado em caso de erro
       alert('Erro ao salvar o post. Verifique sua conexão.');
     }
@@ -499,7 +480,7 @@ const Post: React.FC<PostProps> = ({
         )}
         {topJudgement === 'inventiva' && (
           <div className="ml-2 bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full flex items-center">
-            <LightningBoltIcon className="h-4 w-4 mr-1" />
+            <LightningLightningLightningBoltIcon className="h-4 w-4 mr-1" />
             {judgementLabels.inventiva}
           </div>
         )}
@@ -571,7 +552,7 @@ const Post: React.FC<PostProps> = ({
         <div className="flex items-center space-x-4">
           <div className="flex items-center">
             {liked ? (
-              <HeartIconSolid className="h-4 w-4 text-red-500 mr-1" />
+              <HeartIcon className="h-4 w-4 text-red-500 mr-1" />
             ) : (
               <HeartIcon className="h-4 w-4 mr-1" />
             )}
@@ -628,7 +609,7 @@ const Post: React.FC<PostProps> = ({
           }`}
         >
           {liked ? (
-            <HeartIconSolid className="h-5 w-5 mr-1" />
+            <HeartIcon className="h-5 w-5 mr-1" />
           ) : (
             <HeartIcon className="h-5 w-5 mr-1" />
           )}

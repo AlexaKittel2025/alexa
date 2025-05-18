@@ -1,14 +1,8 @@
-import React, { useState } from 'react';
-import { 
-  PhotographIcon as PhotographIcon, 
-  TagIcon, 
-  BoltIcon as LightningBoltIcon,
-  SparklesIcon,
-  BadgeCheckIcon,
-  CurrencyDollarIcon,
-  LockClosedIcon
-} from '@heroicons/react/outline';
-import ProPaymentModal from './ProPaymentModal';
+;
+
+;
+import { BadgeCheckIcon, CurrencyDollarIcon, LockClosedIcon, SparklesIcon, TagIcon } from '@heroicons/react/outline';
+import React, { useState } from 'react';import ProPaymentModal from './ProPaymentModal';
 
 interface CreatePostProps {
   onSubmit: (content: string, imageURL?: string, tags?: string[]) => void;

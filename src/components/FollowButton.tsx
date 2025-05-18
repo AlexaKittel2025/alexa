@@ -28,7 +28,7 @@ const FollowButton: React.FC<FollowButtonProps> = ({ userId, className = '', onF
           onFollowChange(response.data.isFollowing);
         }
       } catch (error) {
-        console.error('Erro ao verificar status de seguir:', error);
+        
       } finally {
         setLoading(false);
       }
@@ -74,7 +74,7 @@ const FollowButton: React.FC<FollowButtonProps> = ({ userId, className = '', onF
         onFollowChange(!isFollowing);
       }
     } catch (error) {
-      console.error('Erro ao alterar status de seguir:', error);
+      
       alert('Não foi possível alterar o status de seguir. Tente novamente mais tarde.');
     } finally {
       setLoading(false);

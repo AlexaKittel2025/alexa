@@ -24,7 +24,7 @@ export function useMockAuth() {
         const user = JSON.parse(storedUser);
         setMockUser(user);
       } catch (e) {
-        console.error('Erro ao carregar mock user:', e);
+        
       }
     }
     setLoading(false);

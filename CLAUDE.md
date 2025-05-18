@@ -68,3 +68,7 @@ Este é um projeto chamado Mentei App, baseado em Next.js 14.0.3 com TypeScript 
 - Badges e recompensas por conquistas
 
 Ao trabalhar neste projeto, manter a estrutura organizada e garantir que as integrações entre frontend, backend e banco de dados funcionem corretamente.
+
+- Apenas faça modificações seguras, sem introduzir bugs ou mudanças visuais.
+Teste mentalmente a integração entre os arquivos antes de aplicar qualquer mudança.
+Não execute nenhuma ação que possa causar erro em produção ou impedir que o projeto rode localmente.

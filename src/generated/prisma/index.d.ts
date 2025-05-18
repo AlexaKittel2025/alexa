@@ -12,7 +12,6 @@ import $Result = runtime.Types.Result
 
 export type PrismaPromise<T> = $Public.PrismaPromise<T>
 
-
 /**
  * Model User
  * 
@@ -191,7 +190,6 @@ export class PrismaClient<
    */
   $queryRawUnsafe<T = unknown>(query: string, ...values: any[]): Prisma.PrismaPromise<T>;
 
-
   /**
    * Allows the running of a sequence of read/write operations that are guaranteed to either succeed or fail as a whole.
    * @example
@@ -208,7 +206,6 @@ export class PrismaClient<
   $transaction<P extends Prisma.PrismaPromise<any>[]>(arg: [...P], options?: { isolationLevel?: Prisma.TransactionIsolationLevel }): $Utils.JsPromise<runtime.Types.Utils.UnwrapTuple<P>>
 
   $transaction<R>(fn: (prisma: Omit<PrismaClient, runtime.ITXClientDenyList>) => $Utils.JsPromise<R>, options?: { maxWait?: number, timeout?: number, isolationLevel?: Prisma.TransactionIsolationLevel }): $Utils.JsPromise<R>
-
 
   $extends: $Extensions.ExtendsHook<"extends", Prisma.TypeMapCb<ClientOptions>, ExtArgs, $Utils.Call<Prisma.TypeMapCb<ClientOptions>, {
     extArgs: ExtArgs
@@ -393,8 +390,6 @@ export namespace Prisma {
   export import raw = runtime.raw
   export import Sql = runtime.Sql
 
-
-
   /**
    * Decimal.js
    */
@@ -433,7 +428,6 @@ export namespace Prisma {
   /**
    * Utility Types
    */
-
 
   export import JsonObject = runtime.JsonObject
   export import JsonArray = runtime.JsonArray
@@ -533,7 +527,6 @@ export namespace Prisma {
       [P in K]: T[P];
   };
 
-
   export type Enumerable<T> = T | Array<T>;
 
   export type RequiredKeys<T> = {
@@ -589,7 +582,6 @@ export namespace Prisma {
       (Without<T, U> & U) | (Without<U, T> & T)
     : U : T
 
-
   /**
    * Is T a Record?
    */
@@ -604,7 +596,6 @@ export namespace Prisma {
   : T extends object
   ? True
   : False
-
 
   /**
    * If it's T[], return T
@@ -746,8 +737,6 @@ export namespace Prisma {
 
   export const type: unique symbol;
 
-
-
   /**
    * Used by group by
    */
@@ -796,11 +785,9 @@ export namespace Prisma {
    */
   type ExcludeUnderscoreKeys<T extends string> = T extends `_${string}` ? never : T
 
-
   export type FieldRef<Model, FieldType> = runtime.FieldRef<Model, FieldType>
 
   type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRef<Model, FieldType>
-
 
   export const ModelName: {
     User: 'User',
@@ -821,7 +808,6 @@ export namespace Prisma {
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
-
 
   export type Datasources = {
     db?: Datasource
@@ -2078,7 +2064,6 @@ export namespace Prisma {
   }
   /* End Types for Logging */
 
-
   export type PrismaAction =
     | 'findUnique'
     | 'findUniqueOrThrow'
@@ -2136,7 +2121,6 @@ export namespace Prisma {
   /**
    * Count Types
    */
-
 
   /**
    * Count Type UserCountOutputType
@@ -2249,7 +2233,6 @@ export namespace Prisma {
     where?: AchievementWhereInput
   }
 
-
   /**
    * Count Type PostCountOutputType
    */
@@ -2307,7 +2290,6 @@ export namespace Prisma {
     where?: PostTagWhereInput
   }
 
-
   /**
    * Count Type BadgeCountOutputType
    */
@@ -2338,7 +2320,6 @@ export namespace Prisma {
     where?: UserBadgeWhereInput
   }
 
-
   /**
    * Count Type TagCountOutputType
    */
@@ -2368,7 +2349,6 @@ export namespace Prisma {
   export type TagCountOutputTypeCountPostsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: PostTagWhereInput
   }
-
 
   /**
    * Models
@@ -2457,7 +2437,6 @@ export namespace Prisma {
     pontuacaoTotal: number
     _all: number
   }
-
 
   export type UserAvgAggregateInputType = {
     level?: true
@@ -2600,9 +2579,6 @@ export namespace Prisma {
       : GetScalarType<T[P], AggregateUser[P]>
   }
 
-
-
-
   export type UserGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: UserWhereInput
     orderBy?: UserOrderByWithAggregationInput | UserOrderByWithAggregationInput[]
@@ -2653,7 +2629,6 @@ export namespace Prisma {
         }
       >
     >
-
 
   export type UserSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
@@ -3047,7 +3022,6 @@ export namespace Prisma {
      */
     upsert<T extends UserUpsertArgs>(args: SelectSubset<T, UserUpsertArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
-
     /**
      * Count the number of Users.
      * Note, that providing `undefined` is treated as the value not being there.
@@ -3220,9 +3194,6 @@ export namespace Prisma {
     finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
   }
 
-
-
-
   /**
    * Fields of the User model
    */
@@ -3244,7 +3215,6 @@ export namespace Prisma {
     readonly nivelMentiroso: FieldRef<"User", 'Int'>
     readonly pontuacaoTotal: FieldRef<"User", 'Int'>
   }
-    
 
   // Custom InputTypes
   /**
@@ -3907,7 +3877,6 @@ export namespace Prisma {
     include?: UserInclude<ExtArgs> | null
   }
 
-
   /**
    * Model Account
    */
@@ -3973,7 +3942,6 @@ export namespace Prisma {
     session_state: number
     _all: number
   }
-
 
   export type AccountAvgAggregateInputType = {
     expires_at?: true
@@ -4098,9 +4066,6 @@ export namespace Prisma {
       : GetScalarType<T[P], AggregateAccount[P]>
   }
 
-
-
-
   export type AccountGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: AccountWhereInput
     orderBy?: AccountOrderByWithAggregationInput | AccountOrderByWithAggregationInput[]
@@ -4147,7 +4112,6 @@ export namespace Prisma {
         }
       >
     >
-
 
   export type AccountSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
@@ -4495,7 +4459,6 @@ export namespace Prisma {
      */
     upsert<T extends AccountUpsertArgs>(args: SelectSubset<T, AccountUpsertArgs<ExtArgs>>): Prisma__AccountClient<$Result.GetResult<Prisma.$AccountPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
-
     /**
      * Count the number of Accounts.
      * Note, that providing `undefined` is treated as the value not being there.
@@ -4658,9 +4621,6 @@ export namespace Prisma {
     finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
   }
 
-
-
-
   /**
    * Fields of the Account model
    */
@@ -4678,7 +4638,6 @@ export namespace Prisma {
     readonly id_token: FieldRef<"Account", 'String'>
     readonly session_state: FieldRef<"Account", 'String'>
   }
-    
 
   // Custom InputTypes
   /**
@@ -5090,7 +5049,6 @@ export namespace Prisma {
     include?: AccountInclude<ExtArgs> | null
   }
 
-
   /**
    * Model Session
    */
@@ -5122,7 +5080,6 @@ export namespace Prisma {
     expires: number
     _all: number
   }
-
 
   export type SessionMinAggregateInputType = {
     id?: true
@@ -5203,9 +5160,6 @@ export namespace Prisma {
       : GetScalarType<T[P], AggregateSession[P]>
   }
 
-
-
-
   export type SessionGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: SessionWhereInput
     orderBy?: SessionOrderByWithAggregationInput | SessionOrderByWithAggregationInput[]
@@ -5240,7 +5194,6 @@ export namespace Prisma {
         }
       >
     >
-
 
   export type SessionSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
@@ -5548,7 +5501,6 @@ export namespace Prisma {
      */
     upsert<T extends SessionUpsertArgs>(args: SelectSubset<T, SessionUpsertArgs<ExtArgs>>): Prisma__SessionClient<$Result.GetResult<Prisma.$SessionPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
-
     /**
      * Count the number of Sessions.
      * Note, that providing `undefined` is treated as the value not being there.
@@ -5711,9 +5663,6 @@ export namespace Prisma {
     finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
   }
 
-
-
-
   /**
    * Fields of the Session model
    */
@@ -5723,7 +5672,6 @@ export namespace Prisma {
     readonly userId: FieldRef<"Session", 'String'>
     readonly expires: FieldRef<"Session", 'DateTime'>
   }
-    
 
   // Custom InputTypes
   /**
@@ -6135,7 +6083,6 @@ export namespace Prisma {
     include?: SessionInclude<ExtArgs> | null
   }
 
-
   /**
    * Model VerificationToken
    */
@@ -6164,7 +6111,6 @@ export namespace Prisma {
     expires: number
     _all: number
   }
-
 
   export type VerificationTokenMinAggregateInputType = {
     identifier?: true
@@ -6242,9 +6188,6 @@ export namespace Prisma {
       : GetScalarType<T[P], AggregateVerificationToken[P]>
   }
 
-
-
-
   export type VerificationTokenGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: VerificationTokenWhereInput
     orderBy?: VerificationTokenOrderByWithAggregationInput | VerificationTokenOrderByWithAggregationInput[]
@@ -6278,7 +6221,6 @@ export namespace Prisma {
         }
       >
     >
-
 
   export type VerificationTokenSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     identifier?: boolean
@@ -6567,7 +6509,6 @@ export namespace Prisma {
      */
     upsert<T extends VerificationTokenUpsertArgs>(args: SelectSubset<T, VerificationTokenUpsertArgs<ExtArgs>>): Prisma__VerificationTokenClient<$Result.GetResult<Prisma.$VerificationTokenPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
-
     /**
      * Count the number of VerificationTokens.
      * Note, that providing `undefined` is treated as the value not being there.
@@ -6729,9 +6670,6 @@ export namespace Prisma {
     finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
   }
 
-
-
-
   /**
    * Fields of the VerificationToken model
    */
@@ -6740,7 +6678,6 @@ export namespace Prisma {
     readonly token: FieldRef<"VerificationToken", 'String'>
     readonly expires: FieldRef<"VerificationToken", 'DateTime'>
   }
-    
 
   // Custom InputTypes
   /**
@@ -7104,7 +7041,6 @@ export namespace Prisma {
     omit?: VerificationTokenOmit<ExtArgs> | null
   }
 
-
   /**
    * Model Post
    */
@@ -7161,7 +7097,6 @@ export namespace Prisma {
     views: number
     _all: number
   }
-
 
   export type PostAvgAggregateInputType = {
     views?: true
@@ -7277,9 +7212,6 @@ export namespace Prisma {
       : GetScalarType<T[P], AggregatePost[P]>
   }
 
-
-
-
   export type PostGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: PostWhereInput
     orderBy?: PostOrderByWithAggregationInput | PostOrderByWithAggregationInput[]
@@ -7323,7 +7255,6 @@ export namespace Prisma {
         }
       >
     >
-
 
   export type PostSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
@@ -7670,7 +7601,6 @@ export namespace Prisma {
      */
     upsert<T extends PostUpsertArgs>(args: SelectSubset<T, PostUpsertArgs<ExtArgs>>): Prisma__PostClient<$Result.GetResult<Prisma.$PostPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
-
     /**
      * Count the number of Posts.
      * Note, that providing `undefined` is treated as the value not being there.
@@ -7837,9 +7767,6 @@ export namespace Prisma {
     finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
   }
 
-
-
-
   /**
    * Fields of the Post model
    */
@@ -7854,7 +7781,6 @@ export namespace Prisma {
     readonly isActive: FieldRef<"Post", 'Boolean'>
     readonly views: FieldRef<"Post", 'Int'>
   }
-    
 
   // Custom InputTypes
   /**
@@ -8362,7 +8288,6 @@ export namespace Prisma {
     include?: PostInclude<ExtArgs> | null
   }
 
-
   /**
    * Model Comment
    */
@@ -8400,7 +8325,6 @@ export namespace Prisma {
     updatedAt: number
     _all: number
   }
-
 
   export type CommentMinAggregateInputType = {
     id?: true
@@ -8487,9 +8411,6 @@ export namespace Prisma {
       : GetScalarType<T[P], AggregateComment[P]>
   }
 
-
-
-
   export type CommentGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: CommentWhereInput
     orderBy?: CommentOrderByWithAggregationInput | CommentOrderByWithAggregationInput[]
@@ -8526,7 +8447,6 @@ export namespace Prisma {
         }
       >
     >
-
 
   export type CommentSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
@@ -8851,7 +8771,6 @@ export namespace Prisma {
      */
     upsert<T extends CommentUpsertArgs>(args: SelectSubset<T, CommentUpsertArgs<ExtArgs>>): Prisma__CommentClient<$Result.GetResult<Prisma.$CommentPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
-
     /**
      * Count the number of Comments.
      * Note, that providing `undefined` is treated as the value not being there.
@@ -9015,9 +8934,6 @@ export namespace Prisma {
     finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
   }
 
-
-
-
   /**
    * Fields of the Comment model
    */
@@ -9029,7 +8945,6 @@ export namespace Prisma {
     readonly createdAt: FieldRef<"Comment", 'DateTime'>
     readonly updatedAt: FieldRef<"Comment", 'DateTime'>
   }
-    
 
   // Custom InputTypes
   /**
@@ -9441,7 +9356,6 @@ export namespace Prisma {
     include?: CommentInclude<ExtArgs> | null
   }
 
-
   /**
    * Model Reaction
    */
@@ -9476,7 +9390,6 @@ export namespace Prisma {
     createdAt: number
     _all: number
   }
-
 
   export type ReactionMinAggregateInputType = {
     id?: true
@@ -9560,9 +9473,6 @@ export namespace Prisma {
       : GetScalarType<T[P], AggregateReaction[P]>
   }
 
-
-
-
   export type ReactionGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: ReactionWhereInput
     orderBy?: ReactionOrderByWithAggregationInput | ReactionOrderByWithAggregationInput[]
@@ -9598,7 +9508,6 @@ export namespace Prisma {
         }
       >
     >
-
 
   export type ReactionSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
@@ -9918,7 +9827,6 @@ export namespace Prisma {
      */
     upsert<T extends ReactionUpsertArgs>(args: SelectSubset<T, ReactionUpsertArgs<ExtArgs>>): Prisma__ReactionClient<$Result.GetResult<Prisma.$ReactionPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
-
     /**
      * Count the number of Reactions.
      * Note, that providing `undefined` is treated as the value not being there.
@@ -10082,9 +9990,6 @@ export namespace Prisma {
     finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
   }
 
-
-
-
   /**
    * Fields of the Reaction model
    */
@@ -10095,7 +10000,6 @@ export namespace Prisma {
     readonly userId: FieldRef<"Reaction", 'String'>
     readonly createdAt: FieldRef<"Reaction", 'DateTime'>
   }
-    
 
   // Custom InputTypes
   /**
@@ -10507,7 +10411,6 @@ export namespace Prisma {
     include?: ReactionInclude<ExtArgs> | null
   }
 
-
   /**
    * Model Badge
    */
@@ -10542,7 +10445,6 @@ export namespace Prisma {
     createdAt: number
     _all: number
   }
-
 
   export type BadgeMinAggregateInputType = {
     id?: true
@@ -10626,9 +10528,6 @@ export namespace Prisma {
       : GetScalarType<T[P], AggregateBadge[P]>
   }
 
-
-
-
   export type BadgeGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: BadgeWhereInput
     orderBy?: BadgeOrderByWithAggregationInput | BadgeOrderByWithAggregationInput[]
@@ -10664,7 +10563,6 @@ export namespace Prisma {
         }
       >
     >
-
 
   export type BadgeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
@@ -10973,7 +10871,6 @@ export namespace Prisma {
      */
     upsert<T extends BadgeUpsertArgs>(args: SelectSubset<T, BadgeUpsertArgs<ExtArgs>>): Prisma__BadgeClient<$Result.GetResult<Prisma.$BadgePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
-
     /**
      * Count the number of Badges.
      * Note, that providing `undefined` is treated as the value not being there.
@@ -11136,9 +11033,6 @@ export namespace Prisma {
     finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
   }
 
-
-
-
   /**
    * Fields of the Badge model
    */
@@ -11149,7 +11043,6 @@ export namespace Prisma {
     readonly imageUrl: FieldRef<"Badge", 'String'>
     readonly createdAt: FieldRef<"Badge", 'DateTime'>
   }
-    
 
   // Custom InputTypes
   /**
@@ -11577,7 +11470,6 @@ export namespace Prisma {
     include?: BadgeInclude<ExtArgs> | null
   }
 
-
   /**
    * Model UserBadge
    */
@@ -11609,7 +11501,6 @@ export namespace Prisma {
     createdAt: number
     _all: number
   }
-
 
   export type UserBadgeMinAggregateInputType = {
     id?: true
@@ -11690,9 +11581,6 @@ export namespace Prisma {
       : GetScalarType<T[P], AggregateUserBadge[P]>
   }
 
-
-
-
   export type UserBadgeGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: UserBadgeWhereInput
     orderBy?: UserBadgeOrderByWithAggregationInput | UserBadgeOrderByWithAggregationInput[]
@@ -11727,7 +11615,6 @@ export namespace Prisma {
         }
       >
     >
-
 
   export type UserBadgeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
@@ -12042,7 +11929,6 @@ export namespace Prisma {
      */
     upsert<T extends UserBadgeUpsertArgs>(args: SelectSubset<T, UserBadgeUpsertArgs<ExtArgs>>): Prisma__UserBadgeClient<$Result.GetResult<Prisma.$UserBadgePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
-
     /**
      * Count the number of UserBadges.
      * Note, that providing `undefined` is treated as the value not being there.
@@ -12206,9 +12092,6 @@ export namespace Prisma {
     finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
   }
 
-
-
-
   /**
    * Fields of the UserBadge model
    */
@@ -12218,7 +12101,6 @@ export namespace Prisma {
     readonly badgeId: FieldRef<"UserBadge", 'String'>
     readonly createdAt: FieldRef<"UserBadge", 'DateTime'>
   }
-    
 
   // Custom InputTypes
   /**
@@ -12630,7 +12512,6 @@ export namespace Prisma {
     include?: UserBadgeInclude<ExtArgs> | null
   }
 
-
   /**
    * Model Message
    */
@@ -12671,7 +12552,6 @@ export namespace Prisma {
     readAt: number
     _all: number
   }
-
 
   export type MessageMinAggregateInputType = {
     id?: true
@@ -12761,9 +12641,6 @@ export namespace Prisma {
       : GetScalarType<T[P], AggregateMessage[P]>
   }
 
-
-
-
   export type MessageGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: MessageWhereInput
     orderBy?: MessageOrderByWithAggregationInput | MessageOrderByWithAggregationInput[]
@@ -12801,7 +12678,6 @@ export namespace Prisma {
         }
       >
     >
-
 
   export type MessageSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
@@ -13131,7 +13007,6 @@ export namespace Prisma {
      */
     upsert<T extends MessageUpsertArgs>(args: SelectSubset<T, MessageUpsertArgs<ExtArgs>>): Prisma__MessageClient<$Result.GetResult<Prisma.$MessagePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
-
     /**
      * Count the number of Messages.
      * Note, that providing `undefined` is treated as the value not being there.
@@ -13295,9 +13170,6 @@ export namespace Prisma {
     finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
   }
 
-
-
-
   /**
    * Fields of the Message model
    */
@@ -13310,7 +13182,6 @@ export namespace Prisma {
     readonly createdAt: FieldRef<"Message", 'DateTime'>
     readonly readAt: FieldRef<"Message", 'DateTime'>
   }
-    
 
   // Custom InputTypes
   /**
@@ -13741,7 +13612,6 @@ export namespace Prisma {
     include?: MessageInclude<ExtArgs> | null
   }
 
-
   /**
    * Model Tag
    */
@@ -13783,7 +13653,6 @@ export namespace Prisma {
     createdAt: number
     _all: number
   }
-
 
   export type TagAvgAggregateInputType = {
     useCount?: true
@@ -13884,9 +13753,6 @@ export namespace Prisma {
       : GetScalarType<T[P], AggregateTag[P]>
   }
 
-
-
-
   export type TagGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: TagWhereInput
     orderBy?: TagOrderByWithAggregationInput | TagOrderByWithAggregationInput[]
@@ -13925,7 +13791,6 @@ export namespace Prisma {
         }
       >
     >
-
 
   export type TagSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
@@ -14229,7 +14094,6 @@ export namespace Prisma {
      */
     upsert<T extends TagUpsertArgs>(args: SelectSubset<T, TagUpsertArgs<ExtArgs>>): Prisma__TagClient<$Result.GetResult<Prisma.$TagPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
-
     /**
      * Count the number of Tags.
      * Note, that providing `undefined` is treated as the value not being there.
@@ -14392,9 +14256,6 @@ export namespace Prisma {
     finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
   }
 
-
-
-
   /**
    * Fields of the Tag model
    */
@@ -14404,7 +14265,6 @@ export namespace Prisma {
     readonly useCount: FieldRef<"Tag", 'Int'>
     readonly createdAt: FieldRef<"Tag", 'DateTime'>
   }
-    
 
   // Custom InputTypes
   /**
@@ -14832,7 +14692,6 @@ export namespace Prisma {
     include?: TagInclude<ExtArgs> | null
   }
 
-
   /**
    * Model PostTag
    */
@@ -14864,7 +14723,6 @@ export namespace Prisma {
     createdAt: number
     _all: number
   }
-
 
   export type PostTagMinAggregateInputType = {
     id?: true
@@ -14945,9 +14803,6 @@ export namespace Prisma {
       : GetScalarType<T[P], AggregatePostTag[P]>
   }
 
-
-
-
   export type PostTagGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: PostTagWhereInput
     orderBy?: PostTagOrderByWithAggregationInput | PostTagOrderByWithAggregationInput[]
@@ -14982,7 +14837,6 @@ export namespace Prisma {
         }
       >
     >
-
 
   export type PostTagSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
@@ -15297,7 +15151,6 @@ export namespace Prisma {
      */
     upsert<T extends PostTagUpsertArgs>(args: SelectSubset<T, PostTagUpsertArgs<ExtArgs>>): Prisma__PostTagClient<$Result.GetResult<Prisma.$PostTagPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
-
     /**
      * Count the number of PostTags.
      * Note, that providing `undefined` is treated as the value not being there.
@@ -15461,9 +15314,6 @@ export namespace Prisma {
     finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
   }
 
-
-
-
   /**
    * Fields of the PostTag model
    */
@@ -15473,7 +15323,6 @@ export namespace Prisma {
     readonly tagId: FieldRef<"PostTag", 'String'>
     readonly createdAt: FieldRef<"PostTag", 'DateTime'>
   }
-    
 
   // Custom InputTypes
   /**
@@ -15885,7 +15734,6 @@ export namespace Prisma {
     include?: PostTagInclude<ExtArgs> | null
   }
 
-
   /**
    * Model UserStats
    */
@@ -15947,7 +15795,6 @@ export namespace Prisma {
     updatedAt: number
     _all: number
   }
-
 
   export type UserStatsAvgAggregateInputType = {
     pontosDiarios?: true
@@ -16068,9 +15915,6 @@ export namespace Prisma {
       : GetScalarType<T[P], AggregateUserStats[P]>
   }
 
-
-
-
   export type UserStatsGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: UserStatsWhereInput
     orderBy?: UserStatsOrderByWithAggregationInput | UserStatsOrderByWithAggregationInput[]
@@ -16113,7 +15957,6 @@ export namespace Prisma {
         }
       >
     >
-
 
   export type UserStatsSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
@@ -16441,7 +16284,6 @@ export namespace Prisma {
      */
     upsert<T extends UserStatsUpsertArgs>(args: SelectSubset<T, UserStatsUpsertArgs<ExtArgs>>): Prisma__UserStatsClient<$Result.GetResult<Prisma.$UserStatsPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
-
     /**
      * Count the number of UserStats.
      * Note, that providing `undefined` is treated as the value not being there.
@@ -16604,9 +16446,6 @@ export namespace Prisma {
     finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
   }
 
-
-
-
   /**
    * Fields of the UserStats model
    */
@@ -16620,7 +16459,6 @@ export namespace Prisma {
     readonly qtdReacoes: FieldRef<"UserStats", 'Int'>
     readonly updatedAt: FieldRef<"UserStats", 'DateTime'>
   }
-    
 
   // Custom InputTypes
   /**
@@ -17032,7 +16870,6 @@ export namespace Prisma {
     include?: UserStatsInclude<ExtArgs> | null
   }
 
-
   /**
    * Model Achievement
    */
@@ -17077,7 +16914,6 @@ export namespace Prisma {
     createdAt: number
     _all: number
   }
-
 
   export type AchievementAvgAggregateInputType = {
     nivel?: true
@@ -17181,9 +17017,6 @@ export namespace Prisma {
       : GetScalarType<T[P], AggregateAchievement[P]>
   }
 
-
-
-
   export type AchievementGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: AchievementWhereInput
     orderBy?: AchievementOrderByWithAggregationInput | AchievementOrderByWithAggregationInput[]
@@ -17223,7 +17056,6 @@ export namespace Prisma {
         }
       >
     >
-
 
   export type AchievementSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
@@ -17536,7 +17368,6 @@ export namespace Prisma {
      */
     upsert<T extends AchievementUpsertArgs>(args: SelectSubset<T, AchievementUpsertArgs<ExtArgs>>): Prisma__AchievementClient<$Result.GetResult<Prisma.$AchievementPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
-
     /**
      * Count the number of Achievements.
      * Note, that providing `undefined` is treated as the value not being there.
@@ -17699,9 +17530,6 @@ export namespace Prisma {
     finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
   }
 
-
-
-
   /**
    * Fields of the Achievement model
    */
@@ -17712,7 +17540,6 @@ export namespace Prisma {
     readonly nivel: FieldRef<"Achievement", 'Int'>
     readonly createdAt: FieldRef<"Achievement", 'DateTime'>
   }
-    
 
   // Custom InputTypes
   /**
@@ -18124,7 +17951,6 @@ export namespace Prisma {
     include?: AchievementInclude<ExtArgs> | null
   }
 
-
   /**
    * Model Report
    */
@@ -18168,7 +17994,6 @@ export namespace Prisma {
     resolution: number
     _all: number
   }
-
 
   export type ReportMinAggregateInputType = {
     id?: true
@@ -18261,9 +18086,6 @@ export namespace Prisma {
       : GetScalarType<T[P], AggregateReport[P]>
   }
 
-
-
-
   export type ReportGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: ReportWhereInput
     orderBy?: ReportOrderByWithAggregationInput | ReportOrderByWithAggregationInput[]
@@ -18302,7 +18124,6 @@ export namespace Prisma {
         }
       >
     >
-
 
   export type ReportSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
@@ -18637,7 +18458,6 @@ export namespace Prisma {
      */
     upsert<T extends ReportUpsertArgs>(args: SelectSubset<T, ReportUpsertArgs<ExtArgs>>): Prisma__ReportClient<$Result.GetResult<Prisma.$ReportPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
-
     /**
      * Count the number of Reports.
      * Note, that providing `undefined` is treated as the value not being there.
@@ -18801,9 +18621,6 @@ export namespace Prisma {
     finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
   }
 
-
-
-
   /**
    * Fields of the Report model
    */
@@ -18817,7 +18634,6 @@ export namespace Prisma {
     readonly resolvedAt: FieldRef<"Report", 'DateTime'>
     readonly resolution: FieldRef<"Report", 'String'>
   }
-    
 
   // Custom InputTypes
   /**
@@ -19229,7 +19045,6 @@ export namespace Prisma {
     include?: ReportInclude<ExtArgs> | null
   }
 
-
   /**
    * Enums
    */
@@ -19242,7 +19057,6 @@ export namespace Prisma {
   };
 
   export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel]
-
 
   export const UserScalarFieldEnum: {
     id: 'id',
@@ -19265,7 +19079,6 @@ export namespace Prisma {
 
   export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
 
-
   export const AccountScalarFieldEnum: {
     id: 'id',
     userId: 'userId',
@@ -19283,7 +19096,6 @@ export namespace Prisma {
 
   export type AccountScalarFieldEnum = (typeof AccountScalarFieldEnum)[keyof typeof AccountScalarFieldEnum]
 
-
   export const SessionScalarFieldEnum: {
     id: 'id',
     sessionToken: 'sessionToken',
@@ -19293,7 +19105,6 @@ export namespace Prisma {
 
   export type SessionScalarFieldEnum = (typeof SessionScalarFieldEnum)[keyof typeof SessionScalarFieldEnum]
 
-
   export const VerificationTokenScalarFieldEnum: {
     identifier: 'identifier',
     token: 'token',
@@ -19301,7 +19112,6 @@ export namespace Prisma {
   };
 
   export type VerificationTokenScalarFieldEnum = (typeof VerificationTokenScalarFieldEnum)[keyof typeof VerificationTokenScalarFieldEnum]
-
 
   export const PostScalarFieldEnum: {
     id: 'id',
@@ -19317,7 +19127,6 @@ export namespace Prisma {
 
   export type PostScalarFieldEnum = (typeof PostScalarFieldEnum)[keyof typeof PostScalarFieldEnum]
 
-
   export const CommentScalarFieldEnum: {
     id: 'id',
     content: 'content',
@@ -19329,7 +19138,6 @@ export namespace Prisma {
 
   export type CommentScalarFieldEnum = (typeof CommentScalarFieldEnum)[keyof typeof CommentScalarFieldEnum]
 
-
   export const ReactionScalarFieldEnum: {
     id: 'id',
     type: 'type',
@@ -19339,7 +19147,6 @@ export namespace Prisma {
   };
 
   export type ReactionScalarFieldEnum = (typeof ReactionScalarFieldEnum)[keyof typeof ReactionScalarFieldEnum]
-
 
   export const BadgeScalarFieldEnum: {
     id: 'id',
@@ -19351,7 +19158,6 @@ export namespace Prisma {
 
   export type BadgeScalarFieldEnum = (typeof BadgeScalarFieldEnum)[keyof typeof BadgeScalarFieldEnum]
 
-
   export const UserBadgeScalarFieldEnum: {
     id: 'id',
     userId: 'userId',
@@ -19360,7 +19166,6 @@ export namespace Prisma {
   };
 
   export type UserBadgeScalarFieldEnum = (typeof UserBadgeScalarFieldEnum)[keyof typeof UserBadgeScalarFieldEnum]
-
 
   export const MessageScalarFieldEnum: {
     id: 'id',
@@ -19374,7 +19179,6 @@ export namespace Prisma {
 
   export type MessageScalarFieldEnum = (typeof MessageScalarFieldEnum)[keyof typeof MessageScalarFieldEnum]
 
-
   export const TagScalarFieldEnum: {
     id: 'id',
     name: 'name',
@@ -19384,7 +19188,6 @@ export namespace Prisma {
 
   export type TagScalarFieldEnum = (typeof TagScalarFieldEnum)[keyof typeof TagScalarFieldEnum]
 
-
   export const PostTagScalarFieldEnum: {
     id: 'id',
     postId: 'postId',
@@ -19393,7 +19196,6 @@ export namespace Prisma {
   };
 
   export type PostTagScalarFieldEnum = (typeof PostTagScalarFieldEnum)[keyof typeof PostTagScalarFieldEnum]
-
 
   export const UserStatsScalarFieldEnum: {
     id: 'id',
@@ -19408,7 +19210,6 @@ export namespace Prisma {
 
   export type UserStatsScalarFieldEnum = (typeof UserStatsScalarFieldEnum)[keyof typeof UserStatsScalarFieldEnum]
 
-
   export const AchievementScalarFieldEnum: {
     id: 'id',
     userId: 'userId',
@@ -19418,7 +19219,6 @@ export namespace Prisma {
   };
 
   export type AchievementScalarFieldEnum = (typeof AchievementScalarFieldEnum)[keyof typeof AchievementScalarFieldEnum]
-
 
   export const ReportScalarFieldEnum: {
     id: 'id',
@@ -19433,14 +19233,12 @@ export namespace Prisma {
 
   export type ReportScalarFieldEnum = (typeof ReportScalarFieldEnum)[keyof typeof ReportScalarFieldEnum]
 
-
   export const SortOrder: {
     asc: 'asc',
     desc: 'desc'
   };
 
   export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
-
 
   export const QueryMode: {
     default: 'default',
@@ -19449,7 +19247,6 @@ export namespace Prisma {
 
   export type QueryMode = (typeof QueryMode)[keyof typeof QueryMode]
 
-
   export const NullsOrder: {
     first: 'first',
     last: 'last'
@@ -19457,67 +19254,49 @@ export namespace Prisma {
 
   export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
 
-
   /**
    * Field references
    */
-
 
   /**
    * Reference to a field of type 'String'
    */
   export type StringFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'String'>
-    
-
 
   /**
    * Reference to a field of type 'String[]'
    */
   export type ListStringFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'String[]'>
-    
-
 
   /**
    * Reference to a field of type 'DateTime'
    */
   export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime'>
-    
-
 
   /**
    * Reference to a field of type 'DateTime[]'
    */
   export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime[]'>
-    
-
 
   /**
    * Reference to a field of type 'Int'
    */
   export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
-    
-
 
   /**
    * Reference to a field of type 'Int[]'
    */
   export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
-    
-
 
   /**
    * Reference to a field of type 'Boolean'
    */
   export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
-    
-
 
   /**
    * Reference to a field of type 'Float'
    */
   export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
-    
-
 
   /**
    * Reference to a field of type 'Float[]'
@@ -19527,7 +19306,6 @@ export namespace Prisma {
   /**
    * Deep Input Types
    */
-
 
   export type UserWhereInput = {
     AND?: UserWhereInput | UserWhereInput[]
@@ -26880,8 +26658,6 @@ export namespace Prisma {
     postId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
-
-
 
   /**
    * Batch Payload for updateMany & deleteMany & createMany

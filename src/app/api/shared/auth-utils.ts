@@ -6,7 +6,7 @@ import { User } from '@prisma/client';
 const JWT_SECRET = process.env.JWT_SECRET;
 
 if (!JWT_SECRET) {
-  console.error('ATENÇÃO: JWT_SECRET não está definido no ambiente. Use variáveis de ambiente adequadas em produção.');
+  
   // Em produção, lançar um erro seria melhor que usar uma chave padrão
   if (process.env.NODE_ENV === 'production') {
     throw new Error('JWT_SECRET deve ser definido em ambiente de produção');

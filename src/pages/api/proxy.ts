@@ -12,8 +12,6 @@ export const config = {
 // Função para criar um proxy para qualquer rota
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
   const target = 'http://localhost:3001';
-  
-  console.log(`Proxy recebeu requisição ${req.method} para ${req.url || ''}`);
 
   return httpProxyMiddleware(req, res, {
     target,

@@ -44,7 +44,7 @@ const PostsTab: React.FC<PostsTabProps> = ({ userId, isCurrentUser }) => {
       setHasMore(data.hasMore);
       setPage(pageNum);
     } catch (err) {
-      console.error('Erro ao buscar posts:', err);
+      
       setError(err instanceof Error ? err.message : 'Erro ao carregar posts');
     } finally {
       setLoading(false);
@@ -83,7 +83,7 @@ const PostsTab: React.FC<PostsTabProps> = ({ userId, isCurrentUser }) => {
         setSavedPosts(data.savedPosts || []);
       }
     } catch (err) {
-      console.error('Erro ao buscar posts salvos:', err);
+      
     }
   };
 
@@ -117,7 +117,7 @@ const PostsTab: React.FC<PostsTabProps> = ({ userId, isCurrentUser }) => {
         );
       }
     } catch (err) {
-      console.error('Erro ao reagir ao post:', err);
+      
     }
   };
 
@@ -151,7 +151,7 @@ const PostsTab: React.FC<PostsTabProps> = ({ userId, isCurrentUser }) => {
         );
       }
     } catch (err) {
-      console.error('Erro ao julgar o post:', err);
+      
     }
   };
 
@@ -175,7 +175,7 @@ const PostsTab: React.FC<PostsTabProps> = ({ userId, isCurrentUser }) => {
         alert('Erro ao reportar post. Tente novamente.');
       }
     } catch (err) {
-      console.error('Erro ao reportar post:', err);
+      
       alert('Erro ao reportar post. Tente novamente.');
     }
   };
@@ -202,7 +202,7 @@ const PostsTab: React.FC<PostsTabProps> = ({ userId, isCurrentUser }) => {
         }
       }
     } catch (err) {
-      console.error('Erro ao salvar/remover post:', err);
+      
     }
   };
 

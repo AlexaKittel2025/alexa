@@ -7,6 +7,9 @@ import { jwtVerify, SignJWT } from 'jose';
 import { cookies } from 'next/headers';
 import { NextRequest } from 'next/server';
 
+// Re-exportar authOptions de auth.config.ts
+export { authOptions } from './auth.config';
+
 // Interface para o payload do token JWT
 export interface TokenPayload {
   userId: string;
@@ -18,81 +21,105 @@ export interface TokenPayload {
 
 /**
  * Verifica um token JWT
- * @param token - O token JWT a ser verificado
- * @returns O payload decodificado se o token for válido
- * @throws Error se o token for inválido
+ * @param token - Token JWT a ser verificado
+ * @returns Payload do token decodificado ou null se inválido
  */
-export async function verifyToken(token: string): Promise<TokenPayload> {
+export async function verifyToken(token: string): Promise<TokenPayload | null> {
   try {
-    // Em produção, use uma chave secreta do .env
-    const JWT_SECRET = new TextEncoder().encode(
-      process.env.JWT_SECRET || 'your-jwt-secret-should-be-in-env-variables'
-    );
-    
-    const { payload } = await jwtVerify(token, JWT_SECRET);
-    
+    const secret = process.env.JWT_SECRET || 'seu-segredo-jwt';
+    const encoder = new TextEncoder();
+    const { payload } = await jwtVerify(token, encoder.encode(secret));
     return payload as TokenPayload;
   } catch (error) {
-    throw new Error('Token inválido ou expirado');
+    console.error('Erro ao verificar token:', error);
+    return null;
   }
 }
 
 /**
  * Gera um novo token JWT
- * @param payload - Os dados a serem incluídos no token
- * @param expiresIn - Tempo de expiração em segundos (padrão: 24 horas)
- * @returns O token JWT gerado
+ * @param payload - Dados a serem incluídos no token
+ * @returns Token JWT assinado
  */
-export async function generateToken(
-  payload: Omit<TokenPayload, 'iat' | 'exp'>,
-  expiresIn: number = 60 * 60 * 24
-): Promise<string> {
-  const JWT_SECRET = new TextEncoder().encode(
-    process.env.JWT_SECRET || 'your-jwt-secret-should-be-in-env-variables'
-  );
+export async function generateToken(payload: TokenPayload): Promise<string> {
+  const secret = process.env.JWT_SECRET || 'seu-segredo-jwt';
+  const encoder = new TextEncoder();
   
-  const token = await new SignJWT({ ...payload })
+  const token = await new SignJWT(payload)
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
-    .setExpirationTime(Math.floor(Date.now() / 1000) + expiresIn)
-    .sign(JWT_SECRET);
-  
+    .setExpirationTime('7d')
+    .sign(encoder.encode(secret));
+    
   return token;
 }
 
 /**
- * Obtém o token de autenticação da requisição
- * @param request - O objeto de requisição Next.js
- * @returns O token de autenticação ou null se não existir
+ * Obtém o token do cookie de autenticação
+ * @returns Token JWT ou null se não encontrado
  */
-export function getAuthToken(request: NextRequest): string | null {
-  // Tenta obter o token do cookie
-  const cookieToken = request.cookies.get('auth-token')?.value;
-  if (cookieToken) return cookieToken;
+export function getTokenFromCookie(): string | null {
+  const cookieStore = cookies();
+  const authCookie = cookieStore.get('auth-token');
+  return authCookie?.value || null;
+}
+
+/**
+ * Verifica se a requisição tem um token válido
+ * @param request - Objeto NextRequest
+ * @returns Payload do token se válido, null caso contrário
+ */
+export async function verifyRequest(request: NextRequest): Promise<TokenPayload | null> {
+  // Verificar no header Authorization
+  const authHeader = request.headers.get('authorization');
+  if (authHeader) {
+    const token = authHeader.replace('Bearer ', '');
+    return await verifyToken(token);
+  }
   
-  // Tenta obter o token do cabeçalho Authorization
-  const authHeader = request.headers.get('Authorization');
-  if (authHeader && authHeader.startsWith('Bearer ')) {
-    return authHeader.substring(7);
+  // Verificar no cookie
+  const token = request.cookies.get('auth-token')?.value;
+  if (token) {
+    return await verifyToken(token);
   }
   
   return null;
 }
 
 /**
- * Verifica se o usuário está autenticado na requisição
- * @param request - O objeto de requisição Next.js
- * @returns true se o usuário estiver autenticado, false caso contrário
+ * Middleware para proteger rotas autenticadas
+ * @param request - Objeto NextRequest
+ * @returns TokenPayload se autenticado, null caso contrário
  */
-export async function isAuthenticated(request: NextRequest): Promise<boolean> {
-  const token = getAuthToken(request);
+export async function requireAuth(request: NextRequest): Promise<TokenPayload | null> {
+  const payload = await verifyRequest(request);
   
-  if (!token) return false;
-  
-  try {
-    await verifyToken(token);
-    return true;
-  } catch (error) {
-    return false;
+  if (!payload) {
+    throw new Error('Unauthorized');
   }
+  
+  return payload;
+}
+
+/**
+ * Define o cookie de autenticação
+ * @param token - Token JWT a ser armazenado
+ */
+export function setAuthCookie(token: string): void {
+  const cookieStore = cookies();
+  cookieStore.set('auth-token', token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 60 * 60 * 24 * 7, // 7 dias
+    path: '/'
+  });
+}
+
+/**
+ * Remove o cookie de autenticação
+ */
+export function clearAuthCookie(): void {
+  const cookieStore = cookies();
+  cookieStore.delete('auth-token');
 }

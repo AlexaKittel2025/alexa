@@ -75,7 +75,7 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ currentUser }) => {
         }, 3000);
       }
     } catch (error) {
-      console.error('Erro ao salvar perfil:', error);
+      
       setMessage('Erro ao salvar o perfil. Tente novamente.');
     } finally {
       setIsLoading(false);

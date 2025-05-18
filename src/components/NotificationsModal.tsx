@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { XIcon, CheckIcon, TrashIcon } from '@heroicons/react/outline';
-import axios from 'axios';
+;
+
+;
+import { CheckIcon, TrashIcon, XIcon } from '@heroicons/react/outline';
+import React, { useState, useEffect } from 'react';import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 
 interface NotificationsModalProps {
@@ -62,7 +64,7 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({
         onNotificationCountChange(unreadCount);
       }
     } catch (error) {
-      console.error('Erro ao buscar notificações:', error);
+      
     } finally {
       setLoading(false);
     }
@@ -201,7 +203,7 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({
       read: true
     })));
     } catch (error) {
-      console.error('Erro ao marcar todas as notificações como lidas:', error);
+      
     }
   };
   
@@ -219,7 +221,7 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({
       notification.id === id ? { ...notification, read: true } : notification
     ));
     } catch (error) {
-      console.error('Erro ao marcar notificação como lida:', error);
+      
     }
   };
 
@@ -237,7 +239,7 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({
       // Atualizar o estado local
     setNotifications(notifications.filter(notification => notification.id !== id));
     } catch (error) {
-      console.error('Erro ao excluir notificação:', error);
+      
     }
   };
 

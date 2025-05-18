@@ -14,11 +14,11 @@ const pool = new Pool({
 export const testConnection = async (): Promise<boolean> => {
   try {
     const client = await pool.connect();
-    console.log('Conexão com o PostgreSQL estabelecida com sucesso');
+    
     client.release();
     return true;
   } catch (error) {
-    console.error('Erro ao conectar com o PostgreSQL:', error);
+    
     return false;
   }
 };
@@ -28,14 +28,14 @@ if (require.main === module) {
   testConnection()
     .then(success => {
       if (success) {
-        console.log('Teste de conexão com o PostgreSQL bem-sucedido!');
+        
       } else {
-        console.error('Falha no teste de conexão com o PostgreSQL');
+        
         process.exit(1);
       }
     })
     .catch(error => {
-      console.error('Erro fatal durante o teste de conexão:', error);
+      
       process.exit(1);
     })
     .finally(() => {

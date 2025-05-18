@@ -153,7 +153,7 @@ export default function PostList({ filter, tag, uid, limit: postsLimit = 10 }: P
         setLastPostId(lastPost.id);
       }
     } catch (error) {
-      console.error('Erro ao carregar posts:', error);
+      
       // Em caso de erro, mostrar posts de demonstração
       if (posts.length === 0) {
         setPosts(fakePosts);
@@ -170,7 +170,7 @@ export default function PostList({ filter, tag, uid, limit: postsLimit = 10 }: P
   };
 
   const submitReport = () => {
-    console.log(`Denúncia enviada para o post ${selectedPost} com motivo: ${reportReason}`);
+    
     setShowReportModal(false);
     setSelectedPost(null);
     

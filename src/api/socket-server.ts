@@ -34,7 +34,6 @@ export const setupSocketServer = (server: http.Server) => {
   // Gerenciamento de conexões
   io.on('connection', async (socket) => {
     const userId = socket.data.userId;
-    console.log(`Usuário conectado: ${userId}`);
 
     // Associar usuário às suas salas de chat
     try {
@@ -56,7 +55,7 @@ export const setupSocketServer = (server: http.Server) => {
         socket.join(globalRoom.id);
       }
     } catch (error) {
-      console.error('Erro ao associar usuário às salas:', error);
+      
     }
 
     // Evento quando usuário fica online
@@ -87,7 +86,7 @@ export const setupSocketServer = (server: http.Server) => {
           socket.to(contactId).emit('user:status', { userId, status: 'online' });
         }
       } catch (error) {
-        console.error('Erro ao atualizar status online:', error);
+        
       }
     });
 
@@ -105,7 +104,7 @@ export const setupSocketServer = (server: http.Server) => {
           }
         });
       } catch (error) {
-        console.error('Erro ao processar envio de mensagem:', error);
+        
       }
     });
 
@@ -132,13 +131,13 @@ export const setupSocketServer = (server: http.Server) => {
         // Notificar remetente que as mensagens foram lidas
         socket.to(roomId).emit('messages:read', { roomId, userId });
       } catch (error) {
-        console.error('Erro ao marcar mensagens como lidas:', error);
+        
       }
     });
 
     // Evento de desconexão
     socket.on('disconnect', async () => {
-      console.log(`Usuário desconectado: ${userId}`);
+      
       try {
         // Notificar contatos que o usuário está offline
         const userContacts = await prisma.chatRoomUser.findMany({
@@ -165,7 +164,7 @@ export const setupSocketServer = (server: http.Server) => {
           socket.to(contactId).emit('user:status', { userId, status: 'offline' });
         }
       } catch (error) {
-        console.error('Erro ao atualizar status offline:', error);
+        
       }
     });
   });

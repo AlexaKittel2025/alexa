@@ -23,7 +23,7 @@ export async function GET(req: Request) {
     
     return NextResponse.json(formattedMessages);
   } catch (error) {
-    console.error('Erro ao buscar mensagens:', error);
+    
     return NextResponse.json(
       { error: 'Erro ao buscar mensagens' },
       { status: 500 }
@@ -83,7 +83,7 @@ export async function POST(req: Request) {
     
     return NextResponse.json(formattedMessage, { status: 201 });
   } catch (error) {
-    console.error('Erro ao enviar mensagem:', error);
+    
     return NextResponse.json(
       { error: 'Erro ao enviar mensagem' },
       { status: 500 }

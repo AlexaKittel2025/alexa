@@ -1,7 +1,8 @@
-import React from 'react';
-import { XIcon, ClipboardIcon } from '@heroicons/react/outline';
+;
 
-interface ProPaymentModalProps {
+;
+import { ClipboardIcon, XIcon } from '@heroicons/react/outline';
+import React from 'react';interface ProPaymentModalProps {
   isOpen: boolean;
   onClose: () => void;
 }

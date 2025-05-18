@@ -49,7 +49,7 @@ export async function GET(req: Request) {
       // Verificar se o ícone já existe
       try {
         await fsPromises.access(iconPath);
-        console.log(`Ícone ${iconSize}x${iconSize} já existe.`);
+        
       } catch {
         // Se não existir, criar um SVG para este tamanho e salvá-lo como PNG
         // Esta é apenas uma simulação, pois realmente converter SVG para PNG
@@ -60,8 +60,7 @@ export async function GET(req: Request) {
           iconSvg, 
           'utf-8'
         );
-        
-        console.log(`Ícone SVG ${iconSize}x${iconSize} criado.`);
+
       }
     }
     
@@ -72,7 +71,7 @@ export async function GET(req: Request) {
       }
     });
   } catch (error) {
-    console.error('Erro ao gerar ícones:', error);
+    
     return NextResponse.json(
       { error: 'Erro ao gerar ícones' },
       { status: 500 }

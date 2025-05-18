@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { HeartIcon } from '@heroicons/react/outline';
-import { HeartIcon as HeartIconSolid } from '@heroicons/react/solid';
-import { HandThumbUpIcon, EmojiHappyIcon } from '@heroicons/react/outline';
-import { HandThumbUpIcon as HandThumbUpIconSolid, 
-         EmojiHappyIcon as EmojiHappyIconSolid } from '@heroicons/react/solid';
+;
+
+;
+import { EmojiHappyIcon, HeartIcon, ThumbUpIcon } from '@heroicons/react/outline';
+import React, { useState, useEffect } from 'react';;
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { ReactionType } from '../types';
@@ -37,7 +36,7 @@ const PostReactions: React.FC<PostReactionsProps> = ({
         const response = await axios.get(`/api/posts/${postId}/reactions`);
         setReactions(response.data.reactions || {});
       } catch (error) {
-        console.error('Erro ao buscar reações:', error);
+        
       }
     };
     
@@ -55,7 +54,7 @@ const PostReactions: React.FC<PostReactionsProps> = ({
         });
         setUserReaction(response.data.reactionType || null);
       } catch (error) {
-        console.error('Erro ao buscar reação do usuário:', error);
+        
       }
     };
     
@@ -83,7 +82,7 @@ const PostReactions: React.FC<PostReactionsProps> = ({
         onReactionChange(newReaction);
       }
     } catch (error) {
-      console.error('Erro ao adicionar reação:', error);
+      
     } finally {
       setLoading(false);
     }
@@ -104,7 +103,7 @@ const PostReactions: React.FC<PostReactionsProps> = ({
         aria-label="Quase Acreditei"
       >
         {isActive(ReactionType.QuaseAcreditei) ? (
-          <HeartIconSolid className="h-6 w-6" />
+          <HeartIcon className="h-6 w-6" />
         ) : (
           <HeartIcon className="h-6 w-6" />
         )}
@@ -140,9 +139,9 @@ const PostReactions: React.FC<PostReactionsProps> = ({
         aria-label="Mentira Épica"
       >
         {isActive(ReactionType.MentiraEpica) ? (
-          <HandThumbUpIconSolid className="h-6 w-6" />
+          <ThumbUpIconSolid className="h-6 w-6" />
         ) : (
-          <HandThumbUpIcon className="h-6 w-6" />
+          <ThumbUpIcon className="h-6 w-6" />
         )}
         <span className="ml-1 text-sm">{reactions[ReactionType.MentiraEpica] || 0}</span>
       </button>

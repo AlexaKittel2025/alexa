@@ -12,6 +12,7 @@ import {
   FaChevronRight
 } from 'react-icons/fa';
 import { loadUserSettings, saveUserSettings } from '@/utils/persistenceUtils';
+import { useTheme } from 'next-themes';
 
 type SectionType = 'geral' | 'seguranca' | 'privacidade' | 'notificacoes' | 'idioma' | 'conta' | 'interface';
 
@@ -48,76 +49,56 @@ export default function ConfiguracoesPage() {
       enabled: true,
       email: true,
       push: true,
-      mentions: true,
-      newFollowers: true,
       likes: true,
-      comments: true
+      comments: true,
+      follows: true,
+      messages: true
     },
     privacy: {
-      profileVisibility: 'public' as 'public' | 'friends' | 'private',
+      profileVisibility: 'public',
       showEmail: false,
-      showFollowers: true,
-      showFollowing: true,
-      showOnlineStatus: true,
-      activityVisibility: 'followers',
-      searchVisibility: 'public',
-      shareProfile: true,
-      contentVisibility: 'public',
-      commentPermission: 'anyone',
-      showShare: true,
-      tagPermission: 'anyone',
-      allowMentions: true
-    },
-    security: {
-      blockedUsers: [],
-      reportedUsers: [],
-      twoFactorEnabled: false,
-      loginNotifications: true,
-      allowAccountRecovery: true
+      showLastSeen: true,
+      allowMessages: 'everyone',
+      allowTagging: true
     },
     interface: {
       darkMode: false,
       compactMode: false,
-      fontSize: 'medium' as 'small' | 'medium' | 'large',
-      colorScheme: 'purple'
+      showAnimations: true,
+      fontSize: 'medium',
     }
   });
 
+  // Carregar configurações e perfil salvos
   useEffect(() => {
-    // Carregar dados do usuário do localStorage
-    const savedProfile = localStorage.getItem('userProfile');
-    if (savedProfile) {
-      try {
-        const profile = JSON.parse(savedProfile);
-        setUserProfile({
-          name: profile.name || 'Usuário',
-          email: profile.email || 'usuario@email.com',
-          username: profile.username || 'usuario',
-          bio: profile.bio || '',
-          website: profile.website || '',
-          location: profile.location || ''
-        });
-      } catch (error) {
-        console.error('Erro ao carregar perfil:', error);
-      }
-    }
-    
-    // Carregar configurações do localStorage
     const savedSettings = loadUserSettings();
     if (savedSettings) {
       setSettings(savedSettings);
     }
+
+    const savedProfile = localStorage.getItem('userProfile');
+    if (savedProfile) {
+      setUserProfile(JSON.parse(savedProfile));
+    }
+
+    // Aplicar tema inicial
+    const currentTheme = localStorage.getItem('theme') || 'light';
+    if (currentTheme === 'dark') {
+      document.documentElement.classList.add('dark');
+      setSettings(prev => ({
+        ...prev,
+        interface: { ...prev.interface, darkMode: true }
+      }));
+    }
   }, []);
-  
-  // Salvar configurações sempre que mudarem
+
+  // Salvar configurações quando mudarem
   useEffect(() => {
     saveUserSettings(settings);
   }, [settings]);
 
-  const renderContent = () => {
+  const renderSection = () => {
     switch (activeSection) {
-      case 'geral':
-        return <GeralSection userProfile={userProfile} />;
       case 'seguranca':
         return <SegurancaSection settings={settings} setSettings={setSettings} />;
       case 'privacidade':
@@ -131,202 +112,107 @@ export default function ConfiguracoesPage() {
       case 'interface':
         return <InterfaceSection settings={settings} setSettings={setSettings} />;
       default:
-        return <GeralSection userProfile={userProfile} />;
+        return null;
     }
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <h1 className="text-2xl font-bold mb-8 text-gray-900 dark:text-white">Configurações</h1>
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold mb-8 text-gray-900 dark:text-white">Configurações</h1>
       
-      <div className="flex flex-col lg:flex-row gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         {/* Menu lateral */}
-        <aside className="lg:w-80 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
-          <nav className="p-2">
+        <div className="lg:col-span-1">
+          <nav className="space-y-1">
             {menuItems.map((item) => {
               const Icon = item.icon;
               return (
                 <button
                   key={item.id}
                   onClick={() => setActiveSection(item.id)}
-                  className={`w-full flex items-center justify-between p-3 rounded-lg transition-all duration-200 mb-1 ${
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
                     activeSection === item.id
-                      ? 'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400'
-                      : 'hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
+                      ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300'
+                      : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300'
                   }`}
                 >
-                  <div className="flex items-center gap-3">
-                    <Icon className="w-5 h-5" />
-                    <div className="text-left">
-                      <p className="font-medium">{item.label}</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        {item.description}
-                      </p>
-                    </div>
+                  <Icon className="text-xl" />
+                  <div className="text-left">
+                    <p className="font-medium">{item.label}</p>
+                    <p className="text-sm opacity-75">{item.description}</p>
                   </div>
-                  <FaChevronRight className="w-4 h-4 opacity-50" />
+                  <FaChevronRight className="ml-auto opacity-50" />
                 </button>
               );
             })}
           </nav>
-        </aside>
-
-        {/* Conteúdo */}
-        <main className="flex-1 bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
-          {renderContent()}
-        </main>
+        </div>
+        
+        {/* Conteúdo da seção ativa */}
+        <div className="lg:col-span-3">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+            {renderSection()}
+          </div>
+        </div>
       </div>
     </div>
   );
 }
 
-// Seção Geral
-function GeralSection({ userProfile }: { userProfile: any }) {
-  return (
-    <div>
-      <h2 className="text-xl font-semibold mb-6 text-gray-900 dark:text-white">Informações Gerais</h2>
-      <div className="space-y-6">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Nome
-          </label>
-          <input
-            type="text"
-            defaultValue={userProfile.name}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-          />
-        </div>
-        
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Nome de usuário
-          </label>
-          <input
-            type="text"
-            defaultValue={userProfile.username}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-          />
-        </div>
-        
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Email
-          </label>
-          <input
-            type="email"
-            defaultValue={userProfile.email}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-          />
-        </div>
-        
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Bio
-          </label>
-          <textarea
-            defaultValue={userProfile.bio}
-            rows={3}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-          />
-        </div>
-        
-        <button className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors">
-          Salvar Alterações
-        </button>
-      </div>
-    </div>
-  );
-}
-
+// Componentes de seção continuam abaixo...
 // Seção Segurança
 function SegurancaSection({ settings, setSettings }: { settings: any, setSettings: any }) {
-  const updateSecuritySetting = (key: string, value: any) => {
-    setSettings({
-      ...settings,
-      security: {
-        ...settings.security,
-        [key]: value
-      }
-    });
-  };
-
   return (
     <div>
       <h2 className="text-xl font-semibold mb-6 text-gray-900 dark:text-white">Segurança e Login</h2>
       <div className="space-y-6">
-        <div className="border-b border-gray-200 dark:border-gray-700 pb-6">
-          <h3 className="font-medium mb-4 text-gray-900 dark:text-white">Alterar Senha</h3>
+        <div>
+          <h3 className="font-medium text-gray-900 dark:text-white mb-2">Alterar Senha</h3>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label htmlFor="current-password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Senha Atual
               </label>
               <input
                 type="password"
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700"
+                id="current-password"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label htmlFor="new-password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Nova Senha
               </label>
               <input
                 type="password"
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700"
+                id="new-password"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Confirmar Nova Senha
               </label>
               <input
                 type="password"
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700"
+                id="confirm-password"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               />
             </div>
-            <button className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors">
+            <button className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
               Atualizar Senha
             </button>
           </div>
         </div>
         
-        <div>
-          <h3 className="font-medium mb-4 text-gray-900 dark:text-white">Autenticação de Dois Fatores</h3>
-          <p className="text-gray-600 dark:text-gray-400 mb-4">
+        <div className="pt-6 border-t dark:border-gray-700">
+          <h3 className="font-medium text-gray-900 dark:text-white mb-2">Autenticação de Dois Fatores</h3>
+          <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
             Adicione uma camada extra de segurança à sua conta
           </p>
-          <button 
-            onClick={() => updateSecuritySetting('twoFactorEnabled', !settings.security.twoFactorEnabled)}
-            className={`px-4 py-2 rounded-lg transition-colors ${
-              settings.security.twoFactorEnabled 
-                ? 'bg-purple-600 text-white hover:bg-purple-700'
-                : 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-600'
-            }`}
-          >
-            {settings.security.twoFactorEnabled ? 'Desativar 2FA' : 'Ativar 2FA'}
+          <button className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+            Ativar 2FA
           </button>
-        </div>
-        
-        <div className="space-y-4">
-          <h3 className="font-medium text-gray-900 dark:text-white">Outras Configurações</h3>
-          <label className="flex items-center">
-            <input 
-              type="checkbox" 
-              className="mr-3" 
-              checked={settings.security.loginNotifications}
-              onChange={(e) => updateSecuritySetting('loginNotifications', e.target.checked)}
-            />
-            <span className="text-gray-700 dark:text-gray-300">Notificar logins em novos dispositivos</span>
-          </label>
-          <label className="flex items-center">
-            <input 
-              type="checkbox" 
-              className="mr-3" 
-              checked={settings.security.allowAccountRecovery}
-              onChange={(e) => updateSecuritySetting('allowAccountRecovery', e.target.checked)}
-            />
-            <span className="text-gray-700 dark:text-gray-300">Permitir recuperação de conta</span>
-          </label>
         </div>
       </div>
     </div>
@@ -349,58 +235,70 @@ function PrivacidadeSection({ settings, setSettings }: { settings: any, setSetti
     <div>
       <h2 className="text-xl font-semibold mb-6 text-gray-900 dark:text-white">Privacidade</h2>
       <div className="space-y-6">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Visibilidade do Perfil
+          </label>
+          <select 
+            value={settings.privacy.profileVisibility}
+            onChange={(e) => updatePrivacySetting('profileVisibility', e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+          >
+            <option value="public">Público</option>
+            <option value="friends">Apenas amigos</option>
+            <option value="private">Privado</option>
+          </select>
+        </div>
+        
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="font-medium text-gray-900 dark:text-white">Conta Privada</h3>
+            <h3 className="font-medium text-gray-900 dark:text-white">Mostrar E-mail</h3>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              Apenas seguidores aprovados podem ver suas mentiras
+              Exibir seu e-mail no perfil público
             </p>
           </div>
           <label className="relative inline-flex items-center cursor-pointer">
-            <input 
-              type="checkbox" 
-              className="sr-only peer" 
-              checked={settings.privacy.profileVisibility === 'private'}
-              onChange={(e) => updatePrivacySetting('profileVisibility', e.target.checked ? 'private' : 'public')}
+            <input
+              type="checkbox"
+              className="sr-only peer"
+              checked={settings.privacy.showEmail}
+              onChange={(e) => updatePrivacySetting('showEmail', e.target.checked)}
             />
-            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 dark:peer-focus:ring-purple-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-purple-600"></div>
+            <div className="w-11 h-6 bg-gray-200 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-purple-600"></div>
           </label>
         </div>
         
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="font-medium text-gray-900 dark:text-white">Permitir Comentários</h3>
+            <h3 className="font-medium text-gray-900 dark:text-white">Última Vez Visto</h3>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              Outros usuários podem comentar suas mentiras
+              Mostrar quando você esteve online pela última vez
             </p>
           </div>
           <label className="relative inline-flex items-center cursor-pointer">
-            <input 
-              type="checkbox" 
-              className="sr-only peer" 
-              checked={settings.privacy.commentPermission === 'anyone'}
-              onChange={(e) => updatePrivacySetting('commentPermission', e.target.checked ? 'anyone' : 'none')}
+            <input
+              type="checkbox"
+              className="sr-only peer"
+              checked={settings.privacy.showLastSeen}
+              onChange={(e) => updatePrivacySetting('showLastSeen', e.target.checked)}
             />
-            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 dark:peer-focus:ring-purple-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-purple-600"></div>
+            <div className="w-11 h-6 bg-gray-200 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-purple-600"></div>
           </label>
         </div>
         
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="font-medium text-gray-900 dark:text-white">Mostrar Status Online</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Outros podem ver quando você está ativo
-            </p>
-          </div>
-          <label className="relative inline-flex items-center cursor-pointer">
-            <input 
-              type="checkbox" 
-              className="sr-only peer" 
-              checked={settings.privacy.showOnlineStatus}
-              onChange={(e) => updatePrivacySetting('showOnlineStatus', e.target.checked)}
-            />
-            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 dark:peer-focus:ring-purple-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-purple-600"></div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Quem pode enviar mensagens
           </label>
+          <select 
+            value={settings.privacy.allowMessages}
+            onChange={(e) => updatePrivacySetting('allowMessages', e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+          >
+            <option value="everyone">Todos</option>
+            <option value="friends">Apenas amigos</option>
+            <option value="none">Ninguém</option>
+          </select>
         </div>
       </div>
     </div>
@@ -422,82 +320,103 @@ function NotificacoesSection({ settings, setSettings }: { settings: any, setSett
   return (
     <div>
       <h2 className="text-xl font-semibold mb-6 text-gray-900 dark:text-white">Notificações</h2>
-      <div className="space-y-6">
-        <div>
-          <h3 className="font-medium mb-4 text-gray-900 dark:text-white">Notificações por Email</h3>
-          <div className="space-y-4">
-            <label className="flex items-center">
-              <input 
-                type="checkbox" 
-                className="mr-3" 
-                checked={settings.notifications.newFollowers}
-                onChange={(e) => updateNotificationSetting('newFollowers', e.target.checked)}
-              />
-              <span className="text-gray-700 dark:text-gray-300">Novos seguidores</span>
-            </label>
-            <label className="flex items-center">
-              <input 
-                type="checkbox" 
-                className="mr-3" 
-                checked={settings.notifications.comments}
-                onChange={(e) => updateNotificationSetting('comments', e.target.checked)}
-              />
-              <span className="text-gray-700 dark:text-gray-300">Comentários em suas mentiras</span>
-            </label>
-            <label className="flex items-center">
-              <input 
-                type="checkbox" 
-                className="mr-3" 
-                checked={settings.notifications.mentions}
-                onChange={(e) => updateNotificationSetting('mentions', e.target.checked)}
-              />
-              <span className="text-gray-700 dark:text-gray-300">Menções</span>
-            </label>
-            <label className="flex items-center">
-              <input 
-                type="checkbox" 
-                className="mr-3" 
-                checked={settings.notifications.email}
-                onChange={(e) => updateNotificationSetting('email', e.target.checked)}
-              />
-              <span className="text-gray-700 dark:text-gray-300">Newsletter semanal</span>
-            </label>
+      <div className="space-y-4">
+        <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+          <div>
+            <h3 className="font-medium text-gray-900 dark:text-white">Notificações Gerais</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Ativar ou desativar todas as notificações
+            </p>
           </div>
+          <label className="relative inline-flex items-center cursor-pointer">
+            <input
+              type="checkbox"
+              className="sr-only peer"
+              checked={settings.notifications.enabled}
+              onChange={(e) => updateNotificationSetting('enabled', e.target.checked)}
+            />
+            <div className="w-11 h-6 bg-gray-200 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-500 peer-checked:bg-purple-600"></div>
+          </label>
         </div>
         
-        <div>
-          <h3 className="font-medium mb-4 text-gray-900 dark:text-white">Notificações Push</h3>
-          <div className="space-y-4">
-            <label className="flex items-center">
-              <input 
-                type="checkbox" 
-                className="mr-3" 
-                checked={settings.notifications.likes}
-                onChange={(e) => updateNotificationSetting('likes', e.target.checked)}
-              />
-              <span className="text-gray-700 dark:text-gray-300">Curtidas</span>
-            </label>
-            <label className="flex items-center">
-              <input 
-                type="checkbox" 
-                className="mr-3" 
-                checked={settings.notifications.newFollowers}
-                onChange={(e) => updateNotificationSetting('newFollowers', e.target.checked)}
-              />
-              <span className="text-gray-700 dark:text-gray-300">Novos seguidores</span>
-            </label>
-            <label className="flex items-center">
-              <input 
-                type="checkbox" 
-                className="mr-3" 
-                checked={settings.notifications.push}
-                onChange={(e) => updateNotificationSetting('push', e.target.checked)}
-              />
-              <span className="text-gray-700 dark:text-gray-300">Mensagens diretas</span>
-            </label>
-          </div>
+        <div className="space-y-3">
+          <NotificationToggle
+            label="E-mail"
+            description="Receber notificações por e-mail"
+            checked={settings.notifications.email}
+            onChange={(value) => updateNotificationSetting('email', value)}
+            disabled={!settings.notifications.enabled}
+          />
+          
+          <NotificationToggle
+            label="Push"
+            description="Notificações no navegador"
+            checked={settings.notifications.push}
+            onChange={(value) => updateNotificationSetting('push', value)}
+            disabled={!settings.notifications.enabled}
+          />
+          
+          <NotificationToggle
+            label="Curtidas"
+            description="Quando alguém curtir suas postagens"
+            checked={settings.notifications.likes}
+            onChange={(value) => updateNotificationSetting('likes', value)}
+            disabled={!settings.notifications.enabled}
+          />
+          
+          <NotificationToggle
+            label="Comentários"
+            description="Quando comentarem em suas postagens"
+            checked={settings.notifications.comments}
+            onChange={(value) => updateNotificationSetting('comments', value)}
+            disabled={!settings.notifications.enabled}
+          />
+          
+          <NotificationToggle
+            label="Seguidores"
+            description="Quando alguém começar a seguir você"
+            checked={settings.notifications.follows}
+            onChange={(value) => updateNotificationSetting('follows', value)}
+            disabled={!settings.notifications.enabled}
+          />
+          
+          <NotificationToggle
+            label="Mensagens"
+            description="Quando receber novas mensagens"
+            checked={settings.notifications.messages}
+            onChange={(value) => updateNotificationSetting('messages', value)}
+            disabled={!settings.notifications.enabled}
+          />
         </div>
       </div>
+    </div>
+  );
+}
+
+// Componente auxiliar para toggle de notificações
+function NotificationToggle({ label, description, checked, onChange, disabled }: {
+  label: string;
+  description: string;
+  checked: boolean;
+  onChange: (value: boolean) => void;
+  disabled?: boolean;
+}) {
+  return (
+    <div className={`flex items-center justify-between p-3 rounded-lg ${disabled ? 'opacity-50' : ''}`}>
+      <div>
+        <h4 className="font-medium text-gray-900 dark:text-white">{label}</h4>
+        <p className="text-sm text-gray-600 dark:text-gray-400">{description}</p>
+      </div>
+      <label className="relative inline-flex items-center cursor-pointer">
+        <input
+          type="checkbox"
+          className="sr-only peer"
+          checked={checked}
+          onChange={(e) => onChange(e.target.checked)}
+          disabled={disabled}
+        />
+        <div className="w-11 h-6 bg-gray-200 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-purple-600 peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"></div>
+      </label>
     </div>
   );
 }
@@ -548,7 +467,7 @@ function IdiomaSection({ settings, setSettings }: { settings: any, setSettings: 
           <select className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
             <option value="DD/MM/YYYY">DD/MM/AAAA</option>
             <option value="MM/DD/YYYY">MM/DD/AAAA</option>
-            <option value="YYYY/MM/DD">AAAA/MM/DD</option>
+            <option value="YYYY-MM-DD">AAAA-MM-DD</option>
           </select>
         </div>
       </div>
@@ -562,42 +481,43 @@ function ContaSection({ userProfile }: { userProfile: any }) {
     <div>
       <h2 className="text-xl font-semibold mb-6 text-gray-900 dark:text-white">Informações da Conta</h2>
       <div className="space-y-6">
-        <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-          <h3 className="font-medium mb-2 text-gray-900 dark:text-white">Status da Conta</h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            Conta criada em: 15 de março de 2024
-          </p>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            Último login: há 2 horas
-          </p>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            Tipo de conta: <span className="font-medium text-purple-600 dark:text-purple-400">PRO</span>
-          </p>
+        <div>
+          <h3 className="font-medium text-gray-900 dark:text-white mb-4">Dados Básicos</h3>
+          <div className="space-y-4">
+            <div className="flex justify-between py-3 border-b dark:border-gray-700">
+              <span className="text-gray-600 dark:text-gray-400">Nome de usuário</span>
+              <span className="font-medium text-gray-900 dark:text-white">@{userProfile.username}</span>
+            </div>
+            <div className="flex justify-between py-3 border-b dark:border-gray-700">
+              <span className="text-gray-600 dark:text-gray-400">E-mail</span>
+              <span className="font-medium text-gray-900 dark:text-white">{userProfile.email}</span>
+            </div>
+            <div className="flex justify-between py-3 border-b dark:border-gray-700">
+              <span className="text-gray-600 dark:text-gray-400">Nome completo</span>
+              <span className="font-medium text-gray-900 dark:text-white">{userProfile.name}</span>
+            </div>
+          </div>
         </div>
         
-        <div>
-          <h3 className="font-medium mb-4 text-gray-900 dark:text-white">Dados Pessoais</h3>
-          <button className="bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white px-4 py-2 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors mb-3 w-full sm:w-auto">
-            Baixar meus dados
-          </button>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            Baixe uma cópia de todos os seus dados
-          </p>
+        <div className="pt-6 border-t dark:border-gray-700">
+          <h3 className="font-medium text-gray-900 dark:text-white mb-4">Assinatura</h3>
+          <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+            <p className="font-medium text-purple-800 dark:text-purple-300">Plano Gratuito</p>
+            <p className="text-sm text-purple-600 dark:text-purple-400 mt-1">
+              Acesso limitado aos recursos básicos
+            </p>
+            <button className="mt-4 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+              Fazer Upgrade para Pro
+            </button>
+          </div>
         </div>
         
-        <div>
-          <h3 className="font-medium mb-4 text-red-600 dark:text-red-400">Zona de Perigo</h3>
-          <button className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors mb-2">
-            Desativar conta temporariamente
+        <div className="pt-6 border-t dark:border-gray-700">
+          <h3 className="font-medium text-gray-900 dark:text-white mb-4 text-red-600">Zona de Perigo</h3>
+          <button className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+            Excluir Conta
           </button>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-            Sua conta será ocultada mas poderá ser reativada
-          </p>
-          
-          <button className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors">
-            Excluir conta permanentemente
-          </button>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
             Esta ação não pode ser desfeita
           </p>
         </div>
@@ -606,7 +526,7 @@ function ContaSection({ userProfile }: { userProfile: any }) {
   );
 }
 
-// Seção Interface
+// Seção Interface - CORRIGIDA
 function InterfaceSection({ settings, setSettings }: { settings: any, setSettings: any }) {
   const updateInterfaceSetting = (key: string, value: any) => {
     setSettings({
@@ -618,18 +538,20 @@ function InterfaceSection({ settings, setSettings }: { settings: any, setSetting
     });
   };
 
+  const { theme, setTheme } = useTheme();
+  
   const toggleDarkMode = () => {
-    const newValue = !settings.interface.darkMode;
-    updateInterfaceSetting('darkMode', newValue);
-    
-    if (newValue) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-    }
+    setTheme(theme === 'dark' ? 'light' : 'dark');
+    updateInterfaceSetting('darkMode', theme !== 'dark');
   };
+  
+  // Sincronizar o estado do dark mode com o ThemeContext
+  useEffect(() => {
+    const isDarkMode = theme === 'dark';
+    if (settings.interface.darkMode !== isDarkMode) {
+      updateInterfaceSetting('darkMode', isDarkMode);
+    }
+  }, [theme]);
 
   return (
     <div>
@@ -646,7 +568,7 @@ function InterfaceSection({ settings, setSettings }: { settings: any, setSetting
             <input
               type="checkbox"
               className="sr-only peer"
-              checked={settings.interface.darkMode}
+              checked={theme === 'dark'}
               onChange={toggleDarkMode}
             />
             <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 dark:peer-focus:ring-purple-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-purple-600"></div>
@@ -694,10 +616,10 @@ function InterfaceSection({ settings, setSettings }: { settings: any, setSetting
             <input 
               type="checkbox" 
               className="sr-only peer" 
-              checked={true}
-              onChange={() => {}}
+              checked={settings.interface.showAnimations}
+              onChange={(e) => updateInterfaceSetting('showAnimations', e.target.checked)}
             />
-            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 dark:peer-focus:ring-purple-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-purple-600"></div>
+            <div className="w-11 h-6 bg-gray-200 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-purple-600"></div>
           </label>
         </div>
       </div>

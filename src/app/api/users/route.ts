@@ -6,7 +6,15 @@ export async function GET(request: Request) {
     const url = new URL(request.url);
     const limit = parseInt(url.searchParams.get('limit') || '10');
     const offset = parseInt(url.searchParams.get('offset') || '0');
+    const search = url.searchParams.get('search') || '';
     
+    // Se houver busca, pesquisar usuários
+    if (search) {
+      const users = await UserApiService.searchUsers(search);
+      return NextResponse.json({ users });
+    }
+    
+    // Senão, listar todos com paginação
     const result = await UserApiService.getUsersWithPagination({
       limit,
       offset
@@ -14,8 +22,7 @@ export async function GET(request: Request) {
     
     return NextResponse.json(result);
   } catch (error) {
-    console.error('Erro ao buscar usuários:', error);
-    
+
     return NextResponse.json(
       { 
         error: 'Erro ao buscar usuários',
@@ -39,8 +46,7 @@ export async function POST(request: Request) {
     
     return NextResponse.json(newUser, { status: 201 });
   } catch (error) {
-    console.error('Erro ao criar usuário:', error);
-    
+
     if (error instanceof Error) {
       if (error.message.includes('obrigatórios')) {
         return NextResponse.json(

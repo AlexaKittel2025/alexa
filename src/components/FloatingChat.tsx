@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { User } from '../types';
-import { XIcon, EmojiHappyIcon, PhotographIcon, PaperAirplaneIcon } from '@heroicons/react/outline';
+;
 
-interface FloatingChatProps {
+;
+import { EmojiHappyIcon, PaperAirplaneIcon, PhotographIcon, XIcon } from '@heroicons/react/outline';
+import React, { useState, useEffect, useRef } from 'react';
+import { User } from '../types';interface FloatingChatProps {
   isOpen: boolean;
   onClose: () => void;
   user: User;

@@ -36,8 +36,6 @@ function App() {
       setIsLoading(false);
     }, 1000);
 
-    console.log('App.tsx: Componente inicializado');
-
     return () => clearTimeout(timer);
   }, []);
 

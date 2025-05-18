@@ -1,12 +1,13 @@
+;
+;
+;
+;
+import { ChatIcon, PaperAirplaneIcon, UserIcon } from '@heroicons/react/solid';
 import React, { useState, useEffect, useRef } from 'react';
-import { 
-  ChatIcon, 
-  PaperAirplaneIcon, 
-  UserIcon
-} from '@heroicons/react/solid';
-import SearchIcon from '@heroicons/react/solid/SearchIcon';
-import RefreshIcon from '@heroicons/react/solid/RefreshIcon';
-import UserGroupIcon from '@heroicons/react/solid/UserGroupIcon';
+;
+;
+;
+;
 import { useAuth } from '../context/AuthContext';
 import { 
   ChatMessage, 
@@ -319,61 +320,60 @@ const Chat: React.FC = () => {
   // Inicializar socket e carregar dados iniciais
   useEffect(() => {
     if (!user) {
-      console.log('Usuário não autenticado, redirecionando...');
+      
       return;
     }
 
-    console.log('Inicializando chat para o usuário:', user);
     setSocketStatus('connecting');
 
     // Inicializar socket com token de autenticação
     const initChat = async () => {
       try {
-        console.log('Inicializando socket...');
+        
         // Inicializar socket com token do usuário
         const authToken = localStorage.getItem('token') || 'mock-token';
         const socket = initializeSocket(authToken, user.id);
         socketRef.current = socket;
 
         socket.on('connect', () => {
-          console.log('Socket conectado com sucesso!');
+          
           setSocketStatus('connected');
           setReconnectAttempt(0);
           loadData();
         });
 
         socket.on('connect_error', (error) => {
-          console.error('Erro ao conectar ao socket:', error);
+          
           setSocketStatus('error');
           setReconnectAttempt(prev => prev + 1);
         });
 
         socket.on('message:receive', (message: ChatMessage) => {
-          console.log('Nova mensagem recebida:', message);
+          
           handleNewMessage(message);
         });
 
         socket.on('user:typing', ({ roomId, userId, isTyping }) => {
-          console.log(`Usuário ${userId} está ${isTyping ? 'digitando' : 'parou de digitar'}`);
+          
           handleUserTyping({ roomId, userId, isTyping });
         });
 
         socket.on('user:status', ({ userId, status }) => {
-          console.log(`Status do usuário ${userId} alterado para ${status}`);
+          
         });
 
         socket.on('message:read', ({ roomId, userId }) => {
-          console.log(`Mensagens lidas pelo usuário ${userId} na sala ${roomId}`);
+          
           handleMessageRead({ roomId, userId });
         });
 
         socket.on('disconnect', (reason) => {
-          console.log(`Socket desconectado: ${reason}`);
+          
           setSocketStatus('connecting');
         });
 
         socket.on('reconnect', (attemptNumber) => {
-          console.log(`Socket reconectado após ${attemptNumber} tentativas`);
+          
           setSocketStatus('connected');
           setReconnectAttempt(0);
           loadData();
@@ -384,14 +384,14 @@ const Chat: React.FC = () => {
         });
 
         socket.on('reconnect_failed', () => {
-          console.error('Falha ao reconectar após várias tentativas');
+          
           setSocketStatus('error');
         });
 
         // Carregar dados iniciais
         await loadData();
       } catch (error) {
-        console.error('Erro ao inicializar chat:', error);
+        
         setSocketStatus('error');
       }
     };
@@ -400,7 +400,7 @@ const Chat: React.FC = () => {
 
     // Limpar socket ao desmontar
     return () => {
-      console.log('Componente desmontado, fechando socket');
+      
       if (socketRef.current) {
         closeSocket();
         socketRef.current = null;
@@ -413,28 +413,26 @@ const Chat: React.FC = () => {
     try {
       if (!user) return;
 
-      console.log('Carregando dados iniciais...');
-      
       // Buscar salas de chat do usuário
       const roomsResponse = await getUserChatRooms(user.id);
       if (roomsResponse.success && roomsResponse.data) {
-        console.log('Salas de chat carregadas:', roomsResponse.data);
+        
         setChatRooms(roomsResponse.data);
         
         // Se não tem sala ativa, seleciona a global
         if (!activeTab) {
           const globalRoom = roomsResponse.data.find(room => room.type === 'global');
           if (globalRoom) {
-            console.log('Selecionando sala global como padrão:', globalRoom.id);
+            
             setActiveTab('global');
             loadChatMessages(globalRoom.id);
           }
         }
       } else {
-        console.error('Erro ao carregar salas de chat:', roomsResponse.error);
+        
       }
     } catch (error) {
-      console.error('Erro ao carregar dados iniciais:', error);
+      
     }
   };
 
@@ -466,7 +464,7 @@ const Chat: React.FC = () => {
         markMessagesAsRead(roomId, user.id);
       }
     } catch (error) {
-      console.error('Erro ao carregar mensagens:', error);
+      
     }
   };
 
@@ -511,11 +509,11 @@ const Chat: React.FC = () => {
       
       // Se falhar, mostrar erro
       if (!response.success) {
-        console.error('Erro ao enviar mensagem:', response.error);
+        
         // TODO: Adicionar toast de erro
       }
     } catch (error) {
-      console.error('Erro ao enviar mensagem:', error);
+      
       // TODO: Adicionar toast de erro
     }
   };
@@ -540,7 +538,7 @@ const Chat: React.FC = () => {
         setSearchResults(response.data);
       }
     } catch (error) {
-      console.error('Erro ao buscar usuários:', error);
+      
     }
   };
 
@@ -560,7 +558,7 @@ const Chat: React.FC = () => {
         await loadChatMessages(response.data.id);
       }
     } catch (error) {
-      console.error('Erro ao iniciar conversa:', error);
+      
     }
     
     // Limpar pesquisa
@@ -678,8 +676,7 @@ const Chat: React.FC = () => {
     if (!user) return;
     
     setSocketStatus('connecting');
-    console.log('Tentando reconectar manualmente...');
-    
+
     try {
       // Inicializar socket com token do usuário
       const authToken = localStorage.getItem('token') || 'mock-token';
@@ -690,17 +687,17 @@ const Chat: React.FC = () => {
       // Apenas monitoramos o status aqui para atualizar a UI
       setTimeout(() => {
         if (socket.connected) {
-          console.log('Reconexão manual bem-sucedida!');
+          
           setSocketStatus('connected');
           setReconnectAttempt(0);
           loadData();
         } else {
-          console.error('Falha na reconexão manual');
+          
           setSocketStatus('error');
         }
       }, 3000);
     } catch (error) {
-      console.error('Erro ao tentar reconectar manualmente:', error);
+      
       setSocketStatus('error');
     }
   };

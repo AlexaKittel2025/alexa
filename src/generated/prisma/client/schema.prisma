@@ -1,0 +1,226 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = []
+  binaryTargets   = ["native", "debian-openssl-3.0.x"]
+  output          = "../src/generated/prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String        @id @default(cuid())
+  username         String        @unique
+  display_name     String
+  email            String        @unique
+  emailVerified    DateTime?
+  password_hash    String
+  image            String?
+  bio              String?
+  createdAt        DateTime      @default(now()) @map("created_at")
+  updatedAt        DateTime      @updatedAt @map("updated_at")
+  level            Int           @default(1)
+  score            Int           @default(0)
+  isOnline         Boolean       @default(false) @map("is_online")
+  isPro            Boolean       @default(false) @map("is_pro")
+  lastLogin        DateTime?     @map("last_login")
+  nivelMentiroso   Int           @default(1) @map("nivel_mentiroso")
+  pontuacaoTotal   Int           @default(0) @map("pontuacao_total")
+  accounts         Account[]
+  achievements     Achievement[]
+  comments         Comment[]
+  receivedMessages Message[]     @relation("ReceivedMessages")
+  sentMessages     Message[]     @relation("SentMessages")
+  posts            Post[]
+  reactions        Reaction[]
+  reportsMade      Report[]      @relation("ReportsMade")
+  sessions         Session[]
+  badges           UserBadge[]
+  stats            UserStats?
+
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String  @map("user_id")
+  type              String
+  provider          String
+  providerAccountId String  @map("provider_account_id")
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique @map("session_token")
+  userId       String   @map("user_id")
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+model Post {
+  id        String     @id @default(cuid())
+  title     String
+  content   String
+  imageUrl  String?    @map("image_url")
+  authorId  String     @map("author_id")
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt @map("updated_at")
+  isActive  Boolean    @default(true) @map("is_active")
+  views     Int        @default(0)
+  comments  Comment[]
+  tags      PostTag[]
+  author    User       @relation(fields: [authorId], references: [id])
+  reactions Reaction[]
+  reports   Report[]
+
+  @@map("posts")
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  postId    String   @map("post_id")
+  authorId  String   @map("author_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  author    User     @relation(fields: [authorId], references: [id])
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@map("comments")
+}
+
+model Reaction {
+  id        String   @id @default(cuid())
+  type      String
+  postId    String   @map("post_id")
+  userId    String   @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([postId, userId, type])
+  @@map("reactions")
+}
+
+model Badge {
+  id          String      @id @default(cuid())
+  name        String
+  description String
+  imageUrl    String      @map("image_url")
+  createdAt   DateTime    @default(now()) @map("created_at")
+  users       UserBadge[]
+
+  @@map("badges")
+}
+
+model UserBadge {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  badgeId   String   @map("badge_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  badge     Badge    @relation(fields: [badgeId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, badgeId])
+  @@map("user_badges")
+}
+
+model Message {
+  id         String    @id @default(cuid())
+  content    String
+  senderId   String    @map("sender_id")
+  receiverId String?   @map("receiver_id")
+  isGlobal   Boolean   @default(false) @map("is_global")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  readAt     DateTime? @map("read_at")
+  receiver   User?     @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  sender     User      @relation("SentMessages", fields: [senderId], references: [id])
+
+  @@map("messages")
+}
+
+model Tag {
+  id        String    @id @default(cuid())
+  name      String    @unique
+  useCount  Int       @default(0) @map("use_count")
+  createdAt DateTime  @default(now()) @map("created_at")
+  posts     PostTag[]
+
+  @@map("tags")
+}
+
+model PostTag {
+  id        String   @id @default(cuid())
+  postId    String   @map("post_id")
+  tagId     String   @map("tag_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  tag       Tag      @relation(fields: [tagId], references: [id])
+
+  @@unique([postId, tagId])
+  @@map("post_tags")
+}
+
+model UserStats {
+  id            String   @id @default(cuid())
+  userId        String   @unique @map("user_id")
+  pontosDiarios Int      @default(0) @map("pontos_diarios")
+  pontosMensais Int      @default(0) @map("pontos_mensais")
+  totalPontos   Int      @default(0) @map("total_pontos")
+  qtdPosts      Int      @default(0) @map("qtd_posts")
+  qtdReacoes    Int      @default(0) @map("qtd_reacoes")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_stats")
+}
+
+model Achievement {
+  id          String   @id @default(cuid())
+  userId      String   @map("user_id")
+  description String
+  nivel       Int      @default(1)
+  createdAt   DateTime @default(now()) @map("created_at")
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("achievements")
+}
+
+model Report {
+  id         String    @id @default(cuid())
+  reporterId String    @map("reporter_id")
+  postId     String    @map("post_id")
+  reason     String
+  createdAt  DateTime  @default(now()) @map("created_at")
+  resolved   Boolean   @default(false)
+  resolvedAt DateTime? @map("resolved_at")
+  resolution String?
+  post       Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  reporter   User      @relation("ReportsMade", fields: [reporterId], references: [id])
+
+  @@map("reports")
+}

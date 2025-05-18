@@ -1,14 +1,9 @@
-import React from 'react';
-import { User } from '../../types';
-import CalendarIcon from '@heroicons/react/outline/CalendarIcon';
-import LocationMarkerIcon from '@heroicons/react/outline/LocationMarkerIcon';
-import BriefcaseIcon from '@heroicons/react/outline/BriefcaseIcon';
-import AcademicCapIcon from '@heroicons/react/outline/AcademicCapIcon';
-import LinkIcon from '@heroicons/react/outline/LinkIcon';
-import UserIcon from '@heroicons/react/outline/UserIcon';
-import EnvelopeIcon from '@heroicons/react/outline/EnvelopeIcon';
-import PhoneIcon from '@heroicons/react/outline/PhoneIcon';
+;
+
+;
 import { HeartIcon } from '@heroicons/react/outline';
+import React from 'react';
+import { User } from '../../types';;;import { getUserLevel, getUserScore } from '@/utils/getUserLevel';
 
 interface AboutTabProps {
   user: User;
@@ -27,7 +22,7 @@ const AboutTab: React.FC<AboutTabProps> = ({ user }) => {
         year: 'numeric'
       });
     } catch (error) {
-      console.error('Erro ao formatar data:', error);
+      
       return dateString;
     }
   };
@@ -153,16 +148,18 @@ const AboutTab: React.FC<AboutTabProps> = ({ user }) => {
         <div className="mt-4 bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm text-gray-700 dark:text-gray-300">Nível</span>
-            <span className="text-sm font-medium text-primary">{user.level}</span>
+            <span className="text-sm font-medium text-primary">
+              {getUserLevel(user)}
+            </span>
           </div>
           <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2.5">
             <div 
               className="bg-primary h-2.5 rounded-full" 
-              style={{ width: `${Math.min(((user.level || 0) % 5) / 5 * 100, 100)}%` }}
+              style={{ width: `${Math.min(((getUserLevel(user) || 0) % 5) / 5 * 100, 100)}%` }}
             ></div>
           </div>
           <div className="mt-1 text-xs text-right text-gray-500 dark:text-gray-400">
-            {user.points} pontos
+            {getUserScore(user)} pontos
           </div>
         </div>
       </div>

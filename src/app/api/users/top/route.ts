@@ -24,7 +24,7 @@ export async function GET(req: Request) {
         }
       });
     } catch (dbError) {
-      console.error('Erro ao consultar usuários no banco de dados:', dbError);
+      
       // Retornar dados de fallback
       return NextResponse.json([
         {
@@ -67,7 +67,7 @@ export async function GET(req: Request) {
     
     return NextResponse.json(users);
   } catch (error) {
-    console.error('Erro geral ao buscar usuários top:', error);
+    
     // Retornar dados de fallback para não quebrar o frontend
     return NextResponse.json([
       {

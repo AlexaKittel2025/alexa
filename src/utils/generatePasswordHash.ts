@@ -15,10 +15,7 @@ export async function verifyPasswordHash(password: string, hash: string): Promis
 export async function generateTestHashes() {
   const teste123Hash = await generatePasswordHash('teste123');
   const demo123Hash = await generatePasswordHash('Demo123!');
-  
-  console.log('Hash para "teste123":', teste123Hash);
-  console.log('Hash para "Demo123!":', demo123Hash);
-  
+
   return {
     teste123: teste123Hash,
     demo123: demo123Hash

@@ -30,7 +30,7 @@ const UserRanking: React.FC = () => {
         const data = await response.json();
         setUsers(Array.isArray(data) ? data : []);
       } catch (error) {
-        console.error('Erro ao carregar ranking:', error);
+        
         setError('Não foi possível carregar o ranking de usuários');
         
         // Dados de fallback para demonstração

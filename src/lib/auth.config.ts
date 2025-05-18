@@ -33,7 +33,7 @@ export const authOptions: NextAuthOptions = {
           id: user.id,
           email: user.email,
           name: user.display_name,
-          image: user.image || null,
+          image: user.image || user.avatar || null,
           username: user.username
         };
       }

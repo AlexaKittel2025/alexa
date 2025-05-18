@@ -9,11 +9,13 @@ import { getToken } from 'next-auth/jwt';
 // Rotas que requerem autenticação
 const PROTECTED_ROUTES = [
   '/perfil',
+  '/meu-perfil',
   '/dashboard',
   '/chat',
   '/nova-mentira',
   '/plano-pro',
-  // '/configuracoes', // Temporariamente desabilitado para testes
+  '/configuracoes',
+  '/notificacoes',
 ];
 
 // Rotas de API que necessitam de proteção CSRF
@@ -147,8 +149,7 @@ async function handleProtectedRoute(
     // Token válido, prosseguir com a requisição
     return response;
   } catch (error) {
-    console.error('Erro ao verificar autenticação:', error);
-    
+
     // Em caso de erro, redirecionar para login
     const url = new URL('/login', request.url);
     url.searchParams.set('error', 'auth_error');

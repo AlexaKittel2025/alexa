@@ -62,7 +62,7 @@ const checkInitialPostsCreated = async () => {
     const postCount = await prisma.post.count();
     return postCount > 0;
   } catch (error) {
-    console.error('Erro ao verificar posts:', error);
+    
     return false;
   }
 };
@@ -107,7 +107,7 @@ const getOrCreateUser = async (name: string) => {
     
     return user;
   } catch (error) {
-    console.error('Erro ao criar usuário falso:', error);
+    
     throw error;
   }
 };
@@ -133,7 +133,7 @@ const getOrCreateTag = async (name: string) => {
     
     return tag;
   } catch (error) {
-    console.error('Erro ao processar tag:', error);
+    
     throw error;
   }
 };
@@ -145,7 +145,7 @@ export const populateWithFakePosts = async (count: number) => {
     
     // Se já existem posts e estamos apenas adicionando um post único via gerador automático
     if (postsCreated && count === 1) {
-      console.log('Gerando post único...');
+      
       const fakePostData = generateFakePostData();
       
       // Obter ou criar o autor
@@ -171,15 +171,13 @@ export const populateWithFakePosts = async (count: number) => {
           }
         });
       }
-      
-      console.log('Post falso criado com sucesso!');
+
       return true;
     }
     
     // Para inicialização em massa
     if (!postsCreated) {
-      console.log(`Criando ${count} posts falsos iniciais...`);
-      
+
       for (let i = 0; i < count; i++) {
         const fakePostData = generateFakePostData();
         
@@ -207,9 +205,7 @@ export const populateWithFakePosts = async (count: number) => {
           });
         }
       }
-      
-      console.log(`${count} posts falsos iniciais criados com sucesso!`);
-      
+
       // Marcar que os posts iniciais foram criados usando um método mais confiável
       // (Poderia ser uma tabela de configuração no banco, mas para simplificar usamos localStorage)
       if (typeof window !== 'undefined') {
@@ -221,7 +217,7 @@ export const populateWithFakePosts = async (count: number) => {
     
     return false;
   } catch (error) {
-    console.error('Erro ao criar posts falsos:', error);
+    
     return false;
   }
 };
@@ -236,7 +232,7 @@ export const startFakePostsGenerator = (minInterval: number, maxInterval: number
       const nextInterval = Math.floor(Math.random() * (maxInterval - minInterval + 1)) + minInterval;
       setTimeout(generateRandomPost, nextInterval);
     } catch (error) {
-      console.error('Erro ao gerar post automático:', error);
+      
     }
   };
   
@@ -244,11 +240,11 @@ export const startFakePostsGenerator = (minInterval: number, maxInterval: number
   const initialInterval = Math.floor(Math.random() * (maxInterval - minInterval + 1)) + minInterval;
   setTimeout(generateRandomPost, initialInterval);
   
-  console.log(`Gerador automático de posts iniciado (intervalo: ${minInterval/1000}-${maxInterval/1000}s)`);
+  console.log(`Gerador de fake posts iniciado. Intervalo: ${minInterval}-${maxInterval} segundos`);
   
   // Retornar uma função para parar o gerador se necessário
   return () => {
-    console.log('Gerador automático de posts parado');
+    console.log('Gerador de fake posts parado');
     // Nota: como estamos usando setTimeout de forma recursiva, não há uma maneira direta
     // de parar o processo. Na prática, seria melhor usar setInterval e clearInterval.
   };

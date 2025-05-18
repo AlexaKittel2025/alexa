@@ -24,7 +24,7 @@ Uma plataforma para compartilhar e votar em histórias falsas divertidas. Mentei
 
 1. Clone o repositório
 2. Instale as dependências com `npm install`
-3. Crie um arquivo `.env.local` com base no `.env.local.example`:
+3. Crie um arquivo `.env.local` com base no `.env.example`:
    ```
    NEXT_PUBLIC_FIREBASE_API_KEY=your-firebase-api-key
    NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your-project-id.firebaseapp.com

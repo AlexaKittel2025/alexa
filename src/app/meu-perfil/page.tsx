@@ -88,7 +88,6 @@ export default function MeuPerfilPage() {
     }
   ];
 
-
   const mockPointsHistory = [
     { id: '1', description: 'Vitória em batalha', points: 100, date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000) },
     { id: '2', description: 'Post com mais de 100 curtidas', points: 50, date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000) },
@@ -109,7 +108,7 @@ export default function MeuPerfilPage() {
         setProfile(profileData);
         setEditingProfile(profileData);
       } catch (e) {
-        console.error('Erro ao carregar perfil:', e);
+        
       }
     } else {
       // Se não houver dados salvos, salva o perfil inicial
@@ -121,7 +120,7 @@ export default function MeuPerfilPage() {
         const followersData = JSON.parse(savedFollowers);
         setFollowers(followersData);
       } catch (e) {
-        console.error('Erro ao carregar seguidores:', e);
+        
       }
     } else {
       // Se não houver dados salvos, salva os seguidores iniciais
@@ -133,7 +132,7 @@ export default function MeuPerfilPage() {
         const followingData = JSON.parse(savedFollowing);
         setFollowing(followingData);
       } catch (e) {
-        console.error('Erro ao carregar seguindo:', e);
+        
       }
     } else {
       // Se não houver dados salvos, salva os seguindo iniciais

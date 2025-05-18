@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
     
     return response;
   } catch (error) {
-    console.error('Erro ao gerar token CSRF:', error);
+    
     return NextResponse.json(
       { success: false, error: 'Erro interno do servidor' },
       { status: 500 }

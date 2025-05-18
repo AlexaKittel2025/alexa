@@ -17,7 +17,7 @@ export async function GET(req: Request) {
         }
       });
     } catch (dbError) {
-      console.error('Erro ao consultar tags no banco de dados:', dbError);
+      
       // Retornar dados de fallback
       return NextResponse.json(
         ['alien', 'ex', 'vida rica', 'trabalho', 'família', 'viagem'].map((tag, index) => ({
@@ -37,7 +37,7 @@ export async function GET(req: Request) {
     
     return NextResponse.json(formattedTags);
   } catch (error) {
-    console.error('Erro geral ao buscar tags populares:', error);
+    
     // Retornar dados de fallback para não quebrar o frontend
     return NextResponse.json(
       ['alien', 'ex', 'vida rica', 'trabalho', 'família', 'viagem'].map((tag, index) => ({

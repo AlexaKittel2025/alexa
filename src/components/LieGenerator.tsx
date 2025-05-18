@@ -32,7 +32,7 @@ const LieGenerator: React.FC<LieGeneratorProps> = ({ userId, onGenerated, onNeed
       }
     } catch (error) {
       setError('Erro ao gerar mentira. Tente novamente.');
-      console.error('Erro ao gerar mentira:', error);
+      
     } finally {
       setIsLoading(false);
     }

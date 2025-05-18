@@ -81,7 +81,7 @@ const MessageSettings: React.FC<MessageSettingsProps> = ({ currentUser }) => {
         }, 3000);
       }
     } catch (error) {
-      console.error('Erro ao salvar configurações de mensagens:', error);
+      
       setMessage('Erro ao salvar as configurações. Tente novamente.');
     } finally {
       setIsLoading(false);

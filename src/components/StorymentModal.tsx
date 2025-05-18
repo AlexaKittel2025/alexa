@@ -1,21 +1,12 @@
+import { ArrowLeftIcon, ArrowRightIcon, ChatIcon, EyeIcon, HeartIcon, ShareIcon, XIcon } from '@heroicons/react/outline';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import {
-  XIcon,
-  ChatIcon,
-  ShareIcon,
-  EyeIcon,
-  ArrowLeftIcon,
-  ArrowRightIcon,
-  HeartIcon
-} from '@heroicons/react/outline';
-import { HeartIcon as HeartIconSolid } from '@heroicons/react/solid';
-import { User, Storyment } from '../types';
+import { User, Storyment } from '@/types';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { mockUsers } from '../services/mockData';
-import { toggleFollowUser } from '../services/userService';
-import { useAuth } from '../context/AuthContext';
-import { Link, useNavigate } from 'react-router-dom';
+import { mockUsers } from '@/services/mockData';
+import { toggleFollowUser } from '@/services/userService';
+import Link from 'next/link';
+import { getUserLevel } from '@/utils/getUserLevel';
 
 // Componente para a barra de progresso dos stories
 const ProgressBar: React.FC<{
@@ -60,11 +51,27 @@ const ProgressGroup: React.FC<{
 
 // Componente para a animação de curtida
 const LikeAnimation: React.FC = () => (
-  <div className="absolute inset-0 flex items-center justify-center animate-fade-out pointer-events-none z-30">
-    <div className="bg-black bg-opacity-50 px-4 py-2 rounded-full flex items-center animate-pulse-once">
-      <HeartIconSolid className="h-6 w-6 text-red-500 mr-2" />
-      <span className="text-white font-semibold">Amei</span>
-    </div>
+  <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-30">
+    <style dangerouslySetInnerHTML={{ __html: `
+      @keyframes likeAnimation {
+        0% { transform: scale(0) rotate(-45deg); opacity: 0; }
+        15% { transform: scale(1.3) rotate(-45deg); opacity: 1; }
+        30% { transform: scale(0.95) rotate(-45deg); opacity: 1; }
+        45% { transform: scale(1.1) rotate(-45deg); opacity: 1; }
+        80% { transform: scale(1) rotate(-45deg); opacity: 1; }
+        100% { transform: scale(1) rotate(-45deg); opacity: 0; }
+      }
+      .like-animation {
+        animation: likeAnimation 1s ease-out forwards;
+      }
+    `}} />
+    <svg
+      className="w-32 h-32 like-animation"
+      viewBox="0 0 24 24"
+      fill="#ef4444"
+    >
+      <path d="M12 4.435c-1.989-5.399-12-4.597-12 3.568 0 4.068 3.06 9.481 12 14.997 8.94-5.516 12-10.929 12-14.997 0-8.118-10-8.999-12-3.568z" />
+    </svg>
   </div>
 );
 
@@ -170,7 +177,7 @@ const StoryHeader: React.FC<{
     <div className="flex items-center p-4 pt-6">
       <div className="flex items-center">
         {user?.photoURL && (
-          <Link to={`/profile/${user.username}`} title={user.displayName}>
+          <Link href={`/perfil/${user.username}`}>
             <img 
               src={user.photoURL}
               alt={user.displayName}
@@ -179,7 +186,7 @@ const StoryHeader: React.FC<{
           </Link>
         )}
         <div>
-          <Link to={`/profile/${user?.username}`} title={user?.displayName}>
+          <Link href={`/perfil/${user?.username}`}>
             <h3 className="font-bold hover:underline cursor-pointer">{user?.displayName || 'Usuário'}</h3>
           </Link>
           <p className="text-xs opacity-80">{getTimeElapsed()}</p>
@@ -196,18 +203,33 @@ const ViewersModal: React.FC<{
   users: User[];
   title: string;
   type: 'view' | 'like';
-}> = ({ isOpen, onClose, users, title, type }) => {
-  const { currentUser } = useAuth();
-  const [followStates, setFollowStates] = useState<{[userId: string]: boolean}>({});
+  currentUser?: User | null;
+}> = ({ isOpen, onClose, users, title, type, currentUser }) => {
+  // Inicializar estado com valores padrão
+  const [followStates, setFollowStates] = useState<{[userId: string]: boolean}>(() => {
+    const initialStates: {[userId: string]: boolean} = {};
+    if (users && users.length > 0) {
+      users.forEach(user => {
+        initialStates[user.id] = false;
+      });
+    }
+    return initialStates;
+  });
   const [loadingFollow, setLoadingFollow] = useState<{[userId: string]: boolean}>({});
   
+  // Atualizar estado quando users mudar
   useEffect(() => {
-    // Inicializar estado de seguir para cada usuário
-    const initialStates: {[userId: string]: boolean} = {};
-    users.forEach(user => {
-      initialStates[user.id] = false; // Sempre começa como não seguindo
-    });
-    setFollowStates(initialStates);
+    if (users && users.length > 0) {
+      setFollowStates(prevStates => {
+        const newStates = { ...prevStates };
+        users.forEach(user => {
+          if (!(user.id in newStates)) {
+            newStates[user.id] = false;
+          }
+        });
+        return newStates;
+      });
+    }
   }, [users]);
   
   const handleFollowClick = async (userId: string) => {
@@ -225,15 +247,16 @@ const ViewersModal: React.FC<{
         }));
       }
     } catch (error) {
-      console.error('Erro ao seguir/deixar de seguir:', error);
+      
     } finally {
       setLoadingFollow(prev => ({ ...prev, [userId]: false }));
     }
   };
-  
-  console.log("ViewersModal renderizado", { isOpen, users, title, type });
-  
-  if (!isOpen) return null;
+
+  // Renderizar um container vazio se modal fechado, mas manter todos os hooks ativos
+  if (!isOpen) {
+    return <div style={{ display: 'none' }} />;
+  }
   
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-75">
@@ -243,7 +266,7 @@ const ViewersModal: React.FC<{
             {type === 'view' ? (
               <EyeIcon className="h-5 w-5 mr-2" />
             ) : (
-              <HeartIconSolid className="h-5 w-5 mr-2 text-red-500" />
+              <HeartIcon className="h-5 w-5 mr-2 text-red-500" />
             )}
             {title}
           </h3>
@@ -275,7 +298,7 @@ const ViewersModal: React.FC<{
                   key={user.id} 
                   className="flex items-center p-3 border-b border-gray-100 dark:border-gray-700 last:border-0 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-md transition-colors"
                 >
-                  <Link to={`/profile/${user.username}`} className="relative">
+                  <Link href={`/perfil/${user.username}`} className="relative">
                     <img
                       src={user.photoURL || 'https://via.placeholder.com/40'}
                       alt={user.displayName}
@@ -287,17 +310,17 @@ const ViewersModal: React.FC<{
                       </div>
                     )}
                   </Link>
-                  <Link to={`/profile/${user.username}`} className="ml-3 flex-grow">
+                  <Link href={`/perfil/${user.username}`} className="ml-3 flex-grow">
                     <div className="flex items-center">
                       <p className="font-medium">{user.displayName}</p>
                       {type === 'like' && (
-                        <HeartIconSolid className="h-4 w-4 text-red-500 ml-1" />
+                        <HeartIcon className="h-4 w-4 text-red-500 ml-1" />
                       )}
                     </div>
                     <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center">
                       @{user.username}
                       <span className="mx-1">•</span>
-                      Nível {user.level}
+                      Nível {getUserLevel(user)}
                     </p>
                   </Link>
                   <div className="ml-auto">
@@ -363,41 +386,45 @@ const StoryFooter: React.FC<StoryFooterProps> = ({
   submitComment,
   setShowCommentInput
 }) => (
-  <div className="p-3 bg-black bg-opacity-20">
+  <div className="absolute bottom-4 left-0 right-0 px-4">
     <div className="flex items-center justify-between">
-      <div className="flex items-center gap-1">
-        {/* Curtir */}
-        <div className="flex items-center">
-          <button 
-            onClick={onLike}
-            className="flex items-center gap-1 p-1.5 rounded-full hover:bg-black hover:bg-opacity-20"
+      {/* Botão de curtir estilo Instagram */}
+      <button 
+        onClick={onLike}
+        className="transition-transform hover:scale-110 active:scale-95"
+        onMouseEnter={pauseProgress}
+        onMouseLeave={continueProgress}
+      >
+        {isLiked ? (
+          <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none">
+            <path d="M12 4.435c-1.989-5.399-12-4.597-12 3.568 0 4.068 3.06 9.481 12 14.997 8.94-5.516 12-10.929 12-14.997 0-8.118-10-8.999-12-3.568z" fill="#ef4444" />
+          </svg>
+        ) : (
+          <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none">
+            <path d="M12 4.435c-1.989-5.399-12-4.597-12 3.568 0 4.068 3.06 9.481 12 14.997 8.94-5.516 12-10.929 12-14.997 0-8.118-10-8.999-12-3.568z" stroke="white" strokeWidth="2" />
+          </svg>
+        )}
+      </button>
+
+      {/* Contador de curtidas e visualizações */}
+      <div className="flex items-center gap-4">
+        {likeCount > 0 && (
+          <button
+            className="flex items-center gap-1 text-white" 
+            onClick={(e) => {
+              e.stopPropagation();
+              onLikersClick(e);
+            }}
             onMouseEnter={pauseProgress}
             onMouseLeave={continueProgress}
           >
-            {isLiked ? (
-              <HeartIconSolid className="h-5 w-5 text-red-500" />
-            ) : (
-              <HeartIcon className="h-5 w-5" />
-            )}
-            {likeCount > 0 && (
-              <span
-                className={`text-xs font-medium ${isLiked ? 'text-red-500' : ''}`}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onLikersClick(e);
-                }}
-              >
-                {likeCount}
-              </span>
-            )}
+            <span className="text-sm font-medium">{likeCount}</span>
+            <span className="text-sm">curtida{likeCount !== 1 ? 's' : ''}</span>
           </button>
-        </div>
-      </div>
-
-      {/* Visualizações */}
-      <div className="flex items-center space-x-1">
+        )}
+        
         <button
-          className="flex items-center" 
+          className="flex items-center gap-1 text-white" 
           onClick={(e) => {
             e.stopPropagation();
             onViewersClick(e);
@@ -406,7 +433,7 @@ const StoryFooter: React.FC<StoryFooterProps> = ({
           onMouseLeave={continueProgress}
         >
           <EyeIcon className="h-4 w-4" />
-          <span className="text-xs ml-1">{views}</span>
+          <span className="text-sm">{views}</span>
         </button>
       </div>
     </div>
@@ -425,14 +452,14 @@ interface StoryModalProps {
 }
 
 const StorymentModal: React.FC<StoryModalProps> = ({ 
-  stories, 
+  stories = [], 
   initialStoryIndex = 0,
-  isOpen, 
+  isOpen = false, 
   onClose, 
   currentUser,
   storyDuration = 5000,
   setStoriesByUser,
-  storiesByUser
+  storiesByUser = {}
 }) => {
   // Estados do gerenciamento de stories
   const [currentStoryIndex, setCurrentStoryIndex] = useState(initialStoryIndex);
@@ -665,6 +692,9 @@ const StorymentModal: React.FC<StoryModalProps> = ({
   }, [isOpen, currentStoryIndex, storyDuration, isPaused, isTransitioning, handleNextStory, currentUser.id, currentStory, progressStep]);
 
   // Funções para interações
+  // Estado para controlar duplo clique
+  const [lastClickTime, setLastClickTime] = useState(0);
+  
   const handleLike = useCallback((e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
     if (!currentStory) return;
@@ -706,7 +736,7 @@ const StorymentModal: React.FC<StoryModalProps> = ({
       setShowLikeAnimation(true);
       setTimeout(() => {
         setShowLikeAnimation(false);
-      }, 1500);
+      }, 1000);
       
       // Adicionar o usuário atual à lista de pessoas que curtiram
       if (currentUser) {
@@ -717,41 +747,10 @@ const StorymentModal: React.FC<StoryModalProps> = ({
           setLikerUsers(updatedLikers);
         }
       }
-      
-      // Feedback visual adicional
-      const heartElement = document.createElement("div");
-      heartElement.className = "fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-5xl z-50";
-      heartElement.textContent = "❤️";
-      heartElement.style.animation = "heartBeat 1.5s forwards";
-      document.body.appendChild(heartElement);
-      
-      // Estilos para animação
-      const style = document.createElement("style");
-      style.textContent = `
-        @keyframes heartBeat {
-          0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
-          15% { transform: translate(-50%, -50%) scale(1.4); opacity: 1; }
-          30% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-          45% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
-          60% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-          100% { transform: translate(-50%, -50%) scale(3); opacity: 0; }
-        }
-      `;
-      document.head.appendChild(style);
-      
-      // Remover elementos após a animação
-      setTimeout(() => {
-        if (document.body.contains(heartElement)) {
-          document.body.removeChild(heartElement);
-        }
-        if (document.head.contains(style)) {
-          document.head.removeChild(style);
-        }
-      }, 1500);
     }
     
     // Em um cenário real: likeStory(currentStory.id, currentUser.id, newLikedState);
-    console.log(`${newLikedState ? 'Curtiu' : 'Descurtiu'} o story ${currentStory.id}`);
+    
   }, [isLiked, currentStory, currentUser, likerUsers, setStoriesByUser]);
 
   const handleComment = useCallback((e?: React.MouseEvent) => {
@@ -829,8 +828,7 @@ const StorymentModal: React.FC<StoryModalProps> = ({
   const handleViewersClick = useCallback((e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
     if (!currentStory) return;
-    
-    console.log("handleViewersClick chamado");
+
     pauseProgress();
     
     // Em um cenário real, carregaríamos esse dado da API
@@ -894,8 +892,7 @@ const StorymentModal: React.FC<StoryModalProps> = ({
   const handleLikersClick = useCallback((e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
     if (!currentStory) return;
-    
-    console.log("handleLikersClick chamado", e?.type);
+
     pauseProgress();
     
     // Em um cenário real, carregaríamos esse dado da API
@@ -983,17 +980,24 @@ const StorymentModal: React.FC<StoryModalProps> = ({
         
         {/* Conteúdo principal */}
         <div 
-          className="flex flex-col items-center justify-center h-[calc(100%-140px)]"
+          className="flex flex-col items-center justify-center h-[calc(100%-160px)]"
           onMouseDown={pauseProgress}
           onMouseUp={continueProgress}
           onTouchStart={pauseProgress}
           onTouchEnd={continueProgress}
+          onDoubleClick={(e) => {
+            e.stopPropagation();
+            if (!isLiked) {
+              handleLike();
+            }
+          }}
         >
           {currentStory.imageURL ? (
             <img 
               ref={mediaRef as React.RefObject<HTMLImageElement>}
               src={currentStory.imageURL}
               alt={`Story de ${storyUser?.displayName || 'usuário'}`}
+              className="object-contain max-h-full max-w-full"
             />
           ) : (
             <p className="text-xl sm:text-2xl md:text-3xl font-medium text-center px-6 break-words">
@@ -1033,6 +1037,7 @@ const StorymentModal: React.FC<StoryModalProps> = ({
           users={viewerUsers}
           title={`${currentStory.views || 0} visualizações`}
           type="view"
+          currentUser={currentUser}
         />
         
         {/* Modal de curtidas */}
@@ -1045,6 +1050,7 @@ const StorymentModal: React.FC<StoryModalProps> = ({
           users={likerUsers}
           title={`${likeCount} ${likeCount === 1 ? 'pessoa curtiu' : 'pessoas curtiram'}`}
           type="like"
+          currentUser={currentUser}
         />
       </div>
     </div>

@@ -96,7 +96,7 @@ const ConnectionSettings: React.FC<ConnectionSettingsProps> = ({ currentUser }) 
       
       setMessage('Configurações de conexões atualizadas com sucesso!');
     } catch (error) {
-      console.error('Erro ao salvar configurações de conexões:', error);
+      
       setMessage('Erro ao salvar configurações. Tente novamente.');
     } finally {
       setIsLoading(false);

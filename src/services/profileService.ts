@@ -16,9 +16,7 @@ export const getUserProfile = async (): Promise<User> => {
     if (!token) {
       throw new Error('Não autenticado');
     }
-    
-    console.log('Buscando perfil do usuário autenticado');
-    
+
     const response = await fetch(`${getApiUrl()}/api/users/me`, {
       method: 'GET',
       headers: {
@@ -31,14 +29,14 @@ export const getUserProfile = async (): Promise<User> => {
     
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Erro ao buscar perfil:', response.status, errorText);
+      
       throw new Error('Erro ao buscar perfil do usuário');
     }
     
     const data = await response.json();
     return data.user as User;
   } catch (error) {
-    console.error('Erro na requisição de perfil:', error);
+    
     throw error;
   }
 };
@@ -55,9 +53,7 @@ export const updateUserProfile = async (userId: string, userData: Partial<User>)
     if (!token) {
       throw new Error('Não autenticado');
     }
-    
-    console.log('Atualizando perfil do usuário:', userData);
-    
+
     const response = await fetch(`${getApiUrl()}/api/users/${userId}`, {
       method: 'PUT',
       headers: {
@@ -71,14 +67,14 @@ export const updateUserProfile = async (userId: string, userData: Partial<User>)
     
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Erro ao atualizar perfil:', response.status, errorText);
+      
       throw new Error('Erro ao atualizar perfil do usuário');
     }
     
     const data = await response.json();
     return data.user as User;
   } catch (error) {
-    console.error('Erro na requisição de atualização de perfil:', error);
+    
     throw error;
   }
 };
@@ -94,9 +90,7 @@ export const checkUserProStatus = async (userId: string): Promise<boolean> => {
     if (!token) {
       throw new Error('Não autenticado');
     }
-    
-    console.log(`Verificando status PRO do usuário ${userId}`);
-    
+
     const response = await fetch(`${getApiUrl()}/api/users/${userId}/pro-status`, {
       method: 'GET',
       headers: {
@@ -109,14 +103,14 @@ export const checkUserProStatus = async (userId: string): Promise<boolean> => {
     
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Erro ao verificar status PRO:', response.status, errorText);
+      
       return false;
     }
     
     const data = await response.json();
     return data.isPro;
   } catch (error) {
-    console.error('Erro na requisição de status PRO:', error);
+    
     return false;
   }
 }; 

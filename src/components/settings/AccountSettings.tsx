@@ -63,7 +63,7 @@ const AccountSettings: React.FC<AccountSettingsProps> = ({ currentUser }) => {
         setMessage(null);
       }, 3000);
     } catch (error) {
-      console.error('Erro ao atualizar senha:', error);
+      
       setError('Erro ao atualizar senha. Tente novamente.');
     } finally {
       setIsUpdating(false);
@@ -96,7 +96,7 @@ const AccountSettings: React.FC<AccountSettingsProps> = ({ currentUser }) => {
           window.location.href = '/';
         }, 3000);
       } catch (error) {
-        console.error('Erro ao desativar conta:', error);
+        
         setError('Erro ao desativar conta. Tente novamente.');
       } finally {
         setIsUpdating(false);
@@ -135,7 +135,7 @@ const AccountSettings: React.FC<AccountSettingsProps> = ({ currentUser }) => {
             window.location.href = '/';
           }, 3000);
         } catch (error) {
-          console.error('Erro ao excluir conta:', error);
+          
           setError('Erro ao excluir conta. Tente novamente.');
         } finally {
           setIsUpdating(false);

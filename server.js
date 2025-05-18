@@ -7,12 +7,22 @@ const dotenv = require('dotenv');
 // Carregar variáveis de ambiente
 dotenv.config();
 
+// Determinar se estamos em desenvolvimento  
+const dev = process.env.NODE_ENV !== 'production';
+
+// Se estamos em desenvolvimento e DATABASE_URL aponta para SQLite, usar schema.dev.prisma
+const usingDevDB = process.env.DATABASE_URL?.startsWith('file:');
+
+if (usingDevDB) {
+  console.log('Usando banco SQLite para desenvolvimento');
+  // Em desenvolvimento com SQLite, o Prisma já deve estar configurado corretamente
+}
+
 // Criando instância do Prisma com log apenas de erros
 const prisma = new PrismaClient({
-  log: ['error'],
+  log: dev ? ['error', 'warn'] : ['error'],
 });
 
-const dev = process.env.NODE_ENV !== 'production';
 const app = next({ dev });
 const handle = app.getRequestHandler();
 

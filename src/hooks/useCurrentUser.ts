@@ -37,6 +37,17 @@ export const useCurrentUser = () => {
       setLoading(true);
       setError(null);
 
+      // Se temos uma sessão autenticada, buscar dados do banco
+      if (session?.user?.id) {
+        const response = await fetch('/api/users/me');
+        if (response.ok) {
+          const userData = await response.json();
+          setUser(userData);
+          setLoading(false);
+          return;
+        }
+      }
+
       if (username) {
         // Buscar dados de um usuário específico pelo username
         const response = await fetch(`/api/users/${username}`);
@@ -62,14 +73,14 @@ export const useCurrentUser = () => {
         setUser(null);
       }
     } catch (err) {
-      console.error('Erro ao buscar dados do usuário:', err);
+      
       setError('Erro ao carregar dados do perfil');
       
       // Fallback para dados de teste em desenvolvimento
       if (process.env.NODE_ENV === 'development' && session?.user?.id) {
         const fallbackUser = mockUsers.find(u => u.id === session.user.id);
         if (fallbackUser) {
-          console.warn('Usando dados de usuário mock como fallback');
+          
           setUser(fallbackUser);
         }
       }
@@ -112,7 +123,7 @@ export const useCurrentUser = () => {
           setLoading(false);
           return;
         } catch (e) {
-          console.error('Erro ao carregar mock user:', e);
+          
         }
       }
     }

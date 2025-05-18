@@ -57,12 +57,12 @@ export default function UserRewards({ userId }: { userId: string }) {
         setBadges(generateBadges(userData.unlockedBadges || []));
         setAchievements(generateAchievements(userData.achievements || {}));
       } else {
-        console.log('Usuário não encontrado');
+        
       }
       
       setIsLoading(false);
     } catch (error) {
-      console.error('Erro ao buscar dados do usuário:', error);
+      
       setIsLoading(false);
     }
   };
@@ -197,7 +197,7 @@ export default function UserRewards({ userId }: { userId: string }) {
       }, 3000);
       
     } catch (error) {
-      console.error('Erro ao desbloquear emblema:', error);
+      
       alert('Ocorreu um erro ao desbloquear o emblema. Tente novamente.');
     }
   };
@@ -222,7 +222,7 @@ export default function UserRewards({ userId }: { userId: string }) {
       );
       
     } catch (error) {
-      console.error('Erro ao resgatar recompensa:', error);
+      
       alert('Ocorreu um erro ao resgatar a recompensa. Tente novamente.');
     }
   };

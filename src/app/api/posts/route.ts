@@ -11,7 +11,15 @@ export async function GET(req: Request) {
     const cursor = searchParams.get('cursor');
     const tag = searchParams.get('tag') || undefined;
     const userId = searchParams.get('userId') || undefined;
+    const search = searchParams.get('search') || undefined;
     
+    // Se houver busca, pesquisar posts
+    if (search) {
+      const posts = await PostApiService.searchPosts(search);
+      return NextResponse.json({ posts });
+    }
+    
+    // Senão, listar posts com filtros
     const posts = await PostApiService.getPostsWithFilters({
       limit,
       cursor: cursor || undefined,
@@ -19,11 +27,16 @@ export async function GET(req: Request) {
       userId
     });
     
-    return NextResponse.json(posts);
+    const response = NextResponse.json(posts);
+    
+    // Adicionar cache headers para melhor performance
+    response.headers.set('Cache-Control', 'public, s-maxage=30, stale-while-revalidate=60');
+    
+    return response;
   } catch (error) {
-    console.error('Erro ao obter posts:', error);
+    
     // Retornar array vazio em vez de erro para evitar quebrar o frontend
-    return NextResponse.json([]);
+    return NextResponse.json({ posts: [] });
   }
 }
 
@@ -54,8 +67,7 @@ export async function POST(req: Request) {
     
     return NextResponse.json(post);
   } catch (error) {
-    console.error('Erro ao criar post:', error);
-    
+
     // Verificar se é erro de validação
     if (error instanceof Error && error.message.includes('obrigatórios')) {
       return NextResponse.json(

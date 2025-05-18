@@ -1,17 +1,16 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 import { collection, query, where, orderBy, limit, getDocs, startAfter, QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import MainLayout from '@/components/Layout/MainLayout';
 import PostCard from '@/components/Post/PostCard';
-import LoadingSpinner from '@/components/UI/LoadingSpinner';
+import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import { FaHashtag } from 'react-icons/fa';
 
 interface TagPageProps {
-  params: {
+  params: Promise<{
     tag: string;
-  };
+  }>;
 }
 
 interface Post {
@@ -31,7 +30,7 @@ interface Post {
 }
 
 export default function TagPage({ params }: TagPageProps) {
-  const { tag } = params;
+  const { tag } = use(params);
   const decodedTag = decodeURIComponent(tag);
   
   const [posts, setPosts] = useState<Post[]>([]);
@@ -87,7 +86,7 @@ export default function TagPage({ params }: TagPageProps) {
         setPosts(initialPosts);
         setHasMore(snapshot.docs.length >= 10);
       } catch (error) {
-        console.error('Erro ao buscar posts com tag:', error);
+        
       } finally {
         setLoading(false);
       }
@@ -143,65 +142,63 @@ export default function TagPage({ params }: TagPageProps) {
       setPosts(prev => [...prev, ...newPosts]);
       setHasMore(snapshot.docs.length >= 10);
     } catch (error) {
-      console.error('Erro ao carregar mais posts:', error);
+      
     } finally {
       setLoading(false);
     }
   };
   
   return (
-    <MainLayout>
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-6 flex items-center">
-          <div className="bg-purple-100 text-purple-800 p-3 rounded-lg mr-3">
-            <FaHashtag size={24} />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">#{decodedTag}</h1>
-            <p className="text-gray-600">Mentiras com a tag #{decodedTag}</p>
-          </div>
+    <div className="container mx-auto px-4 py-8">
+      <div className="mb-6 flex items-center">
+        <div className="bg-purple-100 text-purple-800 p-3 rounded-lg mr-3">
+          <FaHashtag size={24} />
         </div>
-        
-        {loading && posts.length === 0 ? (
-          <div className="flex justify-center my-8">
-            <LoadingSpinner />
-          </div>
-        ) : posts.length > 0 ? (
-          <div className="space-y-6">
-            {posts.map(post => (
-              <PostCard key={post.id} {...post} />
-            ))}
-            
-            {hasMore && (
-              <div className="flex justify-center mt-6">
-                <button
-                  onClick={handleLoadMore}
-                  disabled={loading}
-                  className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-50 flex items-center"
-                >
-                  {loading ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                      Carregando...
-                    </>
-                  ) : (
-                    'Carregar mais'
-                  )}
-                </button>
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="bg-white rounded-lg shadow-md p-8 text-center">
-            <p className="text-gray-600">
-              Nenhuma mentira encontrada com a tag #{decodedTag}.
-            </p>
-            <p className="text-gray-600 mt-2">
-              Seja o primeiro a compartilhar uma mentira com esta tag!
-            </p>
-          </div>
-        )}
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">#{decodedTag}</h1>
+          <p className="text-gray-600">Mentiras com a tag #{decodedTag}</p>
+        </div>
       </div>
-    </MainLayout>
+      
+      {loading && posts.length === 0 ? (
+        <div className="flex justify-center my-8">
+          <LoadingSpinner />
+        </div>
+      ) : posts.length > 0 ? (
+        <div className="space-y-6">
+          {posts.map(post => (
+            <PostCard key={post.id} {...post} />
+          ))}
+          
+          {hasMore && (
+            <div className="flex justify-center mt-6">
+              <button
+                onClick={handleLoadMore}
+                disabled={loading}
+                className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-50 flex items-center"
+              >
+                {loading ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                    Carregando...
+                  </>
+                ) : (
+                  'Carregar mais'
+                )}
+              </button>
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="bg-white rounded-lg shadow-md p-8 text-center">
+          <p className="text-gray-600">
+            Nenhuma mentira encontrada com a tag #{decodedTag}.
+          </p>
+          <p className="text-gray-600 mt-2">
+            Seja o primeiro a compartilhar uma mentira com esta tag!
+          </p>
+        </div>
+      )}
+    </div>
   );
 } 

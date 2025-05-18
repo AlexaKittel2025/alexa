@@ -32,9 +32,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { email, password } = body;
-    
-    console.log('Mock login attempt for:', email);
-    
+
     // Verificar se o usuário existe
     const user = mockUsers[email];
     
@@ -75,7 +73,7 @@ export async function POST(request: NextRequest) {
     return response;
     
   } catch (error) {
-    console.error('Erro no mock login:', error);
+    
     return NextResponse.json(
       { success: false, error: 'Erro interno do servidor' },
       { status: 500 }

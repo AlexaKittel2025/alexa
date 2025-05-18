@@ -1,333 +1,334 @@
-import React, { useState, useEffect } from 'react';
-import { User, Achievement } from '../types';
-import { TrophyIcon, SparklesIcon, StarIcon, ArrowUpIcon } from '@heroicons/react/outline';
+'use client';
+
+import { useState, useEffect } from 'react';
+import { FaTrophy, FaLock, FaUnlock, FaCoins, FaStar, FaMedal, FaCrown, FaGem } from 'react-icons/fa';
+import { loadGamificationData, Achievement, Badge, unlockBadge } from '@/lib/gamification';
+import { triggerGamificationEvent } from './GamificationNotification';
+import { useCurrentUser } from '@/hooks/useCurrentUser';
 
 interface AchievementsSystemProps {
-  user: User;
-  onLevelUp?: (newLevel: number) => void;
-  onNewAchievement?: (achievement: Achievement) => void;
+  userId: string;
 }
 
-// Níveis e pontos necessários
-const LEVELS_CONFIG = [
-  { level: 1, title: 'Mentiroso Iniciante', points: 0 },
-  { level: 2, title: 'Mentiroso Casual', points: 100 },
-  { level: 3, title: 'Mentiroso Frequente', points: 300 },
-  { level: 4, title: 'Mentiroso Expert', points: 600 },
-  { level: 5, title: 'Mentiroso Profissional', points: 1000 },
-  { level: 6, title: 'Mentiroso Master', points: 1500 },
-  { level: 7, title: 'Mentiroso Elite', points: 2100 },
-  { level: 8, title: 'Grande Mentiroso', points: 2800 },
-  { level: 9, title: 'Mentiroso Lendário', points: 3600 },
-  { level: 10, title: 'Rei das Mentiras', points: 4500 }
-];
-
-// Conquistas disponíveis no sistema
-const AVAILABLE_ACHIEVEMENTS = [
-  {
-    id: 'first-post',
-    title: 'Primeiro Contador',
-    description: 'Publicou sua primeira mentira!',
-    icon: '🎭',
-    points: 25
-  },
-  {
-    id: 'reactions-collector',
-    title: 'Colecionador de Reações',
-    description: 'Recebeu mais de 10 reações em uma única mentira!',
-    icon: '🔥',
-    points: 50
-  },
-  {
-    id: 'consecutive-days',
-    title: 'Mentiroso Dedicado',
-    description: 'Entrou no aplicativo por 7 dias consecutivos',
-    icon: '📆',
-    points: 75
-  },
-  {
-    id: 'comments-100',
-    title: 'Comentarista',
-    description: 'Recebeu mais de 100 comentários em suas mentiras',
-    icon: '💬',
-    points: 100
-  },
-  {
-    id: 'follower-magnet',
-    title: 'Magneto de Seguidores',
-    description: 'Conseguiu 50 seguidores',
-    icon: '🧲',
-    points: 150
-  },
-  {
-    id: 'battle-winner',
-    title: 'Vencedor de Batalha',
-    description: 'Ganhou sua primeira batalha de mentiras',
-    icon: '⚔️',
-    points: 200
-  },
-  {
-    id: 'pro-mentor',
-    title: 'Mentor PRO',
-    description: 'Se tornou um usuário PRO',
-    icon: '👑',
-    points: 250
-  },
-  {
-    id: 'top-liar',
-    title: 'Top Mentiroso',
-    description: 'Entrou no top 10 do Hall da Fama',
-    icon: '🏆',
-    points: 500
-  },
-  {
-    id: 'professional-liar',
-    title: 'Mentiroso Profissional',
-    description: 'Alcançou o nível 5',
-    icon: '⭐',
-    points: 300
-  },
-  {
-    id: 'legendary-liar',
-    title: 'Mentiroso Lendário',
-    description: 'Alcançou o nível 10',
-    icon: '🌟',
-    points: 1000
-  }
-];
-
-const calculateLevel = (points: number): number => {
-  let level = 1;
-  for (const config of LEVELS_CONFIG) {
-    if (points >= config.points) {
-      level = config.level;
-    } else {
-      break;
-    }
-  }
-  return level;
-};
-
-const AchievementsSystem: React.FC<AchievementsSystemProps> = ({ 
-  user: userProp, 
-  onLevelUp, 
-  onNewAchievement 
-}) => {
-  // Use a extended user object with optional achievements
-  const user = userProp as User & { achievements: Achievement[] };
+export default function AchievementsSystem({ userId }: AchievementsSystemProps) {
+  const [achievements, setAchievements] = useState<Achievement[]>([]);
+  const [badges, setBadges] = useState<Badge[]>([]);
+  const [coins, setCoins] = useState(0);
+  const [activeTab, setActiveTab] = useState<'achievements' | 'badges'>('achievements');
+  const [isLoading, setIsLoading] = useState(true);
+  const [filterCategory, setFilterCategory] = useState<string>('all');
+  const [filterTier, setFilterTier] = useState<string>('all');
+  const { user } = useCurrentUser();
   
-  const [userPoints, setUserPoints] = useState(user.points || 0);
-  const [userLevel, setUserLevel] = useState(user.level || 1);
-  const [showLevelUp, setShowLevelUp] = useState(false);
-  const [showNewAchievement, setShowNewAchievement] = useState(false);
-  const [newAchievement, setNewAchievement] = useState<Achievement | null>(null);
-  
-  // Calcular nível com base nos pontos
+  const isCurrentUser = user?.id === userId;
+
   useEffect(() => {
-    const calculatedLevel = calculateLevel(userPoints);
-    
-    if (calculatedLevel > userLevel) {
-      setUserLevel(calculatedLevel);
-      setShowLevelUp(true);
+    loadUserData();
+  }, [userId]);
+
+  const loadUserData = () => {
+    try {
+      setIsLoading(true);
+      const gamificationData = loadGamificationData(userId);
+      setAchievements(gamificationData.achievements);
+      setBadges(gamificationData.badges);
+      setCoins(gamificationData.coins);
+    } catch (error) {
       
-      if (onLevelUp) {
-        onLevelUp(calculatedLevel);
-      }
-      
-      // Verificar se ganhou conquista de nível
-      if (calculatedLevel === 5) {
-        unlockAchievement('professional-liar');
-      } else if (calculatedLevel === 10) {
-        unlockAchievement('legendary-liar');
-      }
-    }
-  }, [user.points, userLevel]);
-  
-  // Simular desbloqueio de conquista (em um caso real, isso seria chamado por serviços específicos)
-  const unlockAchievement = (achievementId: string) => {
-    const achievement = AVAILABLE_ACHIEVEMENTS.find(a => a.id === achievementId);
-    
-    if (achievement) {
-      const hasAchievement = (user.achievements || []).some(a => a.id === achievementId) || false;
-      
-      if (!hasAchievement) {
-        const newAchievementObj: Achievement = {
-          id: achievement.id,
-          title: achievement.title,
-          description: achievement.description,
-          icon: achievement.icon,
-          earnedAt: new Date().toISOString()
-        };
-        
-        setNewAchievement(newAchievementObj);
-        setShowNewAchievement(true);
-        
-        // Adicionar pontos pela conquista
-        setUserPoints(prev => prev + achievement.points);
-        
-        if (onNewAchievement) {
-          onNewAchievement(newAchievementObj);
-        }
-      }
+    } finally {
+      setIsLoading(false);
     }
   };
-  
-  // Encontrar o próximo nível
-  const getNextLevel = () => {
-    const currentLevelConfig = LEVELS_CONFIG.find(config => config.level === userLevel);
-    const nextLevelConfig = LEVELS_CONFIG.find(config => config.level === userLevel + 1);
-    
-    if (!currentLevelConfig || !nextLevelConfig) {
-      return { current: userLevel, next: userLevel, pointsRequired: 0, progress: 100 };
+
+  const handleUnlockBadge = (badge: Badge) => {
+    if (!isCurrentUser || badge.unlocked || coins < badge.cost) return;
+
+    if (unlockBadge(userId, badge.id)) {
+      // Recarregar dados
+      loadUserData();
+      
+      // Disparar notificação
+      triggerGamificationEvent('badge', badge);
+    } else {
+      alert('Você não tem moedas suficientes!');
     }
-    
-    const pointsForCurrentLevel = currentLevelConfig.points;
-    const pointsForNextLevel = nextLevelConfig.points;
-    const pointsRequired = pointsForNextLevel - pointsForCurrentLevel;
-    const pointsEarned = userPoints - pointsForCurrentLevel;
-    const progress = Math.min(Math.round((pointsEarned / pointsRequired) * 100), 100);
-    
-    return {
-      current: userLevel,
-      next: userLevel + 1,
-      pointsRequired,
-      pointsEarned,
-      pointsForNextLevel,
-      progress
-    };
   };
-  
-  const nextLevelInfo = getNextLevel();
-  const userTitle = LEVELS_CONFIG.find(config => config.level === userLevel)?.title || 'Mentiroso';
-  
+
+  const getTierColor = (tier: string): string => {
+    switch (tier) {
+      case 'bronze': return 'text-amber-700';
+      case 'silver': return 'text-gray-400';
+      case 'gold': return 'text-yellow-500';
+      case 'platinum': return 'text-purple-600';
+      case 'diamond': return 'text-blue-500';
+      default: return 'text-gray-600';
+    }
+  };
+
+  const getTierBgColor = (tier: string): string => {
+    switch (tier) {
+      case 'bronze': return 'bg-amber-100';
+      case 'silver': return 'bg-gray-100';
+      case 'gold': return 'bg-yellow-100';
+      case 'platinum': return 'bg-purple-100';
+      case 'diamond': return 'bg-blue-100';
+      default: return 'bg-gray-100';
+    }
+  };
+
+  const getRarityColor = (tier: string): string => {
+    switch (tier) {
+      case 'common': return 'border-gray-300 bg-gray-50';
+      case 'rare': return 'border-blue-300 bg-blue-50';
+      case 'epic': return 'border-purple-300 bg-purple-50';
+      case 'legendary': return 'border-orange-300 bg-orange-50';
+      default: return 'border-gray-300 bg-gray-50';
+    }
+  };
+
+  const filteredAchievements = achievements.filter(achievement => {
+    if (filterCategory !== 'all' && achievement.category !== filterCategory) return false;
+    if (filterTier !== 'all' && achievement.tier !== filterTier) return false;
+    return true;
+  });
+
+  const totalUnlocked = achievements.filter(a => a.unlocked).length;
+  const totalAchievements = achievements.length;
+  const completionPercentage = (totalUnlocked / totalAchievements) * 100;
+
+  if (isLoading) {
+    return (
+      <div className="p-6 bg-white rounded-lg shadow-md">
+        <h2 className="text-xl font-bold mb-4 text-purple-800">Conquistas e Badges</h2>
+        <div className="flex justify-center items-center py-8">
+          <div className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold dark:text-white">Nível e Conquistas</h3>
-        <span className="text-sm text-gray-500 dark:text-gray-400">{userPoints} pontos</span>
+    <div className="p-6 bg-white rounded-lg shadow-md">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-xl font-bold text-purple-800 flex items-center">
+          <FaTrophy className="text-yellow-500 mr-2" />
+          Conquistas e Badges
+        </h2>
+        <div className="flex items-center bg-yellow-100 px-3 py-1 rounded-full">
+          <FaCoins className="text-yellow-500 mr-2" />
+          <span className="font-semibold">{coins} moedas</span>
+        </div>
       </div>
-      
-      {/* Nível Atual */}
+
+      {/* Progresso geral */}
+      <div className="mb-6 p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg">
+        <div className="flex justify-between items-center mb-2">
+          <span className="text-sm font-medium text-gray-700">Progresso Geral</span>
+          <span className="text-sm font-medium text-purple-700">
+            {totalUnlocked}/{totalAchievements} Conquistas
+          </span>
+        </div>
+        <div className="w-full bg-gray-200 rounded-full h-2">
+          <div
+            className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full transition-all duration-300"
+            style={{ width: `${completionPercentage}%` }}
+          />
+        </div>
+      </div>
+
+      {/* Tabs */}
       <div className="mb-6">
-        <div className="flex items-center mb-2">
-          <div className="bg-primary bg-opacity-10 p-2 rounded-full mr-2">
-            <StarIcon className="w-5 h-5 text-primary" />
-          </div>
-          <div>
-            <span className="text-sm text-gray-500 dark:text-gray-400">Nível</span>
-            <h4 className="font-bold dark:text-white">{userLevel} - {userTitle}</h4>
-          </div>
-        </div>
-        
-        {/* Barra de Progresso */}
-        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 mb-1">
-          <div 
-            className="bg-primary h-2.5 rounded-full transition-all duration-500"
-            style={{ width: `${nextLevelInfo.progress}%` }}
-          ></div>
-        </div>
-        
-        {userLevel < 10 && (
-          <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
-            <span>{nextLevelInfo.pointsEarned || 0} / {nextLevelInfo.pointsRequired || 0} pontos</span>
-            <span>Nível {nextLevelInfo.next}</span>
-          </div>
-        )}
-        
-        {userLevel === 10 && (
-          <div className="text-xs text-center text-gray-500 dark:text-gray-400">
-            Você atingiu o nível máximo!
-          </div>
-        )}
-      </div>
-      
-      {/* Últimas Conquistas */}
-      <div>
-        <h4 className="text-sm font-semibold mb-3 dark:text-white flex items-center">
-          <TrophyIcon className="w-4 h-4 mr-1" />
-          Conquistas Recentes
-        </h4>
-        
-        <div className="space-y-3">
-          {(user.achievements || [])?.length > 0 ? (
-            (user.achievements || []).slice(0, 3).map(achievement => (
-              <div 
-                key={achievement.id} 
-                className="flex items-center p-2 bg-gray-50 dark:bg-gray-700 rounded-lg"
-              >
-                <span className="text-2xl mr-2">{achievement.icon}</span>
-                <div>
-                  <h5 className="text-sm font-medium dark:text-white">{achievement.title}</h5>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">{achievement.description}</p>
-                </div>
-              </div>
-            ))
-          ) : (
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Nenhuma conquista desbloqueada ainda. Continue interagindo!
-            </p>
-          )}
-        </div>
-        
-        {(user.achievements || [])?.length > 3 && (
-          <button className="text-primary text-sm font-medium mt-3 w-full text-center">
-            Ver todas ({(user.achievements || []).length})
+        <div className="flex border-b border-gray-200">
+          <button
+            onClick={() => setActiveTab('achievements')}
+            className={`py-2 px-4 ${
+              activeTab === 'achievements'
+                ? 'border-b-2 border-purple-500 text-purple-700 font-medium'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            <FaMedal className="inline mr-2" />
+            Conquistas
           </button>
-        )}
+          <button
+            onClick={() => setActiveTab('badges')}
+            className={`py-2 px-4 ${
+              activeTab === 'badges'
+                ? 'border-b-2 border-purple-500 text-purple-700 font-medium'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            <FaGem className="inline mr-2" />
+            Badges
+          </button>
+        </div>
       </div>
-      
-      {/* Modal de Level Up */}
-      {showLevelUp && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-70">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-sm w-full text-center animate-bounce-in">
-            <div className="mb-4">
-              <div className="mx-auto w-20 h-20 bg-primary bg-opacity-10 rounded-full flex items-center justify-center">
-                <ArrowUpIcon className="w-10 h-10 text-primary" />
-              </div>
-            </div>
-            <h3 className="text-2xl font-bold mb-2 dark:text-white">Nível {userLevel}!</h3>
-            <p className="text-gray-600 dark:text-gray-300 mb-6">
-              Parabéns! Você atingiu o nível {userLevel} e agora é um 
-              <span className="font-medium"> {userTitle}</span>!
-            </p>
-            <button 
-              className="bg-primary text-white px-6 py-2 rounded-lg"
-              onClick={() => setShowLevelUp(false)}
-            >
-              Ótimo!
-            </button>
-          </div>
+
+      {/* Filtros */}
+      {activeTab === 'achievements' && (
+        <div className="mb-4 flex space-x-4">
+          <select
+            value={filterCategory}
+            onChange={(e) => setFilterCategory(e.target.value)}
+            className="px-3 py-1 border rounded-lg text-sm"
+          >
+            <option value="all">Todas Categorias</option>
+            <option value="posts">Posts</option>
+            <option value="battles">Batalhas</option>
+            <option value="engagement">Engajamento</option>
+            <option value="special">Especiais</option>
+          </select>
+          
+          <select
+            value={filterTier}
+            onChange={(e) => setFilterTier(e.target.value)}
+            className="px-3 py-1 border rounded-lg text-sm"
+          >
+            <option value="all">Todos os Níveis</option>
+            <option value="bronze">Bronze</option>
+            <option value="silver">Prata</option>
+            <option value="gold">Ouro</option>
+            <option value="platinum">Platina</option>
+            <option value="diamond">Diamante</option>
+          </select>
         </div>
       )}
-      
-      {/* Modal de Nova Conquista */}
-      {showNewAchievement && newAchievement && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-70">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-sm w-full text-center animate-bounce-in">
-            <div className="mb-4">
-              <div className="mx-auto w-20 h-20 bg-yellow-100 dark:bg-yellow-900 rounded-full flex items-center justify-center">
-                <span className="text-4xl">{newAchievement.icon}</span>
+
+      {/* Conteúdo */}
+      {activeTab === 'achievements' ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {filteredAchievements.map((achievement) => (
+            <div
+              key={achievement.id}
+              className={`p-4 rounded-lg border ${
+                achievement.unlocked
+                  ? 'border-green-300 bg-green-50'
+                  : 'border-gray-200 bg-gray-50'
+              }`}
+            >
+              <div className="flex items-start">
+                <div
+                  className={`w-12 h-12 rounded-full flex items-center justify-center mr-3 ${
+                    achievement.unlocked ? 'bg-green-100' : 'bg-gray-200'
+                  }`}
+                >
+                  {achievement.unlocked ? (
+                    <FaUnlock className="text-green-600" />
+                  ) : (
+                    <FaLock className="text-gray-400" />
+                  )}
+                </div>
+
+                <div className="flex-1">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h3 className="font-semibold text-gray-800 flex items-center">
+                        <span className="text-lg mr-2">{achievement.icon}</span>
+                        {achievement.title}
+                      </h3>
+                      <p className="text-sm text-gray-600 mt-1">{achievement.description}</p>
+                    </div>
+                    <span
+                      className={`text-xs font-medium px-2 py-1 rounded ${getTierBgColor(
+                        achievement.tier
+                      )} ${getTierColor(achievement.tier)}`}
+                    >
+                      {achievement.tier}
+                    </span>
+                  </div>
+
+                  <div className="mt-3">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs text-gray-500">Progresso</span>
+                      <span className="text-xs text-gray-600">
+                        {achievement.progress}/{achievement.maxProgress}
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div
+                        className={`h-2 rounded-full ${
+                          achievement.unlocked ? 'bg-green-500' : 'bg-purple-500'
+                        }`}
+                        style={{
+                          width: `${(achievement.progress / achievement.maxProgress) * 100}%`
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {achievement.unlocked && (
+                    <div className="mt-3 flex items-center text-xs text-gray-600">
+                      <span className="flex items-center mr-3">
+                        <FaCoins className="text-yellow-500 mr-1" />
+                        +{achievement.coinReward}
+                      </span>
+                      <span className="flex items-center">
+                        <FaStar className="text-purple-500 mr-1" />
+                        +{achievement.xpReward} XP
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
-            <h3 className="text-2xl font-bold mb-2 dark:text-white">Nova Conquista!</h3>
-            <h4 className="text-xl font-semibold mb-2 text-primary">{newAchievement.title}</h4>
-            <p className="text-gray-600 dark:text-gray-300 mb-6">
-              {newAchievement.description}
-            </p>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-              +{AVAILABLE_ACHIEVEMENTS.find(a => a.id === newAchievement.id)?.points || 0} pontos
-            </p>
-            <button 
-              className="bg-primary text-white px-6 py-2 rounded-lg"
-              onClick={() => setShowNewAchievement(false)}
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {badges.map((badge) => (
+            <div
+              key={badge.id}
+              className={`p-4 rounded-lg border-2 ${getRarityColor(badge.tier)}`}
             >
-              Incrível!
-            </button>
-          </div>
+              <div className="text-center">
+                <div className="text-4xl mb-2">{badge.icon}</div>
+                <h3 className="font-bold text-gray-800">{badge.name}</h3>
+                <p className="text-sm text-gray-600 mt-1">{badge.description}</p>
+
+                {badge.effects && (
+                  <div className="mt-3 space-y-1">
+                    {badge.effects.map((effect, index) => (
+                      <div key={index} className="text-xs text-purple-600">
+                        ✨ {effect}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <div className="mt-4">
+                  {badge.unlocked ? (
+                    <div className="flex items-center justify-center text-green-600">
+                      <FaUnlock className="mr-1" />
+                      <span className="text-sm font-medium">Desbloqueado</span>
+                    </div>
+                  ) : (
+                    <div>
+                      <div className="flex items-center justify-center mb-2">
+                        <FaCoins className="text-yellow-500 mr-1" />
+                        <span className="font-medium">{badge.cost}</span>
+                      </div>
+                      {isCurrentUser && (
+                        <button
+                          onClick={() => handleUnlockBadge(badge)}
+                          disabled={coins < badge.cost}
+                          className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
+                            coins >= badge.cost
+                              ? 'bg-purple-600 text-white hover:bg-purple-700'
+                              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                          }`}
+                        >
+                          Desbloquear
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </div>
   );
-};
-
-export default AchievementsSystem; 
+}

@@ -1,0 +1,26 @@
+ ⨯ uncaughtException: Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1939:16)
+    at listenInCluster (node:net:1996:12)
+    at Server.listen (node:net:2101:7)
+    at Function.listen (/mnt/c/Users/Admin/Desktop/login/node_modules/express/lib/application.js:635:24)
+    at /mnt/c/Users/Admin/Desktop/login/server.js:92:10 {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+ ⨯ uncaughtException: Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1939:16)
+    at listenInCluster (node:net:1996:12)
+    at Server.listen (node:net:2101:7)
+    at Function.listen (/mnt/c/Users/Admin/Desktop/login/node_modules/express/lib/application.js:635:24)
+    at /mnt/c/Users/Admin/Desktop/login/server.js:92:10 {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+   Reload env: .env.local
+   Reload env: .env

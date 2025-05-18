@@ -22,6 +22,53 @@ export interface PaginationInfo {
 }
 
 export class UserApiService {
+  // Buscar usuários por termo de busca
+  static async searchUsers(searchTerm: string) {
+    try {
+      // Mock data por enquanto
+      const mockUsers = [
+        {
+          id: '1',
+          name: 'João Silva',
+          username: 'joaosilva',
+          email: 'joao@example.com',
+          avatar: '/images/avatar-placeholder.jpg',
+          bio: 'Mentiroso profissional',
+          followers: 150,
+          following: 75,
+          level: 5,
+          score: 1200,
+          isFollowing: false
+        },
+        {
+          id: '2',
+          name: 'Maria Santos',
+          username: 'mariasantos',
+          email: 'maria@example.com',
+          avatar: '/images/avatar-placeholder.jpg',
+          bio: 'Contadora de histórias',
+          followers: 200,
+          following: 100,
+          level: 7,
+          score: 1800,
+          isFollowing: false
+        }
+      ];
+      
+      // Filtrar usuários que contenham o termo de busca
+      const filteredUsers = mockUsers.filter(user => 
+        user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.bio.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      
+      return filteredUsers;
+    } catch (error) {
+      
+      return [];
+    }
+  }
+  
   // Buscar usuários com paginação
   static async getUsersWithPagination(filters: UserFilters) {
     const { limit = 10, offset = 0 } = filters;

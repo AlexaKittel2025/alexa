@@ -65,10 +65,6 @@ export const appConfig: AppConfig = {
 };
 
 // Verificar e logar a URL da API para debug
-console.log('Configuração da API carregada:', {
-  apiUrl: appConfig.apiUrl,
-  environment: process.env.NODE_ENV || 'development'
-});
 
 // Função de utilidade para saber se estamos em ambiente de desenvolvimento
 export const isDevelopment = () => {
@@ -80,7 +76,7 @@ let apiUrlOverride: string | null = null;
 
 export const setApiUrl = (url: string): void => {
   apiUrlOverride = url;
-  console.log('API URL definida para:', url);
+  
 };
 
 export const getApiUrl = (): string => {

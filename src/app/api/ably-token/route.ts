@@ -7,10 +7,10 @@ export async function GET(req: NextRequest) {
     const clientId = req.nextUrl.searchParams.get('clientId') || 'anonymous-' + Math.random().toString(36).substring(2, 15);
     
     // Inicializar o cliente Ably
-    const apiKey = process.env.ABLY_API_KEY || 'sua-chave-ably-aqui';
+    const apiKey = process.env.ABLY_API_KEY;
     
-    if (!apiKey || apiKey === 'sua-chave-ably-aqui') {
-      console.error('Chave API do Ably não configurada.');
+    if (!apiKey) {
+      
       return NextResponse.json(
         { error: 'Configuração incompleta do servidor' },
         { status: 500 }
@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
     // Retornar o token para o cliente
     return NextResponse.json(tokenRequestData);
   } catch (error) {
-    console.error('Erro ao gerar token Ably:', error);
+    
     return NextResponse.json(
       { error: 'Falha ao gerar token' },
       { status: 500 }

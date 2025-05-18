@@ -13,7 +13,6 @@ const {
   skip
 } = require('./runtime/index-browser.js')
 
-
 const Prisma = {}
 
 exports.Prisma = Prisma
@@ -106,8 +105,6 @@ Prisma.NullTypes = {
   JsonNull: objectEnumValues.classes.JsonNull,
   AnyNull: objectEnumValues.classes.AnyNull
 }
-
-
 
 /**
  * Enums
@@ -279,7 +276,6 @@ exports.Prisma.NullsOrder = {
   first: 'first',
   last: 'last'
 };
-
 
 exports.Prisma.ModelName = {
   User: 'User',

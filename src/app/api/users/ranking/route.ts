@@ -27,7 +27,7 @@ export async function GET() {
       users: formattedUsers,
     });
   } catch (error) {
-    console.error('Erro ao buscar ranking:', error);
+    
     return NextResponse.json(
       { success: false, error: 'Erro ao buscar ranking de usuários' },
       { status: 500 }

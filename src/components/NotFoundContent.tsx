@@ -1,8 +1,9 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { ArrowLeftIcon } from '@heroicons/react/outline';
+;
 
-interface NotFoundContentProps {
+;
+import { ArrowLeftIcon } from '@heroicons/react/outline';
+import React from 'react';
+import { Link } from 'react-router-dom';interface NotFoundContentProps {
   title?: string;
   message?: string;
   backLink?: string;

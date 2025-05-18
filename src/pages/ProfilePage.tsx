@@ -1,3 +1,7 @@
+;
+
+;
+import { BellIcon, BookmarkIcon, BriefcaseIcon, CalendarIcon, CameraIcon, ChatAlt2Icon, DotsHorizontalIcon, EmojiHappyIcon, HeartIcon, LinkIcon, LocationMarkerIcon, PaperAirplaneIcon, PencilIcon, PhotographIcon, RefreshIcon, ShareIcon, ShieldCheckIcon, UserAddIcon, UserRemoveIcon, XIcon } from '@heroicons/react/outline';
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -6,31 +10,7 @@ import { Post as PostType, User, Storyment, ReactionType, JudgementType } from '
 import Post from '../components/Post';
 import ProfileStats from '../components/ProfileStats';
 import ProBadge from '../components/ProBadge';
-import { getCurrentUserProStatus } from '../services/userService';
-import {
-  CalendarIcon,
-  LocationMarkerIcon,
-  LinkIcon,
-  BriefcaseIcon,
-  PencilIcon,
-  BellIcon,
-  BellOff as BellSlashIcon,
-  DotsHorizontalIcon,
-  UserAddIcon,
-  UserRemoveIcon,
-  ChatAlt2Icon,
-  PhotographIcon,
-  RefreshIcon,
-  BookmarkIcon,
-  ShieldCheckIcon,
-  HeartIcon,
-  PaperAirplaneIcon,
-  XIcon,
-  EmojiHappyIcon,
-  ShareIcon,
-  CameraIcon
-} from '@heroicons/react/outline';
-import 'react-image-crop/dist/ReactCrop.css';
+import { getCurrentUserProStatus } from '../services/userService';import 'react-image-crop/dist/ReactCrop.css';
 import ReactCrop, { Crop } from 'react-image-crop';
 import { updateUserInfo } from '../services/userService';
 import { useCurrentUser } from '../hooks/useCurrentUser';
@@ -1004,8 +984,7 @@ const ProfileEditModal = ({
 };
 
 const ProfilePage: React.FC = () => {
-  console.log('ProfilePage - Componente renderizado para perfil pessoal');
-  
+
   const { currentUser } = useAuth();
   const navigate = useNavigate();
   const { username } = useParams<{ username: string }>();
@@ -1048,7 +1027,7 @@ const ProfilePage: React.FC = () => {
     if (user?.id) {
         // Filtrar posts do usuário atual dos mockPosts
       const userPosts = mockPosts.filter(post => post.userId === user.id || post.user_id === user.id);
-      console.log(`Encontrados ${userPosts.length} posts para o usuário`);
+      
         setPosts(userPosts);
         
         // Verificar status PRO
@@ -1169,7 +1148,7 @@ const ProfilePage: React.FC = () => {
   };
   
   const handleReport = (postId: string, reason: string) => {
-    console.log(`Post ${postId} reportado: ${reason}`);
+    
     // Em uma aplicação real, aqui seria feita uma chamada à API
     alert(`Denúncia recebida: ${reason}`);
   };
@@ -1241,8 +1220,7 @@ const ProfilePage: React.FC = () => {
         }
       }, 300);
     }, 2000);
-    
-    console.log(`Notificações ${isNotificationsEnabled ? 'desativadas' : 'ativadas'} para ${user?.username}`);
+
   };
 
   const handleSendMessage = () => {
@@ -1270,8 +1248,7 @@ const ProfilePage: React.FC = () => {
         }
       }, 300);
     }, 2000);
-    
-    console.log(`Iniciando conversa com ${user?.username}`);
+
   };
   
   const handleShareProfile = () => {
@@ -1361,8 +1338,7 @@ const ProfilePage: React.FC = () => {
           }
         }, 300);
       }, 2000);
-      
-      console.log(`Usuário ${user?.username} denunciado: ${reason}`);
+
     }
     
     setShowOptionsMenu(false);
@@ -1406,8 +1382,7 @@ const ProfilePage: React.FC = () => {
     if (!user) return;
     
     try {
-      console.log('Atualizando perfil com dados:', userData);
-      
+
       // Processar o campo website para garantir formato correto
       if (userData.website && !userData.website.startsWith('http')) {
         userData.website = `https://${userData.website}`;
@@ -1446,8 +1421,7 @@ const ProfilePage: React.FC = () => {
         }, 300);
       }, 2000);
     } catch (error) {
-      console.error("Erro ao atualizar perfil:", error);
-      
+
       // Feedback de erro
       const toastElement = document.createElement("div");
       toastElement.className = "fixed bottom-20 left-1/2 transform -translate-x-1/2 bg-red-500 text-white px-4 py-2 rounded-full text-sm font-medium z-50";

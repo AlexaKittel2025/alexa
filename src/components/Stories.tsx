@@ -1,7 +1,7 @@
+import { PlusIcon } from '@heroicons/react/outline';
 import React, { useState } from 'react';
 import StorymentModal from './StorymentModal';
-import { User, Storyment } from '../types';
-import { PlusIcon } from '@heroicons/react/outline';
+import { User, Storyment } from '@/types';
 import { generateRealPersonAvatar } from '@/utils/avatarUtils';
 
 // Componente para o círculo de adicionar story

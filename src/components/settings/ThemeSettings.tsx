@@ -1,7 +1,8 @@
-import React from 'react';
-import { SunIcon, MoonIcon, DesktopComputerIcon } from '@heroicons/react/outline';
+;
 
-interface ThemeSettingsProps {
+;
+import { DesktopComputerIcon, MoonIcon, SunIcon } from '@heroicons/react/outline';
+import React from 'react';interface ThemeSettingsProps {
   theme: string;
   setTheme: (theme: 'light' | 'dark' | 'system') => void;
 }

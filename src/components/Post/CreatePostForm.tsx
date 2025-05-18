@@ -4,6 +4,8 @@ import { useState, useRef } from 'react';
 import { FaImage, FaTimes, FaRandom, FaSurprise, FaCrown, FaLock } from 'react-icons/fa';
 import Link from 'next/link';
 import { useAuth } from '@/providers/AuthProvider';
+import { onPostCreated, checkAchievements } from '@/lib/gamification';
+import { triggerGamificationEvent } from '@/components/GamificationNotification';
 
 // Constante para limite de caracteres
 const MAX_CHAR_LIMIT = 1000;
@@ -159,8 +161,17 @@ export default function CreatePostForm() {
       if (!user && guestName) {
         localStorage.setItem('guestName', guestName);
       }
+      
+      // Atualizar gamificação
+      if (user) {
+        onPostCreated(user.id);
+        const unlockedAchievements = checkAchievements(user.id);
+        unlockedAchievements.forEach(achievement => {
+          triggerGamificationEvent('achievement', achievement);
+        });
+      }
     } catch (error) {
-      console.error('Erro ao criar postagem:', error);
+      
     } finally {
       setLoading(false);
     }

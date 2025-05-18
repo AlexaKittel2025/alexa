@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, use } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -74,7 +74,12 @@ const mockPost: Post = {
   ]
 };
 
-export default function PostPage({ params }: { params: { id: string } }) {
+interface PageProps {
+  params: Promise<{ id: string }>;
+}
+
+export default function PostPage({ params }: PageProps) {
+  const { id } = use(params);
   const router = useRouter();
   const [post, setPost] = useState<Post>(mockPost);
   const [newComment, setNewComment] = useState('');

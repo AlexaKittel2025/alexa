@@ -1,6 +1,6 @@
+import { ClockIcon, FireIcon, HashtagIcon, TrendingUpIcon } from '@heroicons/react/outline';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FireIcon, TrendingUpIcon, HashtagIcon, ClockIcon } from '@heroicons/react/outline';
 import { Post as PostType } from '../types';
 import Post from '../components/Post';
 import { mockPosts } from '../services/mockData';
@@ -223,7 +223,7 @@ const Trending: React.FC = () => {
                     key={post.id}
                     post={post}
                     onJudgement={handleJudgement}
-                    onReport={(postId, reason) => console.log(`Post ${postId} reportado: ${reason}`)}
+                    onReport={(postId, reason) => console.log('Reported:', postId, reason)}
                     isSaved={savedPosts.includes(post.id)}
                     onToggleSave={handleToggleSavePost}
                     navigate={navigate}

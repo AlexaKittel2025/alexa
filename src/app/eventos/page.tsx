@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import MainLayout from '@/components/Layout/MainLayout';
 import { FaCalendarAlt, FaClock, FaFire, FaTrophy, FaSpaceShuttle, FaGift, FaCrown, FaUserFriends } from 'react-icons/fa';
 
 interface Event {
@@ -121,16 +120,15 @@ export default function EventosPage() {
   };
   
   return (
-    <MainLayout>
       <div className="container mx-auto p-4">
         <div className="flex items-center mb-6">
-          <FaCalendarAlt className="text-purple-600 text-2xl mr-3" />
-          <h1 className="text-2xl font-bold text-gray-800">Calendário de Eventos</h1>
+          <FaCalendarAlt className="text-purple-600 dark:text-purple-400 text-2xl mr-3" />
+          <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Calendário de Eventos</h1>
         </div>
         
-        <div className="bg-purple-50 border-l-4 border-purple-500 p-4 mb-6 rounded-r-lg">
-          <h2 className="font-bold text-purple-800 mb-1">Sobre os eventos especiais</h2>
-          <p className="text-gray-700">
+        <div className="bg-purple-50 dark:bg-purple-900/20 border-l-4 border-purple-500 p-4 mb-6 rounded-r-lg">
+          <h2 className="font-bold text-purple-800 dark:text-purple-300 mb-1">Sobre os eventos especiais</h2>
+          <p className="text-gray-700 dark:text-gray-300">
             Eventos temáticos onde você pode ganhar recompensas exclusivas, moedas extras e emblemas especiais!
             Participe e destaque-se com suas mentiras mais criativas.
           </p>
@@ -139,7 +137,7 @@ export default function EventosPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
             {/* Lista de Eventos */}
-            <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+            <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-4 flex items-center">
               <FaFire className="text-orange-500 mr-2" />
               Eventos Programados
             </h2>
@@ -150,7 +148,7 @@ export default function EventosPage() {
                   key={evento.id}
                   onClick={() => handleEventClick(evento)}
                   className={`p-4 border rounded-lg cursor-pointer hover:shadow-md transition-shadow ${
-                    selectedEvent?.id === evento.id ? 'border-' + evento.color + '-500 bg-' + evento.color + '-50' : 'border-gray-200 bg-white'
+                    selectedEvent?.id === evento.id ? 'border-' + evento.color + '-500 bg-' + evento.color + '-50 dark:bg-' + evento.color + '-900/20' : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'
                   }`}
                 >
                   <div className="flex items-center justify-between mb-2">
@@ -158,7 +156,7 @@ export default function EventosPage() {
                       <div className={`h-10 w-10 rounded-full bg-${evento.color}-100 flex items-center justify-center mr-3`}>
                         {evento.icon}
                       </div>
-                      <h3 className="font-semibold text-gray-800">{evento.title}</h3>
+                      <h3 className="font-semibold text-gray-800 dark:text-white">{evento.title}</h3>
                     </div>
                     
                     <div className="flex items-center">
@@ -175,7 +173,7 @@ export default function EventosPage() {
                     </span>
                   </div>
                   
-                  <p className="text-gray-600 text-sm line-clamp-2">
+                  <p className="text-gray-600 dark:text-gray-400 text-sm line-clamp-2">
                     {evento.description}
                   </p>
                 </div>
@@ -186,7 +184,7 @@ export default function EventosPage() {
           <div className="lg:col-span-1">
             {/* Detalhes do evento selecionado */}
             {selectedEvent ? (
-              <div className="bg-white rounded-lg shadow-md overflow-hidden sticky top-4">
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden sticky top-4">
                 <div className={`bg-${selectedEvent.color}-500 text-white p-4`}>
                   <h3 className="text-lg font-semibold flex items-center">
                     {selectedEvent.icon}
@@ -202,7 +200,7 @@ export default function EventosPage() {
                 </div>
                 
                 <div className="p-4">
-                  <p className="text-gray-700 mb-4">
+                  <p className="text-gray-700 dark:text-gray-300 mb-4">
                     {selectedEvent.description}
                   </p>
                   
@@ -269,6 +267,5 @@ export default function EventosPage() {
           </div>
         </div>
       </div>
-    </MainLayout>
   );
 } 

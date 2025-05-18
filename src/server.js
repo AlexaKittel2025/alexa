@@ -14,6 +14,6 @@ app.prepare().then(() => {
     handle(req, res, parsedUrl);
   }).listen(port, hostname, (err) => {
     if (err) throw err;
-    console.log(`> Servidor pronto em http://${hostname}:${port}`);
+    
   });
 }); 

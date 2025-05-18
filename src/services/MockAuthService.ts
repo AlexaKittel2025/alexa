@@ -33,25 +33,20 @@ export const mockUsersAuth = [
 
 // Função para verificar credenciais mock
 export async function verifyMockCredentials(username: string, password: string) {
-  console.log('Verificando credenciais mock para:', username);
-  
+
   // Procurar usuário por username ou email
   const user = mockUsersAuth.find(u => 
     u.username === username || u.email === username
   );
   
   if (!user) {
-    console.log('Usuário mock não encontrado');
+    
     return null;
   }
-  
-  console.log('Usuário mock encontrado:', user.username);
-  
+
   // Verificar senha
   const isValid = await bcrypt.compare(password, user.password_hash);
-  
-  console.log('Senha válida?', isValid);
-  
+
   if (!isValid) {
     return null;
   }

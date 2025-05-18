@@ -16,7 +16,24 @@
       "Bash(grep:*)",
       "Bash(pkill:*)",
       "Bash(find:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(npm run lint)",
+      "Bash(npx prisma generate:*)",
+      "Bash(npm i:*)",
+      "Bash(chmod:*)",
+      "Bash(git checkout:*)",
+      "Bash(npx prisma migrate dev:*)",
+      "Bash(^C)",
+      "Bash(curl:*)",
+      "Bash(docker-compose up:*)",
+      "Bash(npm run setup:dev:*)",
+      "Bash(npm run seed:*)",
+      "Bash(npm cache clean:*)",
+      "Bash(true)",
+      "Bash(npx tsc:*)",
+      "Bash(npx swc:*)",
+      "Bash(mv:*)",
+      "Bash(NODE_OPTIONS=\"--max-old-space-size=2048\" npm run build)"
     ],
     "deny": []
   }

@@ -8,7 +8,7 @@ export const getCurrentUser = () => {
     try {
       return JSON.parse(savedProfile);
     } catch (error) {
-      console.error('Erro ao carregar perfil:', error);
+      
     }
   }
   return null;

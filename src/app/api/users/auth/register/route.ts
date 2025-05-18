@@ -11,9 +11,7 @@ export async function POST(request: NextRequest) {
       email: body.email,
       password: body.password
     });
-    
-    console.log('Registro de usuário realizado com sucesso');
-    
+
     // Criar resposta
     const response = NextResponse.json({
       success: true,
@@ -34,8 +32,7 @@ export async function POST(request: NextRequest) {
     return response;
     
   } catch (error) {
-    console.error('Erro ao processar registro de usuário:', error);
-    
+
     if (error instanceof Error) {
       const message = error.message;
       

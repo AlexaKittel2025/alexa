@@ -53,15 +53,13 @@ export default function RegisterForm() {
       
       // Obter e verificar o conteúdo da resposta
       const responseText = await response.text();
-      console.log('Resposta bruta da API:', responseText);
-      
+
       let data;
       try {
         // Tentar analisar a resposta como JSON
         data = JSON.parse(responseText);
       } catch (parseError: any) {
-        console.error('Erro ao analisar resposta JSON:', parseError);
-        
+
         // Verificar se a resposta parece ser HTML (erro de servidor)
         if (responseText.includes('<!DOCTYPE html>') || responseText.includes('<html>')) {
           setAuthError('Erro no servidor: A API retornou HTML em vez de JSON. Verifique se o servidor está em execução corretamente.');
@@ -75,14 +73,12 @@ export default function RegisterForm() {
       }
 
       if (!response.ok) {
-        console.error('Erro na resposta da API:', data);
+        
         setAuthError(data.details || data.error || 'Erro ao criar conta. Tente novamente.');
         setIsRegistering(false);
         return;
       }
 
-      console.log('Registro bem-sucedido!', data);
-      
       // Fazer login automaticamente após o registro bem-sucedido
       const signInResult = await signIn('credentials', {
         redirect: false,
@@ -98,7 +94,7 @@ export default function RegisterForm() {
       router.push('/');
       router.refresh();
     } catch (error) {
-      console.error('Erro ao registrar:', error);
+      
       setAuthError(`Erro de conexão: ${error instanceof Error ? error.message : 'Não foi possível conectar ao servidor'}`);
     } finally {
       setIsRegistering(false);

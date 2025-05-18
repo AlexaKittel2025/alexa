@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useState, useEffect, use } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { FaCamera, FaUser, FaTimes, FaCog } from 'react-icons/fa';
 import { generateRealPersonAvatar } from '@/utils/avatarUtils';
@@ -149,10 +149,13 @@ const mockFollowing = [
   }
 ];
 
-export default function PublicProfilePage() {
+interface PageProps {
+  params: Promise<{ username: string }>;
+}
+
+export default function PublicProfilePage({ params }: PageProps) {
   const router = useRouter();
-  const params = useParams();
-  const username = params.username as string;
+  const { username } = use(params);
   
   const [profile, setProfile] = useState<any>(null);
   const [activeTab, setActiveTab] = useState('posts');

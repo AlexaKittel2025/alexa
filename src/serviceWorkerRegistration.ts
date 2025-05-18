@@ -41,10 +41,7 @@ export function register(config?: Config) {
         // Adiciona alguns logs adicionais ao localhost, apontando para desenvolvedores para a
         // documentação de service worker/PWA.
         navigator.serviceWorker.ready.then(() => {
-          console.log(
-            'Este aplicativo web está sendo servido em cache primeiro por um service worker. ' +
-              'Para saber mais, visite https://cra.link/PWA'
-          );
+          
         });
       } else {
         // Não é localhost. Apenas registra o service worker
@@ -69,10 +66,6 @@ function registerValidSW(swUrl: string, config?: Config) {
               // Neste ponto, o conteúdo pré-cacheado atualizado foi buscado,
               // mas o service worker anterior ainda estará servindo o conteúdo mais antigo
               // até que todas as guias do cliente sejam fechadas.
-              console.log(
-                'Novo conteúdo disponível e será usado quando todas as ' +
-                  'guias desta página forem fechadas. Veja https://cra.link/PWA.'
-              );
 
               // Executa callback
               if (config && config.onUpdate) {
@@ -82,7 +75,6 @@ function registerValidSW(swUrl: string, config?: Config) {
               // Neste ponto, tudo foi pré-cacheado.
               // É o momento perfeito para exibir uma mensagem
               // "Conteúdo está em cache para uso offline."
-              console.log('Conteúdo em cache para uso offline.');
 
               // Executa callback
               if (config && config.onSuccess) {
@@ -94,7 +86,7 @@ function registerValidSW(swUrl: string, config?: Config) {
       };
     })
     .catch((error) => {
-      console.error('Erro durante o registro do service worker:', error);
+      
     });
 }
 
@@ -122,7 +114,7 @@ function checkValidServiceWorker(swUrl: string, config?: Config) {
       }
     })
     .catch(() => {
-      console.log('Não foi encontrada conexão com a internet. O aplicativo está rodando no modo offline.');
+      
     });
 }
 
@@ -133,7 +125,7 @@ export function unregister() {
         registration.unregister();
       })
       .catch((error) => {
-        console.error(error.message);
+        
       });
   }
 } 

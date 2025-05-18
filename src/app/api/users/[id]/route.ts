@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import { UserDetailsService } from '@/services/UserDetailsService';
+import { getUserPermissions, requireAuth, canEditResource, canDeleteResource } from '@/lib/permissions';
 
 interface RouteParams {
   params: {
@@ -16,8 +17,7 @@ export async function GET(
     const user = await UserDetailsService.getUserWithDetails(params.id);
     return NextResponse.json(user);
   } catch (error) {
-    console.error('Erro ao buscar usuário:', error);
-    
+
     if (error instanceof Error && error.message === 'Usuário não encontrado') {
       return NextResponse.json(
         { error: error.message },
@@ -33,8 +33,26 @@ export async function GET(
 }
 
 // PUT - Atualizar um usuário
-export async function PUT(request: Request, { params }: RouteParams) {
+export async function PUT(request: NextRequest, { params }: RouteParams) {
   try {
+    // Verificar autenticação
+    const currentUserId = await requireAuth(request);
+    if (!currentUserId) {
+      return NextResponse.json(
+        { error: 'Não autorizado' },
+        { status: 401 }
+      );
+    }
+    
+    // Verificar permissões
+    const canEdit = await canEditResource(request, params.id);
+    if (!canEdit) {
+      return NextResponse.json(
+        { error: 'Sem permissão para editar este perfil' },
+        { status: 403 }
+      );
+    }
+    
     const body = await request.json();
     
     const updatedUser = await UserDetailsService.updateUser(params.id, {
@@ -48,8 +66,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
     
     return NextResponse.json(updatedUser);
   } catch (error) {
-    console.error('Erro ao atualizar usuário:', error);
-    
+
     if (error instanceof Error) {
       if (error.message === 'Usuário não encontrado') {
         return NextResponse.json(
@@ -74,13 +91,30 @@ export async function PUT(request: Request, { params }: RouteParams) {
 }
 
 // DELETE - Remover um usuário
-export async function DELETE(request: Request, { params }: RouteParams) {
+export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
+    // Verificar autenticação
+    const currentUserId = await requireAuth(request);
+    if (!currentUserId) {
+      return NextResponse.json(
+        { error: 'Não autorizado' },
+        { status: 401 }
+      );
+    }
+    
+    // Verificar permissões
+    const canDelete = await canDeleteResource(request, params.id);
+    if (!canDelete) {
+      return NextResponse.json(
+        { error: 'Sem permissão para deletar este perfil' },
+        { status: 403 }
+      );
+    }
+    
     const result = await UserDetailsService.deleteUser(params.id);
     return NextResponse.json(result, { status: 200 });
   } catch (error) {
-    console.error('Erro ao remover usuário:', error);
-    
+
     if (error instanceof Error && error.message === 'Usuário não encontrado') {
       return NextResponse.json(
         { error: error.message },

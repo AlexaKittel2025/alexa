@@ -133,12 +133,12 @@ const StoriesPreview: React.FC<StoriesPreviewProps> = ({ currentUser }) => {
   
   const handleNextStory = () => {
     // Função agora é tratada dentro do StorymentModal
-    console.log('Próxima história');
+    
   };
   
   const handlePrevStory = () => {
     // Função agora é tratada dentro do StorymentModal  
-    console.log('História anterior');
+    
   };
   
   const handleOpenCreateModal = () => {
@@ -147,7 +147,7 @@ const StoriesPreview: React.FC<StoriesPreviewProps> = ({ currentUser }) => {
 
   const handleCreateStory = (content: string) => {
     // Implementação para criar um novo storyment
-    console.log('Criando novo storyment:', content);
+    
     setIsCreateModalOpen(false);
   };
 

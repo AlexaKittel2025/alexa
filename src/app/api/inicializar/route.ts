@@ -10,8 +10,7 @@ export async function GET(req: Request) {
     
     // Criar usuário de teste se não existir nenhum
     if (userCount === 0) {
-      console.log('Criando usuário de teste...');
-      
+
       // Criar hash da senha
       const hashedPassword = await bcrypt.hash('senha123', 10);
       
@@ -24,9 +23,7 @@ export async function GET(req: Request) {
           image: 'https://i.pravatar.cc/150?u=teste',
         }
       });
-      
-      console.log('Usuário de teste criado:', user.id);
-      
+
       // Criar estatísticas para o usuário
       await prisma.userStats.create({
         data: {
@@ -60,7 +57,7 @@ export async function GET(req: Request) {
       tagCount: await prisma.tag.count()
     });
   } catch (error) {
-    console.error('Erro ao inicializar banco de dados:', error);
+    
     return NextResponse.json(
       { 
         error: 'Erro ao inicializar banco de dados',

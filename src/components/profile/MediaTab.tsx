@@ -54,7 +54,7 @@ const MediaTab: React.FC<MediaTabProps> = ({ userId, isCurrentUser }) => {
       setHasMore(data.hasMore);
       setPage(pageNum);
     } catch (err) {
-      console.error('Erro ao buscar mídia:', err);
+      
       setError(err instanceof Error ? err.message : 'Erro ao carregar mídia');
     } finally {
       setLoading(false);

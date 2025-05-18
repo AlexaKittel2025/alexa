@@ -1,37 +1,12 @@
 import * as Ably from 'ably';
-import { useEffect } from 'react';
 
-// Configurar o cliente Ably - Verificando a existência da API key
-const getApiKey = () => {
-  // Se não estiver no navegador, retorna null para evitar erros de SSR
-  if (typeof window === 'undefined') return null;
-  
-  const apiKey = process.env.NEXT_PUBLIC_ABLY_API_KEY;
-  
-  // Validação da API key para evitar erros de inicialização
-  if (!apiKey || apiKey === 'sua-chave-ably-aqui') {
-    console.warn('Ably API key não encontrada ou inválida. O chat em tempo real não funcionará.');
-    return null;
-  }
-  
-  return apiKey;
-};
-
-// Função para obter cliente Ably com tratamento de erro
+// Função para obter cliente Ably
 export function getAblyClient() {
-  const apiKey = getApiKey();
-  
-  // Se não houver API key, retorna um cliente simulado para evitar erros
-  if (!apiKey) {
-    return createMockAblyClient();
-  }
-  
-  try {
-    return new Ably.Realtime.Promise({ key: apiKey, clientId: 'mentei-app' });
-  } catch (error) {
-    console.error('Erro ao inicializar o cliente Ably:', error);
-    return createMockAblyClient();
-  }
+  // Usa autenticação por token para maior segurança
+  return new Ably.Realtime.Promise({
+    authUrl: '/api/ably-token',
+    authMethod: 'GET'
+  });
 }
 
 // Cliente simulado para quando o Ably não estiver disponível
@@ -69,7 +44,7 @@ export function useChannel(
 
     // Verificar se a API key existe
     if (!getApiKey()) {
-      console.warn(`Canal ${channelName} não foi ativado: API key do Ably não encontrada.`);
+      
       return;
     }
     
@@ -89,7 +64,7 @@ export function useChannel(
         ably.close();
       };
     } catch (error) {
-      console.error(`Erro ao se conectar ao canal ${channelName}:`, error);
+      
     }
   }, [channelName, eventName, onMessage]);
 }
@@ -106,7 +81,7 @@ export async function publishMessage(
   data: any
 ) {
   if (!getApiKey()) {
-    console.warn(`Mensagem não enviada ao canal ${channelName}: API key do Ably não encontrada.`);
+    
     return false;
   }
   
@@ -117,7 +92,7 @@ export async function publishMessage(
     ably.close();
     return true;
   } catch (error) {
-    console.error(`Erro ao publicar mensagem no canal ${channelName}:`, error);
+    
     return false;
   }
 }
@@ -132,7 +107,7 @@ export function createPresenceChannel(
   userData: any
 ) {
   if (!getApiKey()) {
-    console.warn(`Canal de presença ${channelName} não foi criado: API key do Ably não encontrada.`);
+    
     return {
       channel: null,
       leave: () => {}
@@ -153,12 +128,12 @@ export function createPresenceChannel(
           channel.presence.leave();
           ably.close();
         } catch (error) {
-          console.error(`Erro ao sair do canal ${channelName}:`, error);
+          
         }
       }
     };
   } catch (error) {
-    console.error(`Erro ao criar canal de presença ${channelName}:`, error);
+    
     return {
       channel: null,
       leave: () => {}

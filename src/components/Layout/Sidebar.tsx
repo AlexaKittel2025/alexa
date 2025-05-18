@@ -20,14 +20,15 @@ import {
   FaMagic,
   FaSignOutAlt
 } from 'react-icons/fa';
+import NotificationsDropdown from '@/components/NotificationsDropdown';
 
 const menuItems = [
   { label: 'Início', href: '/', icon: FaHome, activeIcon: FaHome },
-  { label: 'Pesquisar', href: '/search', icon: FaSearch },
+  { label: 'Notificações', href: '/notificacoes', icon: FaHeart, activeIcon: FaHeart },
   { label: 'Explorar', href: '/explorar', icon: FaMagic },
   { label: 'Batalhas', href: '/batalhas', icon: FaSmile, activeIcon: FaSmile },
-  { label: 'Criar', href: '/nova-mentira', icon: FaPlus },
-  { label: 'Notificações', href: '/notificacoes', icon: FaHeart, activeIcon: FaHeart },
+  { label: 'Dashboard', href: '/dashboard', icon: FaBars },
+  { label: 'Eventos', href: '/eventos', icon: FaBookmark },
   { label: 'Mensagens', href: '/chat', icon: FaComment },
   { label: 'Configurações', href: '/configuracoes', icon: FaCog, activeIcon: FaCog },
 ];
@@ -54,7 +55,7 @@ export default function Sidebar() {
             id: profile.id || 'user-1'
           });
         } catch (error) {
-          console.error('Erro ao carregar perfil:', error);
+          
         }
       }
     };
@@ -95,7 +96,7 @@ export default function Sidebar() {
         {/* Logo */}
         <div className="px-3 mb-7">
           <Link href="/">
-            <h1 className="text-2xl font-bold hidden lg:block">Mentei</h1>
+            <h1 className="text-2xl font-bold hidden lg:block text-gray-900 dark:text-white transition-colors">Mentei</h1>
             <div className="w-10 h-10 bg-gradient-to-r from-purple-600 to-pink-500 rounded-lg flex items-center justify-center lg:hidden">
               <span className="text-white font-bold">M</span>
             </div>
@@ -108,6 +109,15 @@ export default function Sidebar() {
             {menuItems.map((item) => {
               const isActive = pathname === item.href;
               const Icon = isActive && item.activeIcon ? item.activeIcon : item.icon;
+              
+              // Se for notificações, usar o dropdown
+              if (item.label === 'Notificações') {
+                return (
+                  <li key={item.href}>
+                    <NotificationsDropdown />
+                  </li>
+                );
+              }
               
               return (
                 <li key={item.href}>
@@ -154,7 +164,7 @@ export default function Sidebar() {
               )}
             </div>
             <div className="hidden lg:block">
-              <p className="font-medium text-sm">Meu Perfil</p>
+              <p className="font-medium text-sm text-gray-900 dark:text-white">Meu Perfil</p>
               <p className="text-xs text-gray-500 dark:text-gray-400">@{userProfile.username}</p>
             </div>
           </Link>
@@ -164,7 +174,7 @@ export default function Sidebar() {
             className="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 w-full"
           >
             <FaSignOutAlt className="w-6 h-6 text-gray-700 dark:text-gray-300" />
-            <span className="hidden lg:block">Sair</span>
+            <span className="hidden lg:block text-gray-900 dark:text-white">Sair</span>
           </button>
         </div>
       </div>

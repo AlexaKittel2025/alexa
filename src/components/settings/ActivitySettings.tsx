@@ -90,7 +90,7 @@ const ActivitySettings: React.FC<ActivitySettingsProps> = ({ currentUser }) => {
         }, 3000);
       }
     } catch (error) {
-      console.error('Erro ao salvar configurações de atividade:', error);
+      
       setMessage('Erro ao salvar as configurações. Tente novamente.');
     } finally {
       setIsLoading(false);

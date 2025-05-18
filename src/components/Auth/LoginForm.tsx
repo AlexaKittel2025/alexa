@@ -27,14 +27,13 @@ export default function LoginForm() {
       
       // Em desenvolvimento, verificar credenciais mock diretamente
       if (process.env.NODE_ENV !== 'production') {
-        console.log('Tentando mock login...');
+
+        // Verificar credenciais mock do ambiente
+        const mockEmail = process.env.NEXT_PUBLIC_MOCK_EMAIL;
+        const mockPassword = process.env.NEXT_PUBLIC_MOCK_PASSWORD;
         
-        // Verificar credenciais mock hardcoded
-        if ((email === 'teste@mentei.com' && password === 'teste123') ||
-            (email === 'demo@mentei.com' && password === 'Demo123!')) {
-          
-          console.log('Credenciais mock válidas');
-          
+        if (mockEmail && mockPassword && email === mockEmail && password === mockPassword) {
+
           // Criar usuário mock
           const mockUser = email === 'teste@mentei.com' ? {
             id: 'test-user-1',
@@ -74,7 +73,7 @@ export default function LoginForm() {
       
       if (result?.error) {
         setAuthError('Credenciais inválidas');
-        console.error('Erro no login:', result.error);
+        
         return;
       }
       
@@ -82,7 +81,7 @@ export default function LoginForm() {
       router.push('/');
       router.refresh();
     } catch (error) {
-      console.error('Erro ao fazer login:', error);
+      
       setAuthError('Erro ao fazer login');
     } finally {
       setIsLoading(false);

@@ -70,7 +70,7 @@ router.get('/rooms/:userId', async (req, res) => {
       data: formattedRooms
     });
   } catch (error) {
-    console.error('Erro ao buscar salas de chat:', error);
+    
     res.status(500).json({
       success: false,
       error: 'Erro ao buscar salas de chat'
@@ -102,7 +102,7 @@ router.get('/rooms/global', async (req, res) => {
       data: globalRoom
     });
   } catch (error) {
-    console.error('Erro ao buscar sala global:', error);
+    
     res.status(500).json({
       success: false,
       error: 'Erro ao buscar sala global'
@@ -208,7 +208,7 @@ router.post('/rooms/private', async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Erro ao obter/criar sala privada:', error);
+    
     res.status(500).json({
       success: false,
       error: 'Erro ao obter/criar sala privada'
@@ -260,7 +260,7 @@ router.get('/messages/:roomId', async (req, res) => {
       data: messages
     });
   } catch (error) {
-    console.error('Erro ao buscar mensagens:', error);
+    
     res.status(500).json({
       success: false,
       error: 'Erro ao buscar mensagens'
@@ -329,7 +329,7 @@ router.post('/messages', async (req, res) => {
       data: message
     });
   } catch (error) {
-    console.error('Erro ao enviar mensagem:', error);
+    
     res.status(500).json({
       success: false,
       error: 'Erro ao enviar mensagem'
@@ -367,7 +367,7 @@ router.put('/messages/read', async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Erro ao marcar mensagens como lidas:', error);
+    
     res.status(500).json({
       success: false,
       error: 'Erro ao marcar mensagens como lidas'

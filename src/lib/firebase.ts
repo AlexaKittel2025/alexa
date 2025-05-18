@@ -75,7 +75,7 @@ export const db = {
 export const storage = {
   ref: (path: string) => ({
     putString: async () => {
-      console.warn("Firebase Storage substituído por upload direto");
+      
       return {
         ref: {
           getDownloadURL: async () => {

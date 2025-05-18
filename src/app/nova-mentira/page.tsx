@@ -6,7 +6,6 @@ import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth, db, storage } from '@/lib/firebase';
 import { collection, addDoc, serverTimestamp, updateDoc, doc, increment, setDoc } from 'firebase/firestore';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
-import MainLayout from '@/components/Layout/MainLayout';
 import { FaImage, FaTimesCircle, FaTags, FaExclamationTriangle } from 'react-icons/fa';
 import AuthCheck from '@/components/Auth/AuthCheck';
 import { v4 as uuidv4 } from 'uuid';
@@ -219,7 +218,7 @@ export default function NovaMentira() {
       
       router.push('/');
     } catch (error) {
-      console.error('Erro ao publicar mentira:', error);
+      
       setError('Ocorreu um erro ao publicar sua mentira. Tente novamente.');
     } finally {
       setIsSubmitting(false);
@@ -227,15 +226,12 @@ export default function NovaMentira() {
   };
   
   if (loading) return (
-    <MainLayout>
       <div className="flex justify-center items-center h-[60vh]">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
       </div>
-    </MainLayout>
   );
   
   return (
-    <MainLayout>
       <div className="max-w-3xl mx-auto">
         <div className="bg-white rounded-lg shadow-md overflow-hidden">
           <div className="bg-purple-700 text-white p-4">
@@ -401,6 +397,5 @@ export default function NovaMentira() {
           </form>
         </div>
       </div>
-    </MainLayout>
   );
 } 

@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { CalendarIcon, BadgeCheckIcon, ClockIcon } from '@heroicons/react/outline';
-import { Post as PostType, User, Challenge } from '../types';
+;
+
+;
+import { BadgeCheckIcon, CalendarIcon, ClockIcon } from '@heroicons/react/outline';
+import React, { useState, useEffect } from 'react';import { Post as PostType, User, Challenge } from '../types';
 
 interface WeeklyChallengeProps {
   currentUser: User;

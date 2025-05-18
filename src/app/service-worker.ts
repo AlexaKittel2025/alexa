@@ -19,29 +19,29 @@ const urlsToCache = [
 
 // Evento de instalação - armazena recursos em cache antecipadamente
 self.addEventListener('install', (event) => {
-  console.log('[Service Worker] Instalando');
+  
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
-        console.log('[Service Worker] Cache aberto');
+        
         return cache.addAll(urlsToCache);
       })
       .then(() => self.skipWaiting())
       .catch((error) => {
-        console.error('[Service Worker] Erro ao armazenar em cache:', error);
+        
       })
   );
 });
 
 // Evento de ativação - limpa caches antigos
 self.addEventListener('activate', (event) => {
-  console.log('[Service Worker] Ativando');
+  
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
           if (cacheName !== CACHE_NAME) {
-            console.log('[Service Worker] Removendo cache antigo:', cacheName);
+            
             return caches.delete(cacheName);
           }
           return Promise.resolve();
@@ -49,11 +49,11 @@ self.addEventListener('activate', (event) => {
       );
     })
     .then(() => {
-      console.log('[Service Worker] Ativado e controlando');
+      
       return self.clients.claim();
     })
     .catch((error) => {
-      console.error('[Service Worker] Erro ao ativar:', error);
+      
     })
   );
 });
@@ -96,14 +96,13 @@ self.addEventListener('fetch', (event) => {
                 cache.put(event.request, responseToCache);
               })
               .catch((error) => {
-                console.error('[Service Worker] Erro ao armazenar resposta:', error);
+                
               });
 
             return response;
           })
           .catch((error) => {
-            console.error('[Service Worker] Erro de fetch:', error);
-            
+
             // Se a rede falhar, fornecer a página offline
             if (event.request.headers.get('accept')?.includes('text/html')) {
               return caches.match(OFFLINE_PAGE);
@@ -121,7 +120,7 @@ self.addEventListener('fetch', (event) => {
 // Evento de sincronização em segundo plano
 self.addEventListener('sync', (event) => {
   if (event.tag === 'post-update') {
-    console.log('[Service Worker] Sincronização em segundo plano: post-update');
+    
     // Implementar lógica de sincronização de posts pendentes
   }
 });

@@ -1,10 +1,10 @@
+;
+
+;
+import { EyeIcon } from '@heroicons/react/outline';
 import React, { useState, useEffect } from 'react';
 import { User } from '../../types';
-import { useAuth } from '../../context/AuthContext';
-import { EyeIcon } from '@heroicons/react/outline';
-import LockClosedIcon from '@heroicons/react/outline/XIcon';
-import UserGroupIcon from '@heroicons/react/outline/UserGroupIcon';
-import * as userApi from '../../services/userApi';
+import { useAuth } from '../../context/AuthContext';import * as userApi from '../../services/userApi';
 
 interface PrivacySettingsProps {
   currentUser: User;
@@ -103,7 +103,7 @@ const PrivacySettings: React.FC<PrivacySettingsProps> = ({ currentUser }) => {
         }, 3000);
       }
     } catch (error) {
-      console.error('Erro ao salvar configurações de privacidade:', error);
+      
       setMessage('Erro ao salvar as configurações. Tente novamente.');
     } finally {
       setIsLoading(false);

@@ -1,6 +1,8 @@
-import React, { useState, useRef } from 'react';
-import { XIcon, PhotographIcon, PaperAirplaneIcon } from '@heroicons/react/outline';
-import { useAuth } from '../context/AuthContext';
+;
+
+;
+import { PaperAirplaneIcon, PhotographIcon, XIcon } from '@heroicons/react/outline';
+import React, { useState, useRef } from 'react';import { useAuth } from '../context/AuthContext';
 import { Post } from '../types';
 
 interface CreatePostModalProps {
@@ -107,7 +109,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ isOpen, onClose, onPo
       // Fechar modal
       onClose();
     } catch (err) {
-      console.error('Erro ao criar post:', err);
+      
       setError(err instanceof Error ? err.message : 'Erro ao criar post');
     } finally {
       setIsLoading(false);

@@ -4,8 +4,7 @@ const { sql } = require('@vercel/postgres');
 const path = require('path');
 
 async function runMigrations() {
-  console.log('Iniciando aplicação de migrações...');
-  
+
   try {
     // Configuração do cliente Drizzle
     const db = drizzle(sql);
@@ -15,10 +14,9 @@ async function runMigrations() {
     
     // Executa as migrações
     await migrate(db, { migrationsFolder });
-    
-    console.log('✅ Migrações aplicadas com sucesso!');
+
   } catch (error) {
-    console.error('❌ Erro ao aplicar migrações:', error);
+    
     process.exit(1);
   }
 }

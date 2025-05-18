@@ -10,11 +10,14 @@ export default {
   out: './drizzle/migrations',
   dialect: 'postgresql',
   dbCredentials: {
-    // Usa a conexão do Vercel Postgres ou uma conexão local para desenvolvimento
-    connectionString: process.env.POSTGRES_URL || process.env.DATABASE_URL || '',
+    // Configuração para PostgreSQL
+    host: process.env.POSTGRES_HOST || 'localhost',
+    port: parseInt(process.env.POSTGRES_PORT || '5432'),
+    user: process.env.POSTGRES_USER || 'postgres',
+    password: process.env.POSTGRES_PASSWORD || '',
+    database: process.env.POSTGRES_DATABASE || 'mentei_app',
+    ssl: process.env.NODE_ENV === 'production' ? true : false,
   },
-  // Tabelas que devem ser ignoradas durante as migrações
-  ignoreCodeblocks: [{ type: 'sql' }],
   // Se deve ou não verificar se tabelas existentes correspondem ao schema definido
   strict: true,
 } satisfies Config; 

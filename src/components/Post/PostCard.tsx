@@ -66,7 +66,7 @@ export default function PostCard({ post, onLike, onSave, onShare }: PostCardProp
   const commentCount = post.comments?.length || 0;
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 mb-4">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 p-4 mb-4">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-3">
           <Image
@@ -74,10 +74,13 @@ export default function PostCard({ post, onLike, onSave, onShare }: PostCardProp
             alt={post.author?.name || 'Usuário'}
             width={40}
             height={40}
-            className="rounded-full"
+            className="rounded-full transition-transform duration-200 hover:scale-105"
+            loading="lazy"
+            placeholder="blur"
+            blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAf/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
           />
           <div>
-            <Link href={`/perfil/${post.authorId}`} className="font-semibold hover:underline">
+            <Link href={`/perfil/${post.authorId}`} className="font-semibold hover:underline text-gray-900 dark:text-white transition-colors">
               {post.author?.name || 'Usuário anônimo'}
             </Link>
             <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -87,7 +90,7 @@ export default function PostCard({ post, onLike, onSave, onShare }: PostCardProp
         </div>
         
         <button 
-          className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
+          className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200 hover:scale-105"
           onClick={handleReportClick}
           aria-label="Denunciar"
         >
@@ -96,7 +99,7 @@ export default function PostCard({ post, onLike, onSave, onShare }: PostCardProp
       </div>
       
       <div className="mb-4">
-        <h3 className="text-xl font-bold mb-2">{post.title}</h3>
+        <h3 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">{post.title}</h3>
         <p className="text-gray-700 dark:text-gray-300">{post.content}</p>
         
         {post.imageUrl && (
@@ -107,6 +110,9 @@ export default function PostCard({ post, onLike, onSave, onShare }: PostCardProp
               width={600} 
               height={400} 
               className="rounded-lg max-h-96 object-cover w-full"
+              loading="lazy"
+              placeholder="blur"
+              blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAf/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
             />
           </div>
         )}
@@ -118,7 +124,7 @@ export default function PostCard({ post, onLike, onSave, onShare }: PostCardProp
             <Link 
               href={`/tag/${tagItem.tag.name}`} 
               key={index} 
-              className="text-xs bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 px-2 py-1 rounded-full hover:bg-purple-200 dark:hover:bg-purple-800"
+              className="text-xs bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 px-2 py-1 rounded-full hover:bg-purple-200 dark:hover:bg-purple-800 transition-all duration-200 hover:scale-105"
             >
               #{tagItem.tag.name}
             </Link>
@@ -127,34 +133,34 @@ export default function PostCard({ post, onLike, onSave, onShare }: PostCardProp
       )}
       
       <div className="flex justify-between border-t pt-3 dark:border-gray-700">
-        <div className="flex space-x-4">
+        <div className="flex space-x-2 md:space-x-4 flex-wrap">
           <button 
-            className={`flex items-center space-x-1 transition ${liked ? 'text-purple-600 dark:text-purple-400' : 'text-gray-600 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400'}`}
+            className={`flex items-center space-x-1 transition-all duration-200 transform hover:scale-105 p-2 rounded ${liked ? 'text-purple-600 dark:text-purple-400' : 'text-gray-600 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400'}`}
             onClick={handleLikeClick}
           >
-            <FaThumbsUp />
-            <span>{likesCount}</span>
+            <FaThumbsUp className={liked ? 'animate-pulse' : ''} />
+            <span className="text-sm">{likesCount}</span>
           </button>
           <button 
             onClick={handleCommentClick}
-            className="flex items-center space-x-1 text-gray-600 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400"
+            className="flex items-center space-x-1 text-gray-600 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400 transition-all duration-200 transform hover:scale-105 p-2 rounded"
           >
             <FaComment />
-            <span>{commentCount}</span>
+            <span className="text-sm">{commentCount}</span>
           </button>
           <button 
             onClick={handleShareClick}
-            className="flex items-center space-x-1 text-gray-600 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400"
+            className="flex items-center space-x-1 text-gray-600 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400 transition-all duration-200 transform hover:scale-105 p-2 rounded"
           >
             <FaShare />
-            <span>Compartilhar</span>
+            <span className="hidden sm:inline text-sm">Compartilhar</span>
           </button>
           <button 
             onClick={handleSaveClick}
-            className={`flex items-center space-x-1 transition ${saved ? 'text-purple-600 dark:text-purple-400' : 'text-gray-600 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400'}`}
+            className={`flex items-center space-x-1 transition-all duration-200 transform hover:scale-105 p-2 rounded ${saved ? 'text-purple-600 dark:text-purple-400' : 'text-gray-600 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400'}`}
           >
-            <FaBookmark />
-            <span>{saved ? 'Salvo' : 'Salvar'}</span>
+            <FaBookmark className={saved ? 'animate-pulse' : ''} />
+            <span className="hidden sm:inline text-sm">{saved ? 'Salvo' : 'Salvar'}</span>
           </button>
         </div>
         

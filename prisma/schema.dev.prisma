@@ -1,0 +1,319 @@
+generator client {
+  provider = "prisma-client-js"
+  binaryTargets = ["native", "darwin-arm64", "linux-musl-arm64-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String        @id @default(cuid())
+  username         String        @unique
+  display_name     String
+  email            String        @unique
+  emailVerified    DateTime?
+  password_hash    String
+  avatar           String?       
+  image            String?       
+  bio              String?
+  createdAt        DateTime      @default(now()) @map("created_at")
+  updatedAt        DateTime      @updatedAt @map("updated_at")
+  level            Int           @default(1)
+  score            Int           @default(0)
+  isOnline         Boolean       @default(false) @map("is_online")
+  isPro            Boolean       @default(false) @map("is_pro")
+  lastLogin        DateTime?     @map("last_login")
+  nivelMentiroso   Int           @default(1) @map("nivel_mentiroso")
+  pontuacaoTotal   Int           @default(0) @map("pontuacao_total")
+  battleWins       Int           @default(0) @map("battle_wins")
+  totalBattles     Int           @default(0) @map("total_battles")
+  posts            Post[]
+  comments         Comment[]
+  likes            Like[]
+  battles          Battle[]      @relation("UserBattles")
+  battleVotes      BattleVote[]  
+  notifications    Notification[]
+  achievements     Achievement[]
+  ranking          Ranking?     
+  reports          Report[]
+  follows          Follow[]      @relation("Following")
+  followers        Follow[]      @relation("Followers")
+  sessions         Session[]
+  accounts         Account[]
+  sentMessages     Message[]     @relation("Sender")
+  receivedMessages Message[]     @relation("Receiver")
+  devices          Device[]
+  rewards          Reward[]
+  weekChallenge    WeekChallenge?
+
+  @@index([username])
+  @@index([email])
+  @@map("users")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique @map("session_token")
+  userId       String   @map("user_id")
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String  @map("user_id")
+  type              String
+  provider          String
+  providerAccountId String  @map("provider_account_id")
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id])
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+  @@map("accounts")
+}
+
+model Post {
+  id           String    @id @default(cuid())
+  userId       String    @map("user_id")
+  content      String
+  isStory      Boolean   @default(false) @map("is_story")
+  storyExpiresAt DateTime? @map("story_expires_at")
+  views        Int       @default(0)
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  user         User      @relation(fields: [userId], references: [id])
+  comments     Comment[]
+  likes        Like[]
+  reports      Report[]
+  tags         Tag[]
+  
+  @@index([userId])
+  @@index([createdAt])
+  @@index([isStory])
+  @@map("posts")
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  postId    String   @map("post_id")
+  userId    String   @map("user_id")
+  content   String
+  createdAt DateTime @default(now()) @map("created_at")
+  post      Post     @relation(fields: [postId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+  
+  @@index([postId])
+  @@index([userId])
+  @@map("comments")
+}
+
+model Like {
+  id        String   @id @default(cuid())
+  postId    String   @map("post_id")
+  userId    String   @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  post      Post     @relation(fields: [postId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+  
+  @@unique([postId, userId])
+  @@index([postId])
+  @@index([userId])
+  @@map("likes")
+}
+
+model Battle {
+  id           String       @id @default(cuid())
+  theme        String
+  status       String       @default("waiting")
+  winnerId     String?      @map("winner_id")
+  startTime    DateTime     @default(now()) @map("start_time")
+  endTime      DateTime?    @map("end_time")
+  participants User[]       @relation("UserBattles")
+  entries      BattleEntry[]
+  votes        BattleVote[]
+  
+  @@index([status])
+  @@index([startTime])
+  @@map("battles")
+}
+
+model BattleEntry {
+  id        String   @id @default(cuid())
+  battleId  String   @map("battle_id")
+  userId    String   @map("user_id")
+  content   String
+  createdAt DateTime @default(now()) @map("created_at")
+  battle    Battle   @relation(fields: [battleId], references: [id])
+  
+  @@index([battleId])
+  @@index([userId])
+  @@map("battle_entries")
+}
+
+model BattleVote {
+  id        String   @id @default(cuid())
+  battleId  String   @map("battle_id")
+  userId    String   @map("user_id")
+  entryId   String   @map("entry_id")
+  score     Int
+  createdAt DateTime @default(now()) @map("created_at")
+  battle    Battle   @relation(fields: [battleId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+  
+  @@unique([battleId, userId])
+  @@index([battleId])
+  @@index([userId])
+  @@map("battle_votes")
+}
+
+model Follow {
+  id         String   @id @default(cuid())
+  followerId String   @map("follower_id")
+  followingId String  @map("following_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+  follower   User     @relation("Followers", fields: [followerId], references: [id])
+  following  User     @relation("Following", fields: [followingId], references: [id])
+  
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
+  @@map("follows")
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  type      String
+  title     String?
+  message   String
+  metadata  String?  // Changed from Json to String for SQLite
+  isRead    Boolean  @default(false) @map("is_read")
+  createdAt DateTime @default(now()) @map("created_at")
+  user      User     @relation(fields: [userId], references: [id])
+  
+  @@index([userId])
+  @@index([createdAt])
+  @@index([isRead])
+  @@map("notifications")
+}
+
+model Achievement {
+  id          String   @id @default(cuid())
+  userId      String   @map("user_id")
+  type        String
+  unlocked    Boolean  @default(false)
+  unlockedAt  DateTime? @map("unlocked_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+  user        User     @relation(fields: [userId], references: [id])
+  
+  @@unique([userId, type])
+  @@index([userId])
+  @@index([type])
+  @@map("achievements")
+}
+
+model Ranking {
+  id               String   @id @default(cuid())
+  userId           String   @unique @map("user_id")
+  score            Int      @default(0)
+  weeklyScore      Int      @default(0) @map("weekly_score")
+  globalPosition   Int      @default(0) @map("global_position")
+  weeklyPosition   Int      @default(0) @map("weekly_position")
+  lastUpdated      DateTime @updatedAt @map("last_updated")
+  user             User     @relation(fields: [userId], references: [id])
+  
+  @@index([score])
+  @@index([weeklyScore])
+  @@map("rankings")
+}
+
+model Report {
+  id         String   @id @default(cuid())
+  postId     String?  @map("post_id")
+  userId     String   @map("user_id")
+  reason     String
+  status     String   @default("pending")
+  createdAt  DateTime @default(now()) @map("created_at")
+  post       Post?    @relation(fields: [postId], references: [id])
+  user       User     @relation(fields: [userId], references: [id])
+  
+  @@index([postId])
+  @@index([userId])
+  @@index([status])
+  @@map("reports")
+}
+
+model Tag {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  posts     Post[]
+  createdAt DateTime @default(now()) @map("created_at")
+  
+  @@index([name])
+  @@map("tags")
+}
+
+model Message {
+  id         String   @id @default(cuid())
+  senderId   String   @map("sender_id")
+  receiverId String   @map("receiver_id")
+  content    String
+  isRead     Boolean  @default(false) @map("is_read")
+  createdAt  DateTime @default(now()) @map("created_at")
+  sender     User     @relation("Sender", fields: [senderId], references: [id])
+  receiver   User     @relation("Receiver", fields: [receiverId], references: [id])
+  
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([createdAt])
+  @@map("messages")
+}
+
+model Device {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  token     String   @unique
+  type      String
+  createdAt DateTime @default(now()) @map("created_at")
+  user      User     @relation(fields: [userId], references: [id])
+  
+  @@index([userId])
+  @@map("devices")
+}
+
+model Reward {
+  id          String   @id @default(cuid())
+  userId      String   @map("user_id")
+  type        String
+  amount      Int
+  description String?
+  claimedAt   DateTime @default(now()) @map("claimed_at")
+  user        User     @relation(fields: [userId], references: [id])
+  
+  @@index([userId])
+  @@map("rewards")
+}
+
+model WeekChallenge {
+  id          String   @id @default(cuid())
+  userId      String   @unique @map("user_id")
+  points      Int      @default(0)
+  weekStart   DateTime @map("week_start")
+  lastUpdated DateTime @updatedAt @map("last_updated")
+  user        User     @relation(fields: [userId], references: [id])
+  
+  @@index([weekStart])
+  @@map("week_challenges")
+}

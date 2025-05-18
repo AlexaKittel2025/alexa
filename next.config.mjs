@@ -1,6 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  swcMinify: true,
+  poweredByHeader: false,
+  compress: true,
   images: {
     remotePatterns: [
       {
@@ -79,7 +82,10 @@ const nextConfig = {
         pathname: '/**',
       },
     ],
-    // Domínios removidos pois já estão definidos em remotePatterns
+    formats: ['image/avif', 'image/webp'],
+    minimumCacheTTL: 60,
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
   },
   env: {
     PORT: "3000",
@@ -89,9 +95,41 @@ const nextConfig = {
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
   },
+  experimental: {
+    optimizeCss: false,
+  },
   // Configuração de assets estáticos
   output: 'standalone',
+  
+  // Webpack otimizado
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      // Code splitting otimizado
+      config.optimization.splitChunks = {
+        chunks: 'all',
+        cacheGroups: {
+          default: false,
+          vendors: false,
+          vendor: {
+            name: 'vendor',
+            chunks: 'all',
+            test: /node_modules/,
+            priority: 20
+          },
+          common: {
+            name: 'common',
+            minChunks: 2,
+            chunks: 'all',
+            priority: 10,
+            reuseExistingChunk: true,
+            enforce: true
+          }
+        }
+      };
+    }
+    return config;
+  },
 };
 
 // PWA desativado conforme instruções
-export default nextConfig; 
+export default nextConfig;

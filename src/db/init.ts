@@ -35,15 +35,15 @@ async function createDatabase() {
       if (checkDb.rowCount === 0) {
         // Criando o banco de dados
         await client.query(`CREATE DATABASE ${dbConfig.database}`);
-        console.log('Banco de dados criado com sucesso!');
+        
       } else {
-        console.log('Banco de dados já existe.');
+        
       }
     } finally {
       client.release();
     }
   } catch (error) {
-    console.error('Erro ao criar banco de dados:', error);
+    
     throw error;
   }
 }
@@ -56,12 +56,12 @@ async function executeSQL(pool: Pool, filePath: string) {
     try {
       const sql = fs.readFileSync(path.resolve(filePath), 'utf8');
       await client.query(sql);
-      console.log(`Script ${filePath} executado com sucesso.`);
+      
     } finally {
       client.release();
     }
   } catch (error) {
-    console.error(`Erro ao executar script ${filePath}:`, error);
+    
     throw error;
   }
 }
@@ -78,10 +78,9 @@ async function initializeDatabase() {
     // Executar schema e seed
     await executeSQL(appPool, schemaPath);
     await executeSQL(appPool, seedPath);
-    
-    console.log('Banco de dados inicializado com sucesso!');
+
   } catch (error) {
-    console.error('Erro ao inicializar banco de dados:', error);
+    
   } finally {
     // Fechando as conexões
     adminPool.end();

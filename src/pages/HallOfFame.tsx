@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { PostType } from '../types/index';
-import {
-  EmojiHappyIcon as EmojiHappyIcon,
-  HandThumbUpIcon as ThumbUpIcon,
-  FireIcon
-} from '@heroicons/react/outline';
+;
+;
+
+;
+;
+import { EmojiHappyIcon, FireIcon } from '@heroicons/react/outline';
 import { StarIcon } from '@heroicons/react/solid';
-import UserProfileLink from '../components/UserProfileLink';
+import React, { useState, useEffect } from 'react';
+import { PostType } from '../types/index';import UserProfileLink from '../components/UserProfileLink';
 
 const mockHistoricPosts: PostType[] = [
   {

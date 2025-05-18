@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '@/lib/firebase';
-import MainLayout from '@/components/Layout/MainLayout';
 import { FaCrown, FaRandom, FaImage, FaTrophy, FaGem, FaCheckCircle, FaArrowRight } from 'react-icons/fa';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -49,7 +48,6 @@ export default function PlanoPro() {
   };
   
   return (
-    <MainLayout>
       <div className="max-w-4xl mx-auto py-8">
         <div className="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-lg shadow-lg overflow-hidden">
           <div className="p-8 text-center text-white">
@@ -213,6 +211,5 @@ export default function PlanoPro() {
           </div>
         </div>
       </div>
-    </MainLayout>
   );
 } 

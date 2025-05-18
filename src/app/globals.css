@@ -5,7 +5,7 @@
 /* Instagram-style global styles */
 @layer base {
   body {
-    @apply text-gray-900 bg-gray-50;
+    @apply text-gray-900 bg-gray-50 dark:text-gray-100 dark:bg-gray-950 transition-colors duration-200;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   }
   
@@ -25,32 +25,32 @@
   }
   
   ::-webkit-scrollbar-thumb {
-    @apply bg-gray-300 rounded-full;
+    @apply bg-gray-300 dark:bg-gray-700 rounded-full transition-colors;
   }
   
   ::-webkit-scrollbar-thumb:hover {
-    @apply bg-gray-400;
+    @apply bg-gray-400 dark:bg-gray-600;
   }
 }
 
 @layer components {
   /* Instagram-style button */
   .btn-instagram {
-    @apply bg-blue-500 text-white font-medium py-1.5 px-4 rounded-lg hover:bg-blue-600 transition-colors;
+    @apply bg-blue-500 text-white font-medium py-1.5 px-4 rounded-lg hover:bg-blue-600 transition-all duration-200 transform hover:scale-105;
   }
   
   .btn-instagram-outline {
-    @apply border border-gray-300 text-gray-900 font-medium py-1.5 px-4 rounded-lg hover:bg-gray-50 transition-colors;
+    @apply border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-100 font-medium py-1.5 px-4 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200;
   }
   
   /* Instagram-style input */
   .input-instagram {
-    @apply w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded text-sm focus:border-gray-400 focus:bg-white transition-colors;
+    @apply w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded text-sm focus:border-gray-400 dark:focus:border-gray-500 focus:bg-white dark:focus:bg-gray-700 transition-all duration-200;
   }
   
   /* Instagram-style link */
   .link-instagram {
-    @apply text-blue-500 hover:text-blue-600 font-medium text-sm;
+    @apply text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 font-medium text-sm transition-colors duration-200;
   }
   
   /* Story ring */
@@ -120,4 +120,97 @@
   background: linear-gradient(to right, #f6f7f8 0%, #edeef1 20%, #f6f7f8 40%, #f6f7f8 100%);
   background-size: 800px 104px;
   position: relative;
+}
+
+.dark .shimmer {
+  background: linear-gradient(to right, #1f2937 0%, #374151 20%, #1f2937 40%, #1f2937 100%);
+}
+
+/* Global transition for smooth theme switching */
+* {
+  @apply transition-colors duration-200 ease-in-out;
+}
+
+/* Smooth transitions for common interactions */
+.transition-base {
+  @apply transition-all duration-200 ease-in-out;
+}
+
+.transition-fast {
+  @apply transition-all duration-150 ease-in-out;
+}
+
+.transition-slow {
+  @apply transition-all duration-300 ease-in-out;
+}
+
+/* Default dark mode adjustments */
+.dark {
+  @apply antialiased;
+}
+
+/* Mobile-first responsive utilities */
+@layer utilities {
+  /* Responsive text utilities */
+  .text-responsive {
+    @apply text-sm sm:text-base lg:text-lg;
+  }
+  
+  .text-responsive-sm {
+    @apply text-xs sm:text-sm lg:text-base;
+  }
+  
+  /* Responsive spacing utilities */
+  .gap-responsive {
+    @apply gap-2 sm:gap-4 lg:gap-6;
+  }
+  
+  .p-responsive {
+    @apply p-2 sm:p-4 lg:p-6;
+  }
+  
+  /* Responsive grid utilities */
+  .grid-responsive {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4;
+  }
+}
+
+/* Mobile optimizations */
+@media (max-width: 640px) {
+  /* Smaller click targets for mobile */
+  button, a {
+    @apply min-h-[44px] min-w-[44px];
+  }
+  
+  /* Better touch feedback */
+  button, a, [role="button"] {
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  /* Prevent horizontal scroll */
+  body {
+    overflow-x: hidden;
+  }
+  
+  /* Better font size for mobile */
+  html {
+    font-size: 16px;
+  }
+}
+
+/* Tablet optimizations */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .container {
+    @apply px-6;
+  }
+}
+
+/* Safe area for mobile devices with notches */
+@supports (padding: env(safe-area-inset-top)) {
+  .mobile-safe-area {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
 }

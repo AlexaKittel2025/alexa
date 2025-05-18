@@ -6,7 +6,7 @@ export const getAllPosts = async (limit = 20, offset = 0): Promise<Post[]> => {
   try {
     return await postApi.getAll(limit, offset);
   } catch (error) {
-    console.error('Erro ao buscar posts:', error);
+    
     return [];
   }
 };
@@ -16,7 +16,7 @@ export const getPostById = async (postId: string): Promise<Post | null> => {
   try {
     return await postApi.getById(postId);
   } catch (error) {
-    console.error('Erro ao buscar post por ID:', error);
+    
     return null;
   }
 };
@@ -30,7 +30,7 @@ export const getPostsByUserId = async (
   try {
     return await postApi.getByUserId(userId, limit, offset);
   } catch (error) {
-    console.error('Erro ao buscar posts do usuário:', error);
+    
     return [];
   }
 };
@@ -44,23 +44,30 @@ export const getPostsByTag = async (
   try {
     return await postApi.getByTag(tagName, limit, offset);
   } catch (error) {
-    console.error('Erro ao buscar posts por tag:', error);
+    
     return [];
   }
 };
 
 // Função para criar um novo post
 export const createPost = async (postData: {
-  userId: string;
+  userId?: string;
+  authorId?: string;
   content: string;
   imageURL?: string;
+  type?: string;
   tags?: string[];
   isGenerated?: boolean;
 }): Promise<Post | null> => {
   try {
-    return await postApi.create(postData);
+    // Garantir compatibilidade entre userId e authorId
+    const finalData = {
+      ...postData,
+      userId: postData.userId || postData.authorId
+    };
+    return await postApi.create(finalData);
   } catch (error) {
-    console.error('Erro ao criar post:', error);
+    
     return null;
   }
 };
@@ -73,7 +80,7 @@ export const updatePost = async (
   try {
     return await postApi.update(postId, postData);
   } catch (error) {
-    console.error('Erro ao atualizar post:', error);
+    
     return null;
   }
 };
@@ -84,7 +91,7 @@ export const deletePost = async (postId: string): Promise<boolean> => {
     const response = await postApi.delete(postId);
     return response.success;
   } catch (error) {
-    console.error('Erro ao excluir post:', error);
+    
     return false;
   }
 };
@@ -102,7 +109,7 @@ export const addReactionToPost = async (
     });
     return response.reactions;
   } catch (error) {
-    console.error('Erro ao adicionar reação ao post:', error);
+    
     return null;
   }
 };
@@ -120,7 +127,7 @@ export const addJudgementToPost = async (
     });
     return response.judgements;
   } catch (error) {
-    console.error('Erro ao adicionar julgamento ao post:', error);
+    
     return null;
   }
 }; 

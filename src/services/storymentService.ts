@@ -16,7 +16,7 @@ export const getActiveStoryments = async (limit = 20, offset = 0): Promise<Story
     const storyments = await storymentApi.getActiveStoryments(limit, offset);
     return ensureStorymentFormatting(storyments);
   } catch (error) {
-    console.error('Erro ao buscar storyments ativos:', error);
+    
     return [];
   }
 };
@@ -27,7 +27,7 @@ export const getStorymentById = async (storymentId: string): Promise<Storyment |
     const storyment = await storymentApi.getById(storymentId);
     return ensureStorymentFormatting(storyment);
   } catch (error) {
-    console.error('Erro ao buscar storyment por ID:', error);
+    
     return null;
   }
 };
@@ -43,7 +43,7 @@ export const getStorymentsByUserId = async (
     const storyments = await storymentApi.getByUserId(userId, limit, offset, includeExpired);
     return ensureStorymentFormatting(storyments);
   } catch (error) {
-    console.error('Erro ao buscar storyments do usuário:', error);
+    
     return [];
   }
 };
@@ -59,7 +59,7 @@ export const createStoryment = async (storymentData: CreateStorymentData): Promi
     const storyment = await storymentApi.create(storymentDataToSend);
     return ensureStorymentFormatting(storyment);
   } catch (error) {
-    console.error('Erro ao criar storyment:', error);
+    
     return null;
   }
 };
@@ -70,7 +70,7 @@ export const deleteStoryment = async (storymentId: string): Promise<boolean> => 
     const response = await storymentApi.delete(storymentId);
     return response.success;
   } catch (error) {
-    console.error('Erro ao excluir storyment:', error);
+    
     return false;
   }
 };
@@ -81,7 +81,7 @@ export const markStorymentAsViewed = async (storymentId: string, userId: string)
     const response = await storymentApi.markAsViewed(storymentId, userId);
     return response.success;
   } catch (error) {
-    console.error('Erro ao marcar storyment como visualizado:', error);
+    
     return false;
   }
 };
@@ -92,7 +92,7 @@ export const hasUserViewedStoryment = async (storymentId: string, userId: string
     const response = await storymentApi.hasUserViewed(storymentId, userId);
     return response.hasViewed;
   } catch (error) {
-    console.error('Erro ao verificar visualização de storyment:', error);
+    
     return false;
   }
 };

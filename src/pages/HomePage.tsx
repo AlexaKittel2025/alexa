@@ -1,3 +1,7 @@
+;
+
+;
+import { BadgeCheckIcon, BellIcon, CalendarIcon, FireIcon, HashtagIcon, XIcon } from '@heroicons/react/outline';
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { mockPosts, mockChallenges } from '../services/mockData';
@@ -9,22 +13,7 @@ import Stories from '../components/Stories';
 import RankingCard from '../components/RankingCard';
 import ProPaymentModal from '../components/ProPaymentModal';
 import FloatingChat from '../components/FloatingChat';
-import { generateRandomLie, getCurrentUserProStatus } from '../services/userService';
-import { 
-  CalendarIcon, 
-  BadgeCheckIcon, 
-  XIcon, 
-  BellIcon, 
-  FireIcon,
-  HashtagIcon
-} from '@heroicons/react/outline';
-import BookmarkIcon from '@heroicons/react/outline/BookmarkIcon';
-import UserAddIcon from '@heroicons/react/outline/UserAddIcon';
-import DotsHorizontalIcon from '@heroicons/react/outline/DotsHorizontalIcon';
-import LocationMarkerIcon from '@heroicons/react/outline/LocationMarkerIcon';
-import TrendingUpIcon from '@heroicons/react/outline/TrendingUpIcon';
-import ClockIcon from '@heroicons/react/outline/ClockIcon';
-import ChatAlt2Icon from '@heroicons/react/outline/ChatAlt2Icon';
+import { generateRandomLie, getCurrentUserProStatus } from '../services/userService';;;
 import { useNavigate, Link } from 'react-router-dom';
 import UserProfileLink from '../components/UserProfileLink';
 
@@ -124,7 +113,7 @@ const HomePage: React.FC = () => {
           setIsPro(proStatus);
         }
       } catch (error) {
-        console.error('Erro ao carregar dados:', error);
+        
       } finally {
         setIsLoading(false);
       }
@@ -375,7 +364,7 @@ const HomePage: React.FC = () => {
         setPosts([newPost, ...posts]);
       }
     } catch (error) {
-      console.error('Erro ao gerar mentira:', error);
+      
       setShowProModal(true);
     }
   };
@@ -469,7 +458,7 @@ const HomePage: React.FC = () => {
   };
   
   const handleReport = (postId: string, reason: string) => {
-    console.log(`Post ${postId} reportado: ${reason}`);
+    
     // Em uma aplicação real, aqui seria feita uma chamada à API
     alert(`Denúncia recebida: ${reason}`);
   };

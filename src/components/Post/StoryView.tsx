@@ -67,7 +67,7 @@ export default function StoryView({ initialStoryId, onClose }: StoryViewProps) {
         
         setIsLoading(false);
       } catch (error) {
-        console.error('Erro ao buscar histórias:', error);
+        
         setError('Não foi possível carregar as histórias');
         setIsLoading(false);
       }
@@ -148,7 +148,7 @@ export default function StoryView({ initialStoryId, onClose }: StoryViewProps) {
         method: 'POST',
       });
     } catch (error) {
-      console.error('Erro ao curtir história:', error);
+      
     }
   };
   

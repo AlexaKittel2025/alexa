@@ -28,7 +28,6 @@ const {
   createParam,
 } = require('./runtime/library.js')
 
-
 const Prisma = {}
 
 exports.Prisma = Prisma
@@ -77,9 +76,6 @@ Prisma.NullTypes = {
   JsonNull: objectEnumValues.classes.JsonNull,
   AnyNull: objectEnumValues.classes.AnyNull
 }
-
-
-
 
   const path = require('path')
 
@@ -253,7 +249,6 @@ exports.Prisma.NullsOrder = {
   last: 'last'
 };
 
-
 exports.Prisma.ModelName = {
   User: 'User',
   Account: 'Account',
@@ -345,7 +340,6 @@ config.runtimeDataModel = JSON.parse("{\"models\":{\"User\":{\"dbName\":\"users\
 defineDmmfProperty(exports.Prisma, config.runtimeDataModel)
 config.engineWasm = undefined
 config.compilerWasm = undefined
-
 
 const { warnEnvConflicts } = require('./runtime/library.js')
 

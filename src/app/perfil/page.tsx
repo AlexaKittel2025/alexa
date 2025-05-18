@@ -1,8 +1,9 @@
 'use client';
-
+;
+;
+import { ChevronDownIcon, CogIcon, UserAddIcon } from '@heroicons/react/outline';
 import { useState } from 'react';
 import Image from 'next/image';
-import { Cog6ToothIcon, UserAddIcon, ChevronDownIcon } from '@heroicons/react/outline';
 import PostGrid from '@/components/Post/PostGrid';
 
 // Mock data
@@ -94,7 +95,7 @@ export default function ProfilePage() {
               </div>
               
               <button className="p-1.5 rounded-lg hover:bg-gray-100 ml-auto">
-                <Cog6ToothIcon className="w-5 h-5" />
+                <CogIcon className="w-5 h-5" />
               </button>
             </div>
 

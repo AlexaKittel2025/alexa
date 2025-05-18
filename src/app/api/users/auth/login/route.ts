@@ -4,15 +4,12 @@ import { AuthApiService } from '@/services/AuthApiService';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    console.log('Recebida solicitação de login');
-    
+
     const { user, token } = await AuthApiService.login({
       username: body.email, // Aceita email como username também
       password: body.password
     });
-    
-    console.log('Login bem-sucedido para:', body.email);
-    
+
     // Criar resposta
     const response = NextResponse.json({
       success: true,
@@ -33,8 +30,7 @@ export async function POST(request: NextRequest) {
     return response;
     
   } catch (error) {
-    console.error('Erro ao processar login:', error);
-    
+
     if (error instanceof Error) {
       const message = error.message;
       

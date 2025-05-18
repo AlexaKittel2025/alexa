@@ -1,10 +1,11 @@
+;
+
+;
+import { ExclamationCircleIcon } from '@heroicons/react/outline';
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { User } from '../types';
-import { ExclamationCircleIcon } from '@heroicons/react/outline';
-
-const RegisterPage: React.FC = () => {
+import { User } from '../types';const RegisterPage: React.FC = () => {
   const [formData, setFormData] = useState({
     username: '',
     displayName: '',
@@ -40,23 +41,15 @@ const RegisterPage: React.FC = () => {
     setError('');
     setIsLoading(true);
 
-    console.log('Iniciando processo de registro com dados:', { 
-      username: formData.username, 
-      email: formData.email,
-      displayName: formData.displayName || formData.username,
-      // Não exibir senha por segurança
-      passwordLength: formData.password.length
-    });
-
     if (formData.password !== formData.confirmPassword) {
-      console.log('Erro: Senhas não conferem');
+      
       setError('As senhas não conferem');
       setIsLoading(false);
       return;
     }
     
     if (formData.password.length < 6) {
-      console.log('Erro: Senha muito curta');
+      
       setError('A senha deve ter pelo menos 6 caracteres');
       setIsLoading(false);
       return;
@@ -70,24 +63,18 @@ const RegisterPage: React.FC = () => {
     };
 
     try {
-      console.log('Tentando registrar usuário:', { ...registerData, password: '****' });
-      const success = await register(registerData);
-      console.log('Resultado do registro:', success);
       
+      const success = await register(registerData);
+
       if (success) {
-        console.log('Registro bem-sucedido, redirecionando para home');
+        
         navigate('/');
       } else {
-        console.log('Registro falhou, erro recebido do contexto:', authError);
+        
         setError(authError || 'Falha ao registrar. Tente novamente.');
       }
     } catch (err: any) {
-      console.error('Erro ao registrar usuário:', err);
-      console.error('Detalhes do erro:', { 
-        message: err?.message, 
-        name: err?.name, 
-        stack: err?.stack 
-      });
+
       setError(err?.message || 'Erro ao registrar usuário');
     } finally {
       setIsLoading(false);

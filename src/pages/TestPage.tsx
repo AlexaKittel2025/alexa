@@ -24,10 +24,10 @@ const TestPage: React.FC = () => {
         }
 
         const data = await response.json();
-        console.log('Usuários carregados:', data);
+        
         setUsers(data.users || []);
       } catch (err: any) {
-        console.error('Erro ao carregar usuários:', err);
+        
         setError(err.message || 'Erro ao carregar usuários');
       } finally {
         setLoading(false);

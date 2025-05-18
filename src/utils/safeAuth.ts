@@ -41,7 +41,7 @@ export const safeAuth = {
       // Esta implementação deve ser usada apenas no lado do servidor
       return null;
     } catch (error) {
-      console.error('Erro ao acessar usuário atual:', error);
+      
       return null;
     }
   }

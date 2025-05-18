@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { FaUser, FaTrophy, FaFire } from 'react-icons/fa';
-import LoadingSpinner from '@/components/UI/LoadingSpinner';
+import LoadingSpinner from '@/components/ui/LoadingSpinner';
 
 // Dados falsos para simular o ranking
 const fakeUsers = [

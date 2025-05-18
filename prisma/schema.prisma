@@ -1,10 +1,10 @@
 generator client {
   provider = "prisma-client-js"
-  previewFeatures = []
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -16,6 +16,7 @@ model User {
   emailVerified    DateTime?
   password_hash    String
   image            String?
+  avatar           String?
   bio              String?
   createdAt        DateTime      @default(now()) @map("created_at")
   updatedAt        DateTime      @updatedAt @map("updated_at")
@@ -26,6 +27,11 @@ model User {
   lastLogin        DateTime?     @map("last_login")
   nivelMentiroso   Int           @default(1) @map("nivel_mentiroso")
   pontuacaoTotal   Int           @default(0) @map("pontuacao_total")
+  battleWins       Int           @default(0) @map("battle_wins")
+  totalBattles     Int           @default(0) @map("total_battles")
+  currentStreak    Int           @default(0) @map("current_streak")
+  bestStreak       Int           @default(0) @map("best_streak")
+  lastBattle       DateTime?     @map("last_battle")
   accounts         Account[]
   achievements     Achievement[]
   comments         Comment[]
@@ -37,6 +43,11 @@ model User {
   sessions         Session[]
   badges           UserBadge[]
   stats            UserStats?
+  battlesVoted     Battle[]      @relation("BattleVoter")
+  battlesWon       Battle[]      @relation("BattleWinner")
+  battlesLost      Battle[]      @relation("BattleLoser")
+  notifications    Notification[]
+  sentNotifications Notification[] @relation("NotificationSender")
 
   @@map("users")
 }
@@ -80,20 +91,23 @@ model VerificationToken {
 }
 
 model Post {
-  id        String     @id @default(cuid())
-  title     String
-  content   String
-  imageUrl  String?    @map("image_url")
-  authorId  String     @map("author_id")
-  createdAt DateTime   @default(now()) @map("created_at")
-  updatedAt DateTime   @updatedAt @map("updated_at")
-  isActive  Boolean    @default(true) @map("is_active")
-  views     Int        @default(0)
-  comments  Comment[]
-  tags      PostTag[]
-  author    User       @relation(fields: [authorId], references: [id])
-  reactions Reaction[]
-  reports   Report[]
+  id         String     @id @default(cuid())
+  title      String
+  content    String
+  imageUrl   String?    @map("image_url")
+  authorId   String     @map("author_id")
+  createdAt  DateTime   @default(now()) @map("created_at")
+  updatedAt  DateTime   @updatedAt @map("updated_at")
+  isActive   Boolean    @default(true) @map("is_active")
+  views      Int        @default(0)
+  battleScore Int        @default(0) @map("battle_score")
+  comments   Comment[]
+  tags       PostTag[]
+  author     User       @relation(fields: [authorId], references: [id])
+  reactions  Reaction[]
+  reports    Report[]
+  wonBattles Battle[]   @relation("BattleWinnerPost")
+  lostBattles Battle[]  @relation("BattleLoserPost")
 
   @@map("posts")
 }
@@ -221,4 +235,39 @@ model Report {
   reporter   User      @relation("ReportsMade", fields: [reporterId], references: [id])
 
   @@map("reports")
+}
+
+model Battle {
+  id             String   @id @default(cuid())
+  voterId        String   @map("voter_id")
+  winnerPostId   String   @map("winner_post_id")
+  loserPostId    String   @map("loser_post_id")
+  winnerAuthorId String   @map("winner_author_id")
+  loserAuthorId  String   @map("loser_author_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+  
+  voter          User     @relation("BattleVoter", fields: [voterId], references: [id])
+  winnerPost     Post     @relation("BattleWinnerPost", fields: [winnerPostId], references: [id])
+  loserPost      Post     @relation("BattleLoserPost", fields: [loserPostId], references: [id])
+  winnerAuthor   User     @relation("BattleWinner", fields: [winnerAuthorId], references: [id])
+  loserAuthor    User     @relation("BattleLoser", fields: [loserAuthorId], references: [id])
+
+  @@map("battles")
+}
+
+model Notification {
+  id         String   @id @default(cuid())
+  type       String   // 'reaction', 'comment', 'follow', 'mention', 'system'
+  content    String
+  isRead     Boolean  @default(false) @map("is_read")
+  relatedId  String?  @map("related_id") // ID do post, comentário, etc relacionado
+  senderId   String?  @map("sender_id") // ID do usuário que causou a notificação
+  userId     String   @map("user_id") // ID do usuário que recebe a notificação
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+  
+  user       User     @relation(fields: [userId], references: [id])
+  sender     User?    @relation("NotificationSender", fields: [senderId], references: [id])
+
+  @@map("notifications")
 }

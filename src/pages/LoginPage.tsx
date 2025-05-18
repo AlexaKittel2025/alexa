@@ -29,20 +29,17 @@ const LoginPage: React.FC = () => {
     setError('');
     
     // Log para debug
-    console.log('Tentando login com:', { email, password: password.substring(0, 3) + '***' });
     
     try {
       const success = await login(email, password);
-      
-      console.log('Resultado do login:', success ? 'Sucesso' : 'Falha');
-      
+
       if (success) {
         navigate('/');
       } else {
         setError('E-mail ou senha incorretos');
       }
     } catch (err) {
-      console.error('Erro ao fazer login:', err);
+      
       setError('Ocorreu um erro ao tentar fazer login. Tente novamente.');
     } finally {
       setIsLoading(false);

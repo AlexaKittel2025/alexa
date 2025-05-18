@@ -31,18 +31,11 @@ apiClient.interceptors.response.use(
   },
   (error) => {
     // Log detalhado do erro para desenvolvimento
-    console.error('API Error:', {
-      url: error.config?.url,
-      method: error.config?.method,
-      status: error.response?.status,
-      data: error.response?.data,
-      message: error.message
-    });
 
     // Tratamento específico para erros comuns
     if (error.response?.status === 401) {
       // Redirecionar para login ou mostrar modal
-      console.log('Sessão expirada ou usuário não autenticado');
+      
       // TODO: Implementar redirecionamento ou notificação
     }
 

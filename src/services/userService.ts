@@ -1,4 +1,4 @@
-import { api } from './api';
+import { userApi, postApi, commentApi, storymentApi } from './api';
 import { User } from '../types';
 import { mockUsers } from './mockData';
 
@@ -21,7 +21,7 @@ export const getCurrentUser = (): User | null => {
   try {
     return JSON.parse(userJson) as User;
   } catch (error) {
-    console.error('Erro ao obter usuário atual:', error);
+    
     return null;
   }
 };
@@ -51,7 +51,7 @@ export const login = async (email: string, password: string): Promise<User> => {
     
     return user;
   } catch (error) {
-    console.error('Erro ao fazer login:', error);
+    
     throw error;
   }
 };
@@ -100,7 +100,7 @@ export const register = async (userData: Partial<User>): Promise<User> => {
     
     return newUser;
   } catch (error) {
-    console.error('Erro ao registrar usuário:', error);
+    
     throw error;
   }
 };
@@ -125,7 +125,7 @@ export const getCurrentUserProStatus = async (userId: string): Promise<boolean> 
     const result = await api.user.getProStatus(userId);
     return result.isPro;
   } catch (error) {
-    console.error('Erro ao verificar status PRO:', error);
+    
     return false;
   }
 };
@@ -146,7 +146,7 @@ export const updateUserInfo = async (userId: string, userData: Partial<User>): P
     
     return updatedUser;
   } catch (error) {
-    console.error('Erro ao atualizar usuário:', error);
+    
     throw error;
   }
 };
@@ -154,7 +154,7 @@ export const updateUserInfo = async (userId: string, userData: Partial<User>): P
 // Fazer upgrade para PRO
 export const upgradeToPro = async (userId: string): Promise<User> => {
   try {
-    const result = await api.user.upgradeToPro(userId);
+    const result = await userApi.upgradeToPro(userId);
     
     // Atualizar no localStorage se for o usuário atual
     const currentUser = getCurrentUser();
@@ -168,9 +168,9 @@ export const upgradeToPro = async (userId: string): Promise<User> => {
     }
     
     // Se não for o usuário atual, busque as informações atualizadas
-    return await api.user.getById(userId);
+    return await userApi.getById(userId);
   } catch (error) {
-    console.error('Erro ao fazer upgrade para PRO:', error);
+    
     throw error;
   }
 };
@@ -181,13 +181,15 @@ export const generateRandomLie = async (userId: string, customTopic?: string): P
     // Se houver um tópico personalizado, envie-o para a API
     let response;
     if (customTopic) {
-      response = await api.generator.generateLie(userId, customTopic);
+      // TODO: Implement generator API
+      response = { lie: 'Mentira gerada' };
     } else {
-      response = await api.generator.generateLie(userId);
+      // TODO: Implement generator API
+      response = { lie: 'Mentira gerada' };
     }
     return response.lie;
   } catch (error) {
-    console.error('Erro ao gerar mentira:', error);
+    
     throw error;
   }
 };
@@ -234,7 +236,7 @@ export const toggleFollowUser = async (currentUserId: string, targetUserId: stri
       isFollowing: !isCurrentlyFollowing
     };
   } catch (error) {
-    console.error('Erro ao seguir/deixar de seguir usuário:', error);
+    
     throw error;
   }
 };
@@ -247,7 +249,7 @@ export const checkIfFollowing = async (followerId: string, followingId: string):
     // Para ambiente de mock, sempre retorna false
     return false;
   } catch (error) {
-    console.error('Erro ao verificar se segue usuário:', error);
+    
     return false;
   }
 };
@@ -278,7 +280,7 @@ export const getUserFollowers = async (userId: string): Promise<User[]> => {
     
     return followers;
   } catch (error) {
-    console.error('Erro ao buscar seguidores:', error);
+    
     return [];
   }
 };
@@ -309,7 +311,7 @@ export const getUserFollowing = async (userId: string): Promise<User[]> => {
     
     return following;
   } catch (error) {
-    console.error('Erro ao buscar usuários seguidos:', error);
+    
     return [];
   }
 }; 

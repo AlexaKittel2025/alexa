@@ -1,10 +1,10 @@
+;
+
+;
+import { ExclamationIcon } from '@heroicons/react/outline';
 import React, { useState, useEffect } from 'react';
 import { User, UserSettings } from '../../types';
-import { useAuth } from '../../context/AuthContext';
-import { ExclamationIcon } from '@heroicons/react/outline';
-import XCircleIcon from '@heroicons/react/outline/XCircleIcon';
-import ShieldCheckIcon from '@heroicons/react/outline/ShieldCheckIcon';
-import * as userApi from '../../services/userApi';
+import { useAuth } from '../../context/AuthContext';import * as userApi from '../../services/userApi';
 
 interface SecuritySettingsProps {
   currentUser: User;
@@ -114,7 +114,7 @@ const SecuritySettings: React.FC<SecuritySettingsProps> = ({ currentUser }) => {
         }, 3000);
       }
     } catch (error) {
-      console.error('Erro ao realizar ação de segurança:', error);
+      
       setMessage('Erro ao processar sua solicitação. Tente novamente.');
     } finally {
       setIsLoading(false);
@@ -159,7 +159,7 @@ const SecuritySettings: React.FC<SecuritySettingsProps> = ({ currentUser }) => {
         }, 3000);
       }
     } catch (error) {
-      console.error('Erro ao salvar configurações de segurança:', error);
+      
       setMessage('Erro ao salvar configurações. Tente novamente.');
     } finally {
       setIsLoading(false);
@@ -204,7 +204,7 @@ const SecuritySettings: React.FC<SecuritySettingsProps> = ({ currentUser }) => {
       }, 3000);
       
     } catch (error) {
-      console.error('Erro ao excluir conta:', error);
+      
       setMessage('Erro ao excluir conta. Tente novamente.');
       setIsLoading(false);
     }

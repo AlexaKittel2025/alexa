@@ -3,11 +3,12 @@
 import { useState, useEffect } from 'react';
 import { doc, getDoc, collection, query, where, orderBy, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import MainLayout from '@/components/Layout/MainLayout';
 import PostCard from '@/components/Post/PostCard';
-import UserRewards from '@/components/Profile/UserRewards';
-import CoinSystem from '@/components/Profile/CoinSystem';
-import Achievements from '@/components/Profile/Achievements';
+import UserRewards from '@/components/profile/UserRewards';
+import CoinSystem from '@/components/profile/CoinSystem';
+import Achievements from '@/components/profile/Achievements';
+import AchievementsSystem from '@/components/AchievementsSystem';
+import UserLevelProgress from '@/components/profile/UserLevelProgress';
 import Image from 'next/image';
 import { FaUser, FaCalendarAlt, FaTrophy, FaHeart } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
@@ -38,9 +39,17 @@ interface Post {
   createdAt: any;
 }
 
-export default function PerfilPage({ params }: { params: { id: string } }) {
-  const { id } = params;
+interface PageProps {
+  params: Promise<{ id: string }>;
+}
+
+export default function PerfilPage({ params }: PageProps) {
   const router = useRouter();
+  const [id, setId] = useState<string>('');
+  
+  useEffect(() => {
+    params.then(p => setId(p.id));
+  }, [params]);
   const [user, setUser] = useState<UserData | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
@@ -91,7 +100,7 @@ export default function PerfilPage({ params }: { params: { id: string } }) {
         setPosts(userPosts);
         setLoading(false);
       } catch (error) {
-        console.error('Erro ao carregar perfil:', error);
+        
         setLoading(false);
       }
     };
@@ -101,29 +110,24 @@ export default function PerfilPage({ params }: { params: { id: string } }) {
 
   if (loading) {
     return (
-      <MainLayout>
         <div className="flex justify-center items-center min-h-[60vh]">
           <div className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
         </div>
-      </MainLayout>
     );
   }
 
   if (!user) {
     return (
-      <MainLayout>
         <div className="container mx-auto px-4 py-8">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-gray-800">Usuário não encontrado</h1>
             <p className="mt-2 text-gray-600">O perfil que você está procurando não existe.</p>
           </div>
         </div>
-      </MainLayout>
     );
   }
 
   return (
-    <MainLayout>
       {/* Header do perfil com foto, nome, etc. */}
       <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
         <div className="relative h-48 bg-gradient-to-r from-purple-600 to-indigo-600">
@@ -245,7 +249,8 @@ export default function PerfilPage({ params }: { params: { id: string } }) {
       
       {activeTab === 'conquistas' && (
         <div className="grid grid-cols-1 gap-6">
-          <Achievements userId={id} />
+          <UserLevelProgress userId={id} />
+          <AchievementsSystem userId={id} />
         </div>
       )}
       
@@ -254,6 +259,5 @@ export default function PerfilPage({ params }: { params: { id: string } }) {
           <CoinSystem userId={id} />
         </div>
       )}
-    </MainLayout>
   );
 } 

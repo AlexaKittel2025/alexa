@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { ExclamationCircleIcon, XIcon as XIcon } from '@heroicons/react/outline';
+;
 
-interface ReportButtonProps {
+;
+import { ExclamationCircleIcon } from '@heroicons/react/outline';
+import React, { useState } from 'react';interface ReportButtonProps {
   postId: string;
   onReport: (postId: string, reason: string) => void;
 }

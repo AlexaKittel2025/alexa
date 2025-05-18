@@ -94,12 +94,12 @@ export class AuthApiService {
     }
     
     // Em desenvolvimento, verificar primeiro os usuários mock
-    console.log('NODE_ENV:', process.env.NODE_ENV);
+    
     if (process.env.NODE_ENV !== 'production') {
-      console.log('Tentando login com mock para:', username);
+      
       const mockUser = await verifyMockCredentials(username, password);
       if (mockUser) {
-        console.log('Login com usuário mock:', mockUser.username);
+        
         // Gerar token para o usuário mock
         const token = generateToken(mockUser as any);
         return {
@@ -107,7 +107,7 @@ export class AuthApiService {
           token
         };
       }
-      console.log('Mock login falhou, tentando Prisma');
+      
     }
     
     // Buscar usuário no banco de dados
@@ -142,9 +142,9 @@ export class AuthApiService {
       };
     } catch (error) {
       // Se houver erro com o Prisma, tentar com mock em desenvolvimento
-      console.log('Erro com Prisma:', error);
+      
       if (process.env.NODE_ENV !== 'production') {
-        console.log('Erro com Prisma, tentando com usuário mock');
+        
         const mockUser = await verifyMockCredentials(username, password);
         if (mockUser) {
           const token = generateToken(mockUser as any);

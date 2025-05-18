@@ -3,6 +3,9 @@ import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import { Providers } from '@/providers';
 import InstagramLayout from '@/components/Layout/InstagramLayout';
+import GamificationNotification from '@/components/GamificationNotification';
+import ErrorBoundary from '@/components/ui/ErrorBoundary';
+import { Toaster } from 'react-hot-toast';
 
 // Configurar a fonte
 const inter = Inter({ 
@@ -74,9 +77,22 @@ export default function RootLayout({
       </head>
       <body className="font-sans bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen">
         <Providers>
-          <InstagramLayout>
-            {children}
-          </InstagramLayout>
+          <ErrorBoundary>
+            <InstagramLayout>
+              {children}
+            </InstagramLayout>
+            <GamificationNotification />
+            <Toaster 
+              position="top-center"
+              toastOptions={{
+                className: '',
+                style: {
+                  background: '#333',
+                  color: '#fff',
+                },
+              }}
+            />
+          </ErrorBoundary>
         </Providers>
       </body>
     </html>

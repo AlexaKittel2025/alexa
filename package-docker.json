@@ -1,0 +1,10 @@
+{
+  "scripts": {
+    "docker:start": "docker-compose up -d",
+    "docker:stop": "docker-compose down",
+    "docker:logs": "docker-compose logs -f",
+    "dev:docker": "docker-compose up -d && npm run dev:frontend",
+    "db:push": "npx prisma db push",
+    "db:migrate": "npx prisma migrate dev"
+  }
+}

@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
+;
+
+;
 import { FireIcon } from '@heroicons/react/outline';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';import { useNavigate } from 'react-router-dom';
 import UserProfileLink from './UserProfileLink';
 import { rankingService, RankingPeriod, RankingUser } from '../services/rankingService';
 
@@ -22,7 +24,7 @@ const RankingCard: React.FC = () => {
       const data = await rankingService.getRanking(activePeriod);
       setRankingData(data);
     } catch (error) {
-      console.error('Erro ao carregar ranking:', error);
+      
       setError('Não foi possível carregar o ranking. Tente novamente mais tarde.');
     } finally {
       setIsLoading(false);

@@ -3,13 +3,13 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
-import { FaHeart, FaComment, FaPaperPlane, FaBookmark } from 'react-icons/fa';
-import { FaHeart as FaHeartSolid } from 'react-icons/fa';
+import { FaComment, FaPaperPlane, FaBookmark } from 'react-icons/fa';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import CommentsModal from '../CommentsModal';
 import LikesModal from '../LikesModal';
 import { getUserProfileLink } from '@/utils/userUtils';
+import ReactionsBar from './ReactionsBar';
+import CommentSystem from './CommentSystem';
 import { savePostData, loadPostData, saveLike, saveComments, saveSavedPost, isPostSaved } from '@/utils/persistenceUtils';
 
 interface Comment {
@@ -47,105 +47,41 @@ interface InstagramPostProps {
     likedByMe?: boolean;
     saved?: boolean;
   };
+  currentUser?: {
+    id: string;
+    name: string;
+    username: string;
+    avatar: string;
+  };
   onLike?: (postId: string) => void;
   onSave?: (postId: string) => void;
   onShare?: (postId: string) => void;
   onComment?: (postId: string, comment: string) => void;
 }
 
-export default function InstagramPost({ post, onLike, onSave, onShare, onComment }: InstagramPostProps) {
-  const [liked, setLiked] = useState(post.likedByMe || false);
-  const [likes, setLikes] = useState(post.likes);
+export default function InstagramPost({ post, currentUser, onLike, onSave, onShare, onComment }: InstagramPostProps) {
   const [saved, setSaved] = useState(post.saved || false);
   const [showFullContent, setShowFullContent] = useState(false);
-  const [comment, setComment] = useState('');
-  const [comments, setComments] = useState<Comment[]>([]);
   const [commentCount, setCommentCount] = useState(post.comments);
   const [showCommentsModal, setShowCommentsModal] = useState(false);
   const [showLikesModal, setShowLikesModal] = useState(false);
+  const [showCommentInput, setShowCommentInput] = useState(false);
   const [usersWhoLiked, setUsersWhoLiked] = useState<UserLike[]>([]);
+  const [totalReactions, setTotalReactions] = useState(post.likes);
 
   // Sync state with props
   useEffect(() => {
-    setLiked(post.likedByMe || false);
-    setLikes(post.likes);
     setSaved(post.saved || false);
-  }, [post.likedByMe, post.likes, post.saved]);
+  }, [post.saved]);
 
-  // Load saved comments from localStorage
-  useEffect(() => {
-    const savedComments = localStorage.getItem(`post-${post.id}-comments`);
-    if (savedComments) {
-      setComments(JSON.parse(savedComments));
-      setCommentCount(JSON.parse(savedComments).length);
-    }
-  }, [post.id]);
+  const handleReactionsUpdate = (reactions: any) => {
+    // Calcular o total de reações
+    const total = Object.values(reactions).reduce((sum: number, count: any) => sum + count, 0);
+    setTotalReactions(total);
+  };
 
-  // Save comments to localStorage whenever they change
-  useEffect(() => {
-    localStorage.setItem(`post-${post.id}-comments`, JSON.stringify(comments));
-  }, [comments, post.id]);
-
-  // Load saved likes from localStorage
-  useEffect(() => {
-    const savedLikes = localStorage.getItem(`post-${post.id}-likes`);
-    if (savedLikes) {
-      const parsed = JSON.parse(savedLikes);
-      setUsersWhoLiked(parsed);
-      setLikes(parsed.length);
-    } else {
-      // Mock initial likes if post has likes
-      const mockLikes: UserLike[] = [
-        {
-          id: 'user-1',
-          name: 'Ana Silva',
-          username: 'anasilva',
-          avatar: '/images/avatar-placeholder.jpg',
-          isFollowing: true
-        },
-        {
-          id: 'user-2',
-          name: 'Carlos Santos',
-          username: 'carlossantos',
-          avatar: '/images/avatar-placeholder.jpg',
-          isFollowing: false
-        }
-      ];
-      if (post.likes > 0) {
-        const initialLikes = mockLikes.slice(0, Math.min(post.likes, mockLikes.length));
-        setUsersWhoLiked(initialLikes);
-      } else {
-        setUsersWhoLiked([]);
-      }
-    }
-  }, [post.id]);
-
-  // Save likes to localStorage whenever they change
-  useEffect(() => {
-    localStorage.setItem(`post-${post.id}-likes`, JSON.stringify(usersWhoLiked));
-  }, [usersWhoLiked, post.id]);
-
-  const handleLike = () => {
-    const currentUser: UserLike = {
-      id: 'current-user',
-      name: 'Meu Nome',
-      username: 'meuusuario',
-      avatar: '/images/avatar-placeholder.jpg',
-      isFollowing: false
-    };
-
-    if (liked) {
-      setUsersWhoLiked(usersWhoLiked.filter(user => user.id !== 'current-user'));
-      setLikes(likes - 1);
-    } else {
-      setUsersWhoLiked([currentUser, ...usersWhoLiked]);
-      setLikes(likes + 1);
-    }
-    
-    setLiked(!liked);
-    if (onLike) {
-      onLike(post.id);
-    }
+  const handleCommentsUpdate = (count: number) => {
+    setCommentCount(count);
   };
 
   const handleSave = () => {
@@ -161,72 +97,13 @@ export default function InstagramPost({ post, onLike, onSave, onShare, onComment
     }
   };
 
-  const handleComment = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (comment.trim()) {
-      const newComment: Comment = {
-        id: Date.now().toString(),
-        userId: 'current-user',
-        username: 'meuusuario',
-        userAvatar: '/images/avatar-placeholder.jpg',
-        text: comment,
-        createdAt: new Date(),
-        isMyComment: true
-      };
-      
-      setComments([...comments, newComment]);
-      setCommentCount(commentCount + 1);
-      setComment('');
-      
-      if (onComment) {
-        onComment(post.id, comment);
-      }
-    }
-  };
-
-  const handleAddComment = (text: string) => {
-    const newComment: Comment = {
-      id: Date.now().toString(),
-      userId: 'current-user',
-      username: 'meuusuario',
-      userAvatar: '/images/avatar-placeholder.jpg',
-      text: text,
-      createdAt: new Date(),
-      isMyComment: true
-    };
-    
-    setComments([...comments, newComment]);
-    setCommentCount(commentCount + 1);
-    
-    if (onComment) {
-      onComment(post.id, text);
-    }
-  };
-
-  const handleEditComment = (commentId: string, newText: string) => {
-    setComments(comments.map(comment => 
-      comment.id === commentId ? { ...comment, text: newText } : comment
-    ));
-  };
-
-  const handleDeleteComment = (commentId: string) => {
-    setComments(comments.filter(comment => comment.id !== commentId));
-    setCommentCount(commentCount - 1);
-  };
-
-  const handleFollowFromLikes = (userId: string) => {
-    setUsersWhoLiked(usersWhoLiked.map(user =>
-      user.id === userId ? { ...user, isFollowing: !user.isFollowing } : user
-    ));
-  };
-
   const contentPreview = post.content.length > 100 && !showFullContent
     ? post.content.slice(0, 100) + '...'
     : post.content;
 
   return (
     <>
-      <article className="bg-white border border-gray-200 rounded-lg mb-6">
+      <article className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-lg mb-6">
         {/* Header */}
         <div className="flex items-center justify-between p-3">
           <Link href={getUserProfileLink(post.user.username)} className="flex items-center gap-3">
@@ -239,10 +116,10 @@ export default function InstagramPost({ post, onLike, onSave, onShare, onComment
                 className="w-full h-full object-cover"
               />
             </div>
-            <span className="font-medium text-sm">{post.user.username}</span>
+            <span className="font-medium text-sm dark:text-white">{post.user.username}</span>
           </Link>
           
-          <button className="p-2">
+          <button className="p-2 dark:text-gray-300">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
             </svg>
@@ -263,58 +140,39 @@ export default function InstagramPost({ post, onLike, onSave, onShare, onComment
 
         {/* Actions */}
         <div className="p-3">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-4">
-              <button onClick={handleLike} className="transition-transform active:scale-110">
-                {liked ? (
-                  <FaHeartSolid className="w-6 h-6 text-red-500" />
-                ) : (
-                  <FaHeart className="w-6 h-6 text-gray-900 hover:text-gray-600" />
-                )}
-              </button>
-              
-              <button 
-                onClick={() => setShowCommentsModal(true)}
-                className="transition-transform active:scale-110"
-              >
-                <FaComment className="w-6 h-6 text-gray-900 hover:text-gray-600" />
-              </button>
-              
-              <button onClick={handleShare} className="transition-transform active:scale-110">
-                <FaPaperPlane className="w-6 h-6 text-gray-900 hover:text-gray-600 -rotate-45" />
-              </button>
-            </div>
-            
-            <button onClick={handleSave} className="transition-transform active:scale-110">
-              {saved ? (
-                <FaBookmark className="w-6 h-6 text-gray-900" />
-              ) : (
-                <FaBookmark className="w-6 h-6 text-gray-900 hover:text-gray-600" />
-              )}
-            </button>
+          <div className="mb-3">
+            <ReactionsBar 
+              postId={post.id}
+              authorId={post.user.id}
+              onUpdate={handleReactionsUpdate}
+              onComment={() => setShowCommentInput(!showCommentInput)}
+              onShare={handleShare}
+              onSave={handleSave}
+              isSaved={saved}
+            />
           </div>
 
           {/* Likes */}
           <div className="mb-2">
             <button 
               onClick={() => setShowLikesModal(true)}
-              className="font-semibold text-sm hover:text-gray-600 transition-colors"
+              className="font-semibold text-sm hover:text-gray-600 dark:text-white dark:hover:text-gray-300 transition-colors"
             >
-              {likes.toLocaleString('pt-BR')} curtidas
+              {totalReactions.toLocaleString('pt-BR')} curtidas
             </button>
           </div>
 
           {/* Content */}
           <div className="mb-2">
-            <Link href={`/perfil/${post.user.id}`} className="font-semibold text-sm mr-2">
+            <Link href={`/perfil/${post.user.id}`} className="font-semibold text-sm mr-2 dark:text-white">
               {post.user.username}
             </Link>
-            <span className="text-sm">
+            <span className="text-sm dark:text-gray-300">
               {contentPreview}
               {post.content.length > 100 && !showFullContent && (
                 <button
                   onClick={() => setShowFullContent(true)}
-                  className="text-gray-500 ml-1"
+                  className="text-gray-500 dark:text-gray-400 ml-1"
                 >
                   mais
                 </button>
@@ -322,32 +180,18 @@ export default function InstagramPost({ post, onLike, onSave, onShare, onComment
             </span>
           </div>
 
-          {/* Comments Preview */}
-          {comments.length > 0 && (
-            <div className="mb-2">
-              {comments.slice(-2).map((comment) => (
-                <div key={comment.id} className="text-sm">
-                  <Link href={getUserProfileLink(comment.username)} className="font-semibold mr-2">
-                    {comment.username}
-                  </Link>
-                  <span>{comment.text}</span>
-                </div>
-              ))}
-            </div>
-          )}
-
           {/* View All Comments */}
           {commentCount > 0 && (
             <button 
               onClick={() => setShowCommentsModal(true)}
-              className="text-sm text-gray-500 mb-2 block hover:text-gray-700"
+              className="text-sm text-gray-500 dark:text-gray-400 mb-2 block hover:text-gray-700 dark:hover:text-gray-300"
             >
               Ver todos os {commentCount} comentários
             </button>
           )}
 
           {/* Timestamp */}
-          <time className="text-xs text-gray-500 uppercase">
+          <time className="text-xs text-gray-500 dark:text-gray-400 uppercase">
             {formatDistanceToNow(new Date(post.createdAt), {
               addSuffix: true,
               locale: ptBR
@@ -355,49 +199,52 @@ export default function InstagramPost({ post, onLike, onSave, onShare, onComment
           </time>
         </div>
 
-        {/* Comment Input */}
-        <div className="border-t border-gray-200 p-3">
-          <form onSubmit={handleComment} className="flex items-center gap-3">
-            <EmojiButton />
-            <input
-              type="text"
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              placeholder="Adicione um comentário..."
-              className="flex-1 text-sm outline-none"
+        {/* Comment Input - Inline */}
+        {showCommentInput && (
+          <div className="border-t border-gray-200 dark:border-gray-700 p-3">
+            <CommentSystem 
+              postId={post.id}
+              authorId={post.user.id}
+              onCommentsUpdate={handleCommentsUpdate}
+              isModal={false}
             />
-            <button
-              type="submit"
-              disabled={!comment.trim()}
-              className={`text-sm font-semibold transition-colors ${
-                comment.trim()
-                  ? 'text-blue-500 hover:text-blue-600'
-                  : 'text-gray-300'
-              }`}
-            >
-              Publicar
-            </button>
-          </form>
-        </div>
+          </div>
+        )}
       </article>
 
       {/* Comments Modal */}
-      <CommentsModal
-        isOpen={showCommentsModal}
-        onClose={() => setShowCommentsModal(false)}
-        postId={post.id}
-        comments={comments}
-        onAddComment={handleAddComment}
-        onEditComment={handleEditComment}
-        onDeleteComment={handleDeleteComment}
-      />
+      {showCommentsModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-lg max-w-2xl w-full max-h-[80vh] flex flex-col">
+            <div className="flex justify-between items-center p-4 border-b dark:border-gray-700">
+              <h2 className="text-lg font-semibold dark:text-white">Comentários</h2>
+              <button
+                onClick={() => setShowCommentsModal(false)}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-full"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="flex-1 overflow-hidden">
+              <CommentSystem 
+                postId={post.id}
+                authorId={post.user.id}
+                onClose={() => setShowCommentsModal(false)}
+                isModal={true}
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Likes Modal */}
       <LikesModal
         isOpen={showLikesModal}
         onClose={() => setShowLikesModal(false)}
         likes={usersWhoLiked}
-        onFollow={handleFollowFromLikes}
+        onFollow={() => {}}
       />
     </>
   );

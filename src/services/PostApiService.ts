@@ -17,12 +17,88 @@ export interface CreatePostData {
 }
 
 export class PostApiService {
+  // Buscar posts por termo de busca
+  static async searchPosts(searchTerm: string) {
+    try {
+      // Mock data por enquanto
+      const mockPosts = [
+        {
+          id: '1',
+          user: {
+            id: '1',
+            name: 'João Silva',
+            username: 'joaosilva',
+            avatar: '/images/avatar-placeholder.jpg'
+          },
+          content: `Hoje vi um unicórnio no estacionamento do shopping. Ele estava comendo batata frita e ouvindo música clássica. #mentira #criatividade`,
+          likes: 42,
+          comments: 5,
+          createdAt: new Date().toISOString(),
+          likedByMe: false,
+          saved: false,
+          imageUrl: '',
+          truth_percentage: 5,
+          tags: ['mentira', 'criatividade']
+        },
+        {
+          id: '2',
+          user: {
+            id: '2',
+            name: 'Maria Santos',
+            username: 'mariasantos',
+            avatar: '/images/avatar-placeholder.jpg'
+          },
+          content: `Minha avó surfou pela primeira vez aos 95 anos e ganhou o campeonato mundial. #mentira #humor`,
+          likes: 87,
+          comments: 12,
+          createdAt: new Date().toISOString(),
+          likedByMe: false,
+          saved: false,
+          imageUrl: '',
+          truth_percentage: 2,
+          tags: ['mentira', 'humor']
+        }
+      ];
+      
+      // Filtrar posts que contenham o termo de busca
+      const filteredPosts = mockPosts.filter(post => 
+        post.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        post.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
+      );
+      
+      return filteredPosts;
+    } catch (error) {
+      
+      return [];
+    }
+  }
+  
   // Obter posts com filtros e paginação
   static async getPostsWithFilters(filters: PostFilters) {
     const { limit = 10, cursor, tag, userId } = filters;
     
+    // Construir o where clause
+    const where: any = {};
+    
+    // Filtrar por usuário se fornecido
+    if (userId) {
+      where.authorId = userId;
+    }
+    
+    // Filtrar por tag se fornecido
+    if (tag) {
+      where.tags = {
+        some: {
+          tag: {
+            name: tag
+          }
+        }
+      };
+    }
+    
     // Construir o query base
     const queryOptions: any = {
+      where,
       take: limit,
       orderBy: {
         createdAt: 'desc' as const
@@ -31,7 +107,8 @@ export class PostApiService {
         author: {
           select: {
             id: true,
-            name: true,
+            display_name: true,
+            username: true,
             image: true
           }
         },
@@ -56,32 +133,6 @@ export class PostApiService {
         id: cursor
       };
     }
-    
-    // Filtros adicionais
-    const where: any = {};
-    
-    // Filtrar por tag
-    if (tag) {
-      where.tags = {
-        some: {
-          tag: {
-            name: tag
-          }
-        }
-      };
-    }
-    
-    // Filtrar por usuário
-    if (userId) {
-      where.authorId = userId;
-    }
-    
-    // Adicionar filtros ao query
-    if (Object.keys(where).length > 0) {
-      queryOptions.where = where;
-    }
-    
-    console.log('Consultando posts com as seguintes opções:', JSON.stringify(queryOptions, null, 2));
     
     // Executar a consulta
     const posts = await prisma.post.findMany(queryOptions);
@@ -154,7 +205,7 @@ export class PostApiService {
           }
         });
       } catch (tagError) {
-        console.error(`Erro ao processar tag "${tagName}":`, tagError);
+        
         // Continuar com as próximas tags mesmo se houver erro
       }
     }

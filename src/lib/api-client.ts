@@ -29,7 +29,7 @@ async function apiCall<T>(endpoint: string, options: RequestInit = {}): Promise<
 
     return await response.json();
   } catch (error) {
-    console.error(`API Error (${endpoint}):`, error);
+    console.error('API Client Error:', error);
     throw error;
   }
 }
