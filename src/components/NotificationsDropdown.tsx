@@ -1,90 +1,16 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { FaHeart, FaComment, FaUserPlus, FaTrophy, FaStar, FaBell } from 'react-icons/fa';
+import { FaHeart, FaComment, FaUserPlus, FaTrophy, FaStar, FaBell, FaGamepad } from 'react-icons/fa';
 import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-
-interface Notification {
-  id: string;
-  type: 'like' | 'comment' | 'follow' | 'achievement' | 'system';
-  title: string;
-  message: string;
-  from?: {
-    id: string;
-    name: string;
-    username: string;
-    avatar: string;
-  };
-  postId?: string;
-  createdAt: Date;
-  read: boolean;
-}
-
-// Mock de notificações
-const mockNotifications: Notification[] = [
-  {
-    id: '1',
-    type: 'like',
-    title: 'Nova curtida',
-    message: 'curtiu sua mentira',
-    from: {
-      id: '2',
-      name: 'Maria Silva',
-      username: 'mariasilva',
-      avatar: '/images/avatar-placeholder.jpg'
-    },
-    postId: '1',
-    createdAt: new Date(Date.now() - 1000 * 60 * 5), // 5 minutos atrás
-    read: false
-  },
-  {
-    id: '2',
-    type: 'comment',
-    title: 'Novo comentário',
-    message: 'comentou: "Que mentira criativa!"',
-    from: {
-      id: '3',
-      name: 'João Santos',
-      username: 'joaosantos',
-      avatar: '/images/avatar-placeholder.jpg'
-    },
-    postId: '1',
-    createdAt: new Date(Date.now() - 1000 * 60 * 30), // 30 minutos atrás
-    read: false
-  },
-  {
-    id: '3',
-    type: 'follow',
-    title: 'Novo seguidor',
-    message: 'começou a seguir você',
-    from: {
-      id: '4',
-      name: 'Ana Costa',
-      username: 'anacosta',
-      avatar: '/images/avatar-placeholder.jpg'
-    },
-    createdAt: new Date(Date.now() - 1000 * 60 * 60), // 1 hora atrás
-    read: true
-  },
-  {
-    id: '4',
-    type: 'achievement',
-    title: 'Nova conquista!',
-    message: 'Você desbloqueou: Mentiroso Iniciante',
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2 horas atrás
-    read: true
-  }
-];
+import { useNotifications } from '@/providers/NotificationProvider';
 
 const NotificationsDropdown: React.FC = () => {
+  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
   const [isOpen, setIsOpen] = useState(false);
-  const [notifications, setNotifications] = useState(mockNotifications);
   const dropdownRef = useRef<HTMLDivElement>(null);
-
-  // Contador de notificações não lidas
-  const unreadCount = notifications.filter(n => !n.read).length;
 
   // Fechar dropdown ao clicar fora
   useEffect(() => {
@@ -103,16 +29,6 @@ const NotificationsDropdown: React.FC = () => {
     setIsOpen(!isOpen);
   };
 
-  const markAsRead = (notificationId: string) => {
-    setNotifications(prev => 
-      prev.map(n => n.id === notificationId ? { ...n, read: true } : n)
-    );
-  };
-
-  const markAllAsRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-  };
-
   const getIcon = (type: Notification['type']) => {
     switch (type) {
       case 'like':
@@ -123,6 +39,14 @@ const NotificationsDropdown: React.FC = () => {
         return <FaUserPlus className="text-green-500" />;
       case 'achievement':
         return <FaTrophy className="text-yellow-500" />;
+      case 'battle_challenge':
+      case 'battle_result':
+        return <FaGamepad className="text-purple-500" />;
+      case 'level_up':
+        return <FaStar className="text-orange-500" />;
+      case 'mention':
+        return <FaBell className="text-indigo-500" />;
+      case 'system':
       default:
         return <FaBell className="text-gray-500" />;
     }
@@ -156,7 +80,7 @@ const NotificationsDropdown: React.FC = () => {
               {unreadCount > 0 && (
                 <button
                   onClick={markAllAsRead}
-                  className="text-sm text-primary hover:underline"
+                  className="text-sm text-purple-600 hover:underline"
                 >
                   Marcar todas como lidas
                 </button>
@@ -171,20 +95,20 @@ const NotificationsDropdown: React.FC = () => {
                 Nenhuma notificação ainda
               </div>
             ) : (
-              notifications.map((notification) => (
+              notifications.slice(0, 10).map((notification) => (
                 <div
                   key={notification.id}
                   className={`p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer ${
-                    !notification.read ? 'bg-blue-50 dark:bg-gray-700' : ''
+                    !notification.isRead ? 'bg-blue-50 dark:bg-gray-700' : ''
                   }`}
                   onClick={() => markAsRead(notification.id)}
                 >
                   <div className="flex items-start gap-3">
                     {/* Ícone ou avatar */}
-                    {notification.from ? (
+                    {notification.sender ? (
                       <img
-                        src={notification.from.avatar}
-                        alt={notification.from.name}
+                        src={notification.sender.avatar || '/images/avatar-placeholder.jpg'}
+                        alt={notification.sender.displayName}
                         className="w-10 h-10 rounded-full"
                       />
                     ) : (
@@ -195,20 +119,25 @@ const NotificationsDropdown: React.FC = () => {
 
                     {/* Conteúdo */}
                     <div className="flex-1">
+                      {notification.title && (
+                        <p className="text-sm font-semibold dark:text-white">
+                          {notification.title}
+                        </p>
+                      )}
                       <p className="text-sm dark:text-white">
-                        {notification.from && (
+                        {notification.sender && (
                           <Link 
-                            href={`/usuario/${notification.from.username}`}
+                            href={`/usuario/${notification.sender.username}`}
                             className="font-semibold hover:underline"
                           >
-                            {notification.from.name}
+                            {notification.sender.displayName}
                           </Link>
                         )}
-                        {notification.from && ' '}
-                        {notification.message}
+                        {notification.sender && ' '}
+                        {notification.content}
                       </p>
                       <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                        {formatDistanceToNow(notification.createdAt, { 
+                        {formatDistanceToNow(new Date(notification.createdAt), { 
                           addSuffix: true,
                           locale: ptBR 
                         })}
@@ -216,7 +145,7 @@ const NotificationsDropdown: React.FC = () => {
                     </div>
 
                     {/* Indicador de não lida */}
-                    {!notification.read && (
+                    {!notification.isRead && (
                       <div className="w-2 h-2 bg-blue-500 rounded-full mt-2" />
                     )}
                   </div>
@@ -228,7 +157,7 @@ const NotificationsDropdown: React.FC = () => {
           {/* Footer */}
           <Link 
             href="/notificacoes"
-            className="block p-3 text-center text-sm text-primary hover:bg-gray-50 dark:hover:bg-gray-700 border-t dark:border-gray-700"
+            className="block p-3 text-center text-sm text-purple-600 hover:bg-gray-50 dark:hover:bg-gray-700 border-t dark:border-gray-700"
           >
             Ver todas as notificações
           </Link>

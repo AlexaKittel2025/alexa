@@ -66,6 +66,34 @@ Este é um projeto chamado Mentei App, baseado em Next.js 14.0.3 com TypeScript 
 - Chat global em tempo real
 - Ranking de usuários e histórias
 - Badges e recompensas por conquistas
+- Sistema de batalhas de mentiras com votação em tempo real
+
+## Sistema de Batalhas
+
+O sistema de batalhas foi completamente atualizado e agora funciona com banco de dados real:
+
+### Arquitetura
+- **BattleService**: Serviço centralizado para todas as operações de batalha
+- **API Endpoints**: 
+  - `/api/battles` - GET (estatísticas, batalha ativa, histórico), POST (criar/entrar em batalha)
+  - `/api/battles/vote` - POST (votar), GET (verificar se pode votar)
+- **Componentes**:
+  - `BattleMentirasNew`: Componente principal atualizado usando APIs reais
+  - `BattleEntryModal`: Modal para entrada em batalhas
+  - `BattleCard`, `BattleStats`, `BattleHistory`: Componentes de UI
+
+### Estrutura do Banco de Dados
+- `BattlePost`: Posts específicos para batalhas
+- `Battle`: Batalhas com status (waiting, active, finished)
+- `BattleVote`: Registro de votos
+- `BattleStats`: Estatísticas de vitórias/derrotas
+
+### Fluxo
+1. Usuário cria um post de batalha (primeiro participante)
+2. Sistema aguarda outro usuário entrar (segundo participante)
+3. Batalha fica ativa para votação de outros usuários
+4. Sistema determina vencedor baseado nos votos
+5. Estatísticas são atualizadas automaticamente
 
 Ao trabalhar neste projeto, manter a estrutura organizada e garantir que as integrações entre frontend, backend e banco de dados funcionem corretamente.
 

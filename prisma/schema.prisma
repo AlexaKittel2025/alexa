@@ -24,6 +24,7 @@ model User {
   score            Int           @default(0)
   isOnline         Boolean       @default(false) @map("is_online")
   isPro            Boolean       @default(false) @map("is_pro")
+  isActive         Boolean       @default(true) @map("is_active")
   lastLogin        DateTime?     @map("last_login")
   nivelMentiroso   Int           @default(1) @map("nivel_mentiroso")
   pontuacaoTotal   Int           @default(0) @map("pontuacao_total")
@@ -43,11 +44,14 @@ model User {
   sessions         Session[]
   badges           UserBadge[]
   stats            UserStats?
-  battlesVoted     Battle[]      @relation("BattleVoter")
+  battlePosts      BattlePost[]
+  battleVotes      BattleVote[]
+  battleStats      BattleStats[]
   battlesWon       Battle[]      @relation("BattleWinner")
-  battlesLost      Battle[]      @relation("BattleLoser")
   notifications    Notification[]
   sentNotifications Notification[] @relation("NotificationSender")
+  followers        Follow[]      @relation("FollowingUser")
+  following        Follow[]      @relation("FollowerUser")
 
   @@map("users")
 }
@@ -106,8 +110,6 @@ model Post {
   author     User       @relation(fields: [authorId], references: [id])
   reactions  Reaction[]
   reports    Report[]
-  wonBattles Battle[]   @relation("BattleWinnerPost")
-  lostBattles Battle[]  @relation("BattleLoserPost")
 
   @@map("posts")
 }
@@ -237,22 +239,67 @@ model Report {
   @@map("reports")
 }
 
-model Battle {
-  id             String   @id @default(cuid())
-  voterId        String   @map("voter_id")
-  winnerPostId   String   @map("winner_post_id")
-  loserPostId    String   @map("loser_post_id")
-  winnerAuthorId String   @map("winner_author_id")
-  loserAuthorId  String   @map("loser_author_id")
-  createdAt      DateTime @default(now()) @map("created_at")
+model BattlePost {
+  id         String   @id @default(cuid())
+  content    String
+  imageUrl   String?  @map("image_url")
+  authorId   String   @map("author_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
   
-  voter          User     @relation("BattleVoter", fields: [voterId], references: [id])
-  winnerPost     Post     @relation("BattleWinnerPost", fields: [winnerPostId], references: [id])
-  loserPost      Post     @relation("BattleLoserPost", fields: [loserPostId], references: [id])
-  winnerAuthor   User     @relation("BattleWinner", fields: [winnerAuthorId], references: [id])
-  loserAuthor    User     @relation("BattleLoser", fields: [loserAuthorId], references: [id])
+  author     User     @relation(fields: [authorId], references: [id])
+  battlesA   Battle[] @relation("BattlePostA")
+  battlesB   Battle[] @relation("BattlePostB")
+  votes      BattleVote[]
+  
+  @@map("battle_posts")
+}
 
+model Battle {
+  id         String   @id @default(cuid())
+  postAId    String   @map("post_a_id")
+  postBId    String?  @map("post_b_id")
+  status     String   @default("waiting") // waiting, active, finished
+  winnerId   String?  @map("winner_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+  
+  postA      BattlePost  @relation("BattlePostA", fields: [postAId], references: [id])
+  postB      BattlePost? @relation("BattlePostB", fields: [postBId], references: [id])
+  winner     User?       @relation("BattleWinner", fields: [winnerId], references: [id])
+  votes      BattleVote[]
+  stats      BattleStats[]
+  
   @@map("battles")
+}
+
+model BattleVote {
+  id         String     @id @default(cuid())
+  battleId   String     @map("battle_id")
+  postId     String     @map("post_id")
+  userId     String     @map("user_id")
+  createdAt  DateTime   @default(now()) @map("created_at")
+  
+  battle     Battle     @relation(fields: [battleId], references: [id])
+  post       BattlePost @relation(fields: [postId], references: [id])
+  user       User       @relation(fields: [userId], references: [id])
+  
+  @@unique([battleId, userId])
+  @@map("battle_votes")
+}
+
+model BattleStats {
+  id         String   @id @default(cuid())
+  battleId   String   @map("battle_id")
+  userId     String   @map("user_id")
+  won        Boolean
+  createdAt  DateTime @default(now()) @map("created_at")
+  
+  battle     Battle   @relation(fields: [battleId], references: [id])
+  user       User     @relation(fields: [userId], references: [id])
+  
+  @@unique([battleId, userId])
+  @@map("battle_stats")
 }
 
 model Notification {
@@ -270,4 +317,17 @@ model Notification {
   sender     User?    @relation("NotificationSender", fields: [senderId], references: [id])
 
   @@map("notifications")
+}
+
+model Follow {
+  id         String   @id @default(cuid())
+  followerId String   @map("follower_id")
+  followingId String  @map("following_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+  
+  follower   User     @relation("FollowerUser", fields: [followerId], references: [id])
+  following  User     @relation("FollowingUser", fields: [followingId], references: [id])
+
+  @@unique([followerId, followingId])
+  @@map("follows")
 }

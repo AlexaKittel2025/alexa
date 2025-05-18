@@ -24,6 +24,7 @@ import NotificationsDropdown from '@/components/NotificationsDropdown';
 
 const menuItems = [
   { label: 'Início', href: '/', icon: FaHome, activeIcon: FaHome },
+  { label: 'Buscar', href: '/search', icon: FaSearch, activeIcon: FaSearch },
   { label: 'Notificações', href: '/notificacoes', icon: FaHeart, activeIcon: FaHeart },
   { label: 'Explorar', href: '/explorar', icon: FaMagic },
   { label: 'Batalhas', href: '/batalhas', icon: FaSmile, activeIcon: FaSmile },

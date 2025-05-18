@@ -522,12 +522,14 @@ const Post: React.FC<PostProps> = ({
         )}
       </div>
       
-      {post.imageURL && (
+      {/* Imagem do post */}
+      {(post.imageURL || post.imageUrl || post.image) && (
         <div className="mb-4 px-4">
           <img 
-            src={post.imageURL} 
+            src={post.imageURL || post.imageUrl || post.image} 
             alt={`Imagem do post de ${post.user?.displayName || 'usuário'}`} 
-            className="w-full h-auto rounded-lg"
+            className="w-full h-auto rounded-lg object-cover"
+            style={{ maxHeight: '500px' }}
           />
         </div>
       )}

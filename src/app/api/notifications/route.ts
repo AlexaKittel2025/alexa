@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { authOptions } from '@/lib/auth.config';
 import { getServerSession } from 'next-auth';
-import { prisma } from '@/lib/prisma';
+import { NotificationService } from '@/services/NotificationService';
 
 export async function GET(request: NextRequest) {
   try {
@@ -11,41 +11,25 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
-    // Buscar notificações do usuário
-    const notifications = await prisma.notification.findMany({
-      where: {
-        userId: session.user.id
-      },
-      orderBy: {
-        createdAt: 'desc'
-      },
-      take: 50 // Limitar a 50 notificações recentes
-    });
+    const searchParams = request.nextUrl.searchParams;
+    const limit = parseInt(searchParams.get('limit') || '20');
+    const offset = parseInt(searchParams.get('offset') || '0');
+    const unreadOnly = searchParams.get('unreadOnly') === 'true';
 
-    // Formatar os dados
-    const formattedNotifications = notifications.map(notification => ({
-      id: notification.id,
-      type: notification.type,
-      content: notification.content,
-      is_read: notification.isRead,
-      related_id: notification.relatedId,
-      sender_id: notification.senderId,
-      created_at: notification.createdAt.toISOString()
-    }));
+    // Buscar notificações usando o serviço
+    const result = await NotificationService.getUserNotifications(
+      session.user.id,
+      { limit, offset, unreadOnly }
+    );
 
-    return NextResponse.json(formattedNotifications);
+    return NextResponse.json(result);
   } catch (error) {
-
-    // Se a tabela não existir, retornar array vazio
-    if (error.code === 'P2021') {
-      return NextResponse.json([]);
-    }
-    
+    console.error('Erro ao buscar notificações:', error);
     return NextResponse.json({ error: 'Erro ao buscar notificações' }, { status: 500 });
   }
 }
 
-// Criar nova notificação
+// Criar nova notificação (apenas para fins de teste/admin)
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
@@ -55,21 +39,21 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { type, content, relatedId, userId } = body;
+    const { type, title, content, userId, relatedId, metadata } = body;
 
-    const notification = await prisma.notification.create({
-      data: {
-        type,
-        content,
-        relatedId,
-        userId,
-        senderId: session.user.id
-      }
+    const notification = await NotificationService.createNotification({
+      type,
+      title,
+      content,
+      userId: userId || session.user.id,
+      senderId: session.user.id,
+      relatedId,
+      metadata
     });
 
     return NextResponse.json(notification);
   } catch (error) {
-    
+    console.error('Erro ao criar notificação:', error);
     return NextResponse.json({ error: 'Erro ao criar notificação' }, { status: 500 });
   }
 }

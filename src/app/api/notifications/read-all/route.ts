@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { authOptions } from '@/lib/auth.config';
 import { getServerSession } from 'next-auth';
-import { prisma } from '@/lib/prisma';
+import { NotificationService } from '@/services/NotificationService';
 
 export async function PUT(request: NextRequest) {
   try {
@@ -11,20 +11,16 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
-    // Marcar todas as notificações do usuário como lidas
-    await prisma.notification.updateMany({
-      where: {
-        userId: session.user.id,
-        isRead: false
-      },
-      data: {
-        isRead: true
-      }
-    });
+    // Marcar todas as notificações como lidas usando o serviço
+    const success = await NotificationService.markAllAsRead(session.user.id);
+
+    if (!success) {
+      return NextResponse.json({ error: 'Erro ao marcar notificações como lidas' }, { status: 500 });
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    
-    return NextResponse.json({ error: 'Erro ao atualizar notificações' }, { status: 500 });
+    console.error('Erro ao marcar todas as notificações como lidas:', error);
+    return NextResponse.json({ error: 'Erro ao marcar notificações como lidas' }, { status: 500 });
   }
 }

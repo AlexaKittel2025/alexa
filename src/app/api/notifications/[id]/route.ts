@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { authOptions } from '@/lib/auth.config';
 import { getServerSession } from 'next-auth';
-import { prisma } from '@/lib/prisma';
+import { NotificationService } from '@/services/NotificationService';
 
 export async function DELETE(
   request: NextRequest,
@@ -16,26 +16,16 @@ export async function DELETE(
 
     const notificationId = params.id;
 
-    // Verificar se a notificação pertence ao usuário
-    const notification = await prisma.notification.findFirst({
-      where: {
-        id: notificationId,
-        userId: session.user.id
-      }
-    });
+    // Deletar notificação usando o serviço
+    const success = await NotificationService.deleteNotification(notificationId, session.user.id);
 
-    if (!notification) {
+    if (!success) {
       return NextResponse.json({ error: 'Notificação não encontrada' }, { status: 404 });
     }
 
-    // Deletar a notificação
-    await prisma.notification.delete({
-      where: { id: notificationId }
-    });
-
     return NextResponse.json({ success: true });
   } catch (error) {
-    
+    console.error('Erro ao deletar notificação:', error);
     return NextResponse.json({ error: 'Erro ao deletar notificação' }, { status: 500 });
   }
 }

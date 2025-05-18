@@ -1,438 +1,251 @@
 'use client';
-;
-;
-import { BellIcon, CheckIcon, TrashIcon } from '@heroicons/react/outline';
-import React, { useState, useEffect } from 'react';import axios from 'axios';
-import { useCurrentUser } from '@/hooks/useCurrentUser';
-import { useRouter } from 'next/navigation';
-import LoadingSpinner from '@/components/ui/LoadingSpinner';
 
-interface Notification {
-  id: string;
-  type: string;
-  content: string;
-  is_read: boolean;
-  related_id: string | null;
-  sender_id: string | null;
-  created_at: string;
-}
-
-interface LocalNotification {
-  id: string;
-  type: string;
-  title: string;
-  message: string;
-  time: string;
-  read: boolean;
-  actionUrl?: string;
-}
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { formatDistanceToNow } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { useSession } from 'next-auth/react';
+import { Notification } from '@/services/NotificationService';
+import { FaHeart, FaComment, FaUserPlus, FaTrophy, FaBell, FaGamepad, FaStar, FaArrowLeft } from 'react-icons/fa';
 
 export default function NotificationsPage() {
-  const [notifications, setNotifications] = useState<LocalNotification[]>([]);
+  const { data: session } = useSession();
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
-  const { user, loading: userLoading } = useCurrentUser();
-  const router = useRouter();
+
+  useEffect(() => {
+    if (!session?.user?.id) return;
+    
+    fetchNotifications();
+  }, [session, filter]);
 
   const fetchNotifications = async () => {
-    if (!user?.id) return;
+    if (!session?.user?.id) return;
     
     setLoading(true);
     try {
-      const response = await axios.get('/api/notifications', {
-        headers: { Authorization: `Bearer ${user.accessToken}` }
-      });
-      
-      const apiNotifications: Notification[] = response.data;
-      const localNotifications = apiNotifications.map(convertToLocalNotification);
-      setNotifications(localNotifications);
+      const url = filter === 'unread' 
+        ? '/api/notifications?unreadOnly=true'
+        : '/api/notifications?limit=100';
+        
+      const response = await fetch(url);
+      if (response.ok) {
+        const data = await response.json();
+        setNotifications(data.notifications || []);
+      }
     } catch (error) {
-
-      // Mock data para desenvolvimento
-      const mockNotifications: LocalNotification[] = [
-        {
-          id: '1',
-          type: 'reaction',
-          title: 'Nova reação',
-          message: 'João reagiu à sua mentira sobre "Comi pizza no café da manhã"',
-          time: '5 minutos atrás',
-          read: false,
-          actionUrl: '/post/1'
-        },
-        {
-          id: '2',
-          type: 'comment',
-          title: 'Novo comentário',
-          message: 'Maria comentou: "Essa história é inacreditável! 😂"',
-          time: '1 hora atrás',
-          read: false,
-          actionUrl: '/post/2'
-        },
-        {
-          id: '3',
-          type: 'follow',
-          title: 'Novo seguidor',
-          message: 'Pedro começou a seguir você',
-          time: '2 horas atrás',
-          read: true,
-          actionUrl: '/perfil/pedro'
-        },
-        {
-          id: '4',
-          type: 'mention',
-          title: 'Nova menção',
-          message: 'Você foi mencionado em "A história mais mentirosa do dia"',
-          time: '1 dia atrás',
-          read: true,
-          actionUrl: '/post/3'
-        },
-        {
-          id: '5',
-          type: 'system',
-          title: 'Conquista desbloqueada',
-          message: 'Parabéns! Você alcançou o nível 5 de Mentiroso!',
-          time: '2 dias atrás',
-          read: true
-        }
-      ];
-      
-      setNotifications(mockNotifications);
+      console.error('Erro ao buscar notificações:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const convertToLocalNotification = (notification: Notification): LocalNotification => {
-    return {
-      id: notification.id,
-      type: notification.type,
-      title: getNotificationTitle(notification.type),
-      message: notification.content,
-      time: getTimeFromDate(notification.created_at),
-      read: notification.is_read,
-      actionUrl: getActionUrlForNotification(notification)
-    };
-  };
-
-  const getActionUrlForNotification = (notification: Notification): string | undefined => {
-    if (!notification.related_id) return undefined;
-    
-    switch (notification.type) {
-      case 'comment':
-      case 'reaction':
-        return `/post/${notification.related_id}`;
-      case 'follow':
-        return `/perfil/${notification.sender_id}`;
-      default:
-        return undefined;
-    }
-  };
-
-  const getNotificationTitle = (type: string): string => {
-    switch (type) {
-      case 'reaction':
-        return 'Nova reação';
-      case 'comment':
-        return 'Novo comentário';
-      case 'follow':
-        return 'Novo seguidor';
-      case 'mention':
-        return 'Nova menção';
-      default:
-        return 'Notificação';
-    }
-  };
-
-  const getTimeFromDate = (dateString: string): string => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    
-    if (diffMins < 60) {
-      return `${diffMins} minutos atrás`;
-    } else if (diffMins < 1440) {
-      return `${Math.floor(diffMins / 60)} horas atrás`;
-    } else {
-      return `${Math.floor(diffMins / 1440)} dias atrás`;
-    }
-  };
-
-  const getIconForType = (type: string) => {
-    switch (type) {
-      case 'reaction':
-        return (
-          <div className="bg-yellow-100 dark:bg-yellow-900 p-3 rounded-full">
-            <span className="text-yellow-500 dark:text-yellow-300 text-2xl">😂</span>
-          </div>
-        );
-      case 'comment':
-        return (
-          <div className="bg-blue-100 dark:bg-blue-900 p-3 rounded-full">
-            <span className="text-blue-500 dark:text-blue-300 text-2xl">💬</span>
-          </div>
-        );
-      case 'follow':
-        return (
-          <div className="bg-green-100 dark:bg-green-900 p-3 rounded-full">
-            <span className="text-green-500 dark:text-green-300 text-2xl">👥</span>
-          </div>
-        );
-      case 'mention':
-        return (
-          <div className="bg-purple-100 dark:bg-purple-900 p-3 rounded-full">
-            <span className="text-purple-500 dark:text-purple-300 text-2xl">@</span>
-          </div>
-        );
-      case 'system':
-        return (
-          <div className="bg-purple-100 dark:bg-purple-900 p-3 rounded-full">
-            <span className="text-purple-600 dark:text-purple-300 text-2xl">🏆</span>
-          </div>
-        );
-      default:
-        return (
-          <div className="bg-gray-100 dark:bg-gray-800 p-3 rounded-full">
-            <BellIcon className="h-6 w-6 text-gray-600 dark:text-gray-400" />
-          </div>
-        );
-    }
-  };
-
-  const markAsRead = async (id: string) => {
-    if (!user?.accessToken) {
-      // Mock behavior para desenvolvimento
-      setNotifications(notifications.map(notification => 
-        notification.id === id ? { ...notification, read: true } : notification
-      ));
-      return;
-    }
-    
+  const markAsRead = async (notificationId: string) => {
     try {
-      await axios.put(`/api/notifications/${id}/read`, {}, {
-        headers: { Authorization: `Bearer ${user.accessToken}` }
+      const response = await fetch('/api/notifications/read', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notificationId })
       });
-      
-      setNotifications(notifications.map(notification => 
-        notification.id === id ? { ...notification, read: true } : notification
-      ));
+
+      if (response.ok) {
+        setNotifications(prev => 
+          prev.map(n => n.id === notificationId ? { ...n, isRead: true } : n)
+        );
+      }
     } catch (error) {
-      
-      // Mock behavior quando API falha
-      setNotifications(notifications.map(notification => 
-        notification.id === id ? { ...notification, read: true } : notification
-      ));
+      console.error('Erro ao marcar notificação como lida:', error);
     }
   };
 
   const markAllAsRead = async () => {
-    if (!user?.accessToken) {
-      // Mock behavior para desenvolvimento
-      setNotifications(notifications.map(notification => ({
-        ...notification,
-        read: true
-      })));
-      return;
-    }
-    
     try {
-      await axios.put('/api/notifications/read-all', {}, {
-        headers: { Authorization: `Bearer ${user.accessToken}` }
+      const response = await fetch('/api/notifications/read-all', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' }
       });
-      
-      setNotifications(notifications.map(notification => ({
-        ...notification,
-        read: true
-      })));
+
+      if (response.ok) {
+        setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+      }
     } catch (error) {
-      
-      // Mock behavior quando API falha
-      setNotifications(notifications.map(notification => ({
-        ...notification,
-        read: true
-      })));
+      console.error('Erro ao marcar todas as notificações como lidas:', error);
     }
   };
 
-  const deleteNotification = async (id: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    
-    if (!user?.accessToken) {
-      // Mock behavior para desenvolvimento
-      setNotifications(notifications.filter(notification => notification.id !== id));
-      return;
-    }
-    
+  const deleteNotification = async (notificationId: string) => {
     try {
-      await axios.delete(`/api/notifications/${id}`, {
-        headers: { Authorization: `Bearer ${user.accessToken}` }
+      const response = await fetch(`/api/notifications/${notificationId}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' }
       });
-      
-      setNotifications(notifications.filter(notification => notification.id !== id));
+
+      if (response.ok) {
+        setNotifications(prev => prev.filter(n => n.id !== notificationId));
+      }
     } catch (error) {
-      
-      // Mock behavior quando API falha
-      setNotifications(notifications.filter(notification => notification.id !== id));
+      console.error('Erro ao deletar notificação:', error);
     }
   };
 
-  const deleteAllRead = async () => {
-    if (!user?.accessToken) {
-      // Mock behavior para desenvolvimento
-      setNotifications(notifications.filter(notification => !notification.read));
-      return;
-    }
-    
-    try {
-      await axios.delete('/api/notifications/read', {
-        headers: { Authorization: `Bearer ${user.accessToken}` }
-      });
-      
-      setNotifications(notifications.filter(notification => !notification.read));
-    } catch (error) {
-      
-      // Mock behavior quando API falha
-      setNotifications(notifications.filter(notification => !notification.read));
-    }
-  };
-
-  const handleNotificationClick = (notification: LocalNotification) => {
-    markAsRead(notification.id);
-    if (notification.actionUrl) {
-      router.push(notification.actionUrl);
+  const getIcon = (type: Notification['type']) => {
+    switch (type) {
+      case 'like':
+        return <FaHeart className="text-red-500" />;
+      case 'comment':
+        return <FaComment className="text-blue-500" />;
+      case 'follow':
+        return <FaUserPlus className="text-green-500" />;
+      case 'achievement':
+        return <FaTrophy className="text-yellow-500" />;
+      case 'battle_challenge':
+      case 'battle_result':
+        return <FaGamepad className="text-purple-500" />;
+      case 'level_up':
+        return <FaStar className="text-orange-500" />;
+      case 'mention':
+        return <FaBell className="text-indigo-500" />;
+      case 'system':
+      default:
+        return <FaBell className="text-gray-500" />;
     }
   };
 
-  useEffect(() => {
-    if (user && !userLoading) {
-      fetchNotifications();
-    }
-  }, [user, userLoading]);
-
-  const filteredNotifications = filter === 'unread' 
-    ? notifications.filter(n => !n.read)
-    : notifications;
-
-  const hasUnreadNotifications = notifications.some(n => !n.read);
-
-  if (loading || userLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
-        <LoadingSpinner size="large" />
-      </div>
-    );
-  }
+  const unreadCount = notifications.filter(n => !n.isRead).length;
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-4xl mx-auto p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-            Notificações
-          </h1>
+        <div className="border-b border-gray-200 dark:border-gray-700 p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-4">
+              <Link 
+                href="/"
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              >
+                <FaArrowLeft className="w-5 h-5" />
+              </Link>
+              <h1 className="text-2xl font-bold dark:text-white">Notificações</h1>
+            </div>
+            {unreadCount > 0 && (
+              <button
+                onClick={markAllAsRead}
+                className="text-sm text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300"
+              >
+                Marcar todas como lidas
+              </button>
+            )}
+          </div>
           
-          {/* Filtros e Ações */}
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div className="flex gap-4">
-              <button
-                onClick={() => setFilter('all')}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                  filter === 'all' 
-                    ? 'bg-purple-600 text-white' 
-                    : 'bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'
-                }`}
-              >
-                Todas
-              </button>
-              <button
-                onClick={() => setFilter('unread')}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                  filter === 'unread' 
-                    ? 'bg-purple-600 text-white' 
-                    : 'bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'
-                }`}
-              >
-                Não lidas
-              </button>
-            </div>
-            
-            <div className="flex gap-2">
-              {hasUnreadNotifications && (
-                <button
-                  onClick={markAllAsRead}
-                  className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                >
-                  <CheckIcon className="h-4 w-4" />
-                  <span>Marcar todas como lidas</span>
-                </button>
-              )}
-              {notifications.some(n => n.read) && (
-                <button
-                  onClick={deleteAllRead}
-                  className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                >
-                  <TrashIcon className="h-4 w-4" />
-                  <span>Limpar lidas</span>
-                </button>
-              )}
-            </div>
+          {/* Filtros */}
+          <div className="flex gap-4">
+            <button
+              onClick={() => setFilter('all')}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                filter === 'all'
+                  ? 'bg-purple-600 text-white'
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+              }`}
+            >
+              Todas
+            </button>
+            <button
+              onClick={() => setFilter('unread')}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                filter === 'unread'
+                  ? 'bg-purple-600 text-white'
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+              }`}
+            >
+              Não lidas ({unreadCount})
+            </button>
           </div>
         </div>
 
-        {/* Lista de Notificações */}
-        <div className="space-y-4">
-          {filteredNotifications.length > 0 ? (
-            filteredNotifications.map(notification => (
+        {/* Lista de notificações */}
+        <div className="divide-y divide-gray-200 dark:divide-gray-700">
+          {loading ? (
+            <div className="p-8 text-center">
+              <div className="w-8 h-8 border-3 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+              <p className="mt-4 text-gray-600 dark:text-gray-400">Carregando notificações...</p>
+            </div>
+          ) : notifications.length === 0 ? (
+            <div className="p-8 text-center">
+              <FaBell className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-600 dark:text-gray-400">
+                {filter === 'unread' ? 'Nenhuma notificação não lida' : 'Nenhuma notificação ainda'}
+              </p>
+            </div>
+          ) : (
+            notifications.map((notification) => (
               <div
                 key={notification.id}
-                onClick={() => handleNotificationClick(notification)}
-                className={`bg-white dark:bg-gray-900 rounded-lg p-4 shadow-sm transition-all hover:shadow-md cursor-pointer ${
-                  !notification.read ? 'border-2 border-purple-200 dark:border-purple-800' : 'border border-gray-200 dark:border-gray-700'
+                className={`p-6 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer ${
+                  !notification.isRead ? 'bg-blue-50 dark:bg-blue-900/10' : ''
                 }`}
+                onClick={() => markAsRead(notification.id)}
               >
                 <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0">
-                    {getIconForType(notification.type)}
-                  </div>
-                  
+                  {/* Ícone ou avatar */}
+                  {notification.sender ? (
+                    <img
+                      src={notification.sender.avatar || '/images/avatar-placeholder.jpg'}
+                      alt={notification.sender.displayName}
+                      className="w-12 h-12 rounded-full"
+                    />
+                  ) : (
+                    <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                      {getIcon(notification.type)}
+                    </div>
+                  )}
+
+                  {/* Conteúdo */}
                   <div className="flex-1">
-                    <div className="flex items-center justify-between mb-1">
-                      <h3 className="font-semibold text-gray-900 dark:text-white">
+                    {notification.title && (
+                      <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
                         {notification.title}
                       </h3>
-                      <span className="text-sm text-gray-500 dark:text-gray-400">
-                        {notification.time}
-                      </span>
-                    </div>
-                    
-                    <p className="text-gray-600 dark:text-gray-300">
-                      {notification.message}
-                    </p>
-                    
-                    {!notification.read && (
-                      <span className="inline-block mt-2 px-2 py-1 bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300 text-xs font-medium rounded-full">
-                        Não lida
-                      </span>
                     )}
+                    <p className="text-gray-700 dark:text-gray-300">
+                      {notification.sender && (
+                        <Link 
+                          href={`/usuario/${notification.sender.username}`}
+                          className="font-semibold hover:underline"
+                        >
+                          {notification.sender.displayName}
+                        </Link>
+                      )}
+                      {notification.sender && ' '}
+                      {notification.content}
+                    </p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                      {formatDistanceToNow(new Date(notification.createdAt), { 
+                        addSuffix: true,
+                        locale: ptBR 
+                      })}
+                    </p>
                   </div>
-                  
-                  <button
-                    onClick={(e) => deleteNotification(notification.id, e)}
-                    className="flex-shrink-0 text-gray-400 hover:text-red-500 transition-colors p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
-                  >
-                    <TrashIcon className="h-5 w-5" />
-                  </button>
+
+                  {/* Ações */}
+                  <div className="flex items-center gap-2">
+                    {!notification.isRead && (
+                      <div className="w-2 h-2 bg-blue-500 rounded-full" />
+                    )}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deleteNotification(notification.id);
+                      }}
+                      className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                    >
+                      <span className="text-gray-500 hover:text-red-500">✕</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             ))
-          ) : (
-            <div className="text-center py-16">
-              <BellIcon className="h-16 w-16 text-gray-300 dark:text-gray-700 mx-auto mb-4" />
-              <p className="text-gray-500 dark:text-gray-400 text-lg">
-                {filter === 'unread' ? 'Sem notificações não lidas' : 'Sem notificações'}
-              </p>
-            </div>
           )}
         </div>
       </div>

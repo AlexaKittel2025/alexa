@@ -1,109 +1,151 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import { FaUserCheck, FaUserPlus, FaSpinner } from 'react-icons/fa';
+import { useRouter } from 'next/navigation';
 
 interface FollowButtonProps {
   userId: string;
+  username?: string;
+  initialIsFollowing?: boolean;
   className?: string;
-  onFollowChange?: (isFollowing: boolean) => void;
+  onFollowChange?: (isFollowing: boolean, counts: { followersCount: number; followingCount: number }) => void;
+  size?: 'sm' | 'md' | 'lg';
+  showIcon?: boolean;
 }
 
-const FollowButton: React.FC<FollowButtonProps> = ({ userId, className = '', onFollowChange }) => {
-  const [isFollowing, setIsFollowing] = useState(false);
+const FollowButton: React.FC<FollowButtonProps> = ({ 
+  userId, 
+  username,
+  initialIsFollowing = false,
+  className = '', 
+  onFollowChange,
+  size = 'md',
+  showIcon = true
+}) => {
+  const [isFollowing, setIsFollowing] = useState(initialIsFollowing);
+  const [isHovering, setIsHovering] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { currentUser, isAuthenticated } = useAuth();
+  const { user } = useAuth();
+  const router = useRouter();
   
   useEffect(() => {
-    // Verificar se o usuário atual já segue o usuário alvo
-    const checkFollowStatus = async () => {
-      if (!isAuthenticated || !currentUser) return;
-      
-      try {
-        setLoading(true);
-        
-        const response = await axios.get(`/api/users/${currentUser.id}/following/${userId}`);
-        setIsFollowing(response.data.isFollowing);
-        
-        if (onFollowChange) {
-          onFollowChange(response.data.isFollowing);
-        }
-      } catch (error) {
-        
-      } finally {
-        setLoading(false);
-      }
-    };
-    
     checkFollowStatus();
-  }, [userId, currentUser, isAuthenticated, onFollowChange]);
+  }, [userId, user]);
+  
+  useEffect(() => {
+    setIsFollowing(initialIsFollowing);
+  }, [initialIsFollowing]);
+  
+  const checkFollowStatus = async () => {
+    if (!user || user.id === userId) return;
+    
+    try {
+      const response = await fetch(`/api/users/${userId}/follow`);
+      const data = await response.json();
+      
+      if (data && typeof data.isFollowing === 'boolean') {
+        setIsFollowing(data.isFollowing);
+      }
+    } catch (error) {
+      console.error('Erro ao verificar status de follow:', error);
+    }
+  };
   
   const toggleFollow = async () => {
-    if (!isAuthenticated || !currentUser) {
-      // Redirecionar para login ou mostrar mensagem
-      alert('Você precisa estar logado para seguir outros usuários.');
+    if (!user) {
+      router.push('/login');
       return;
     }
     
-    if (userId === currentUser.id) {
-      alert('Você não pode seguir a si mesmo.');
+    if (userId === user.id) {
       return;
     }
     
     setLoading(true);
     
     try {
-      const token = localStorage.getItem('token');
-      
-      if (!token) {
-        throw new Error('Token não encontrado');
-      }
-      
-      const endpoint = isFollowing 
-        ? `/api/users/${currentUser.id}/unfollow/${userId}`
-        : `/api/users/${currentUser.id}/follow/${userId}`;
-      
-      const response = await axios.post(endpoint, {}, {
+      const method = isFollowing ? 'DELETE' : 'POST';
+      const response = await fetch(`/api/users/${userId}/follow`, {
+        method,
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Content-Type': 'application/json'
         }
       });
       
-      setIsFollowing(!isFollowing);
+      if (!response.ok) {
+        throw new Error('Erro ao alterar follow');
+      }
+      
+      const data = await response.json();
+      const newFollowingState = !isFollowing;
+      
+      setIsFollowing(newFollowingState);
       
       if (onFollowChange) {
-        onFollowChange(!isFollowing);
+        onFollowChange(newFollowingState, {
+          followersCount: data.followersCount,
+          followingCount: data.followingCount
+        });
       }
     } catch (error) {
-      
-      alert('Não foi possível alterar o status de seguir. Tente novamente mais tarde.');
+      console.error('Erro ao seguir/deixar de seguir:', error);
+      alert('Não foi possível completar a ação. Tente novamente.');
     } finally {
       setLoading(false);
     }
   };
   
+  if (user && userId === user.id) {
+    return null;
+  }
+  
+  const sizeClasses = {
+    sm: 'px-3 py-1 text-sm',
+    md: 'px-4 py-2',
+    lg: 'px-6 py-3 text-lg'
+  };
+  
+  const getButtonText = () => {
+    if (loading) return null;
+    if (isFollowing && isHovering) return 'Deixar de seguir';
+    if (isFollowing) return 'Seguindo';
+    return 'Seguir';
+  };
+  
+  const getButtonIcon = () => {
+    if (loading) return <FaSpinner className="animate-spin" />;
+    if (isFollowing) return <FaUserCheck />;
+    return <FaUserPlus />;
+  };
+  
+  const buttonClasses = `
+    ${sizeClasses[size]}
+    rounded-full font-medium transition-all duration-200
+    focus:outline-none focus:ring-2 focus:ring-offset-2
+    flex items-center justify-center gap-2
+    ${loading ? 'cursor-not-allowed opacity-70' : 'cursor-pointer'}
+    ${isFollowing 
+      ? isHovering
+        ? 'bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50'
+        : 'bg-gray-200 text-gray-800 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600'
+      : 'bg-purple-600 text-white hover:bg-purple-700 dark:bg-purple-700 dark:hover:bg-purple-600'
+    }
+    ${className}
+  `;
+  
   return (
     <button
       onClick={toggleFollow}
       disabled={loading}
-      className={`px-4 py-2 rounded-full font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-        isFollowing
-          ? 'bg-gray-200 text-gray-800 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 focus:ring-gray-500'
-          : 'bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 focus:ring-blue-500'
-      } ${className}`}
+      onMouseEnter={() => setIsHovering(true)}
+      onMouseLeave={() => setIsHovering(false)}
+      className={buttonClasses}
+      title={isFollowing ? `Deixar de seguir @${username || userId}` : `Seguir @${username || userId}`}
     >
-      {loading ? (
-        <span className="flex items-center justify-center">
-          <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-current" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-          </svg>
-          Aguarde...
-        </span>
-      ) : isFollowing ? (
-        'Seguindo'
-      ) : (
-        'Seguir'
-      )}
+      {showIcon && getButtonIcon()}
+      {getButtonText()}
     </button>
   );
 };

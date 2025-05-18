@@ -3,320 +3,235 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { FaUser, FaTrophy, FaFire } from 'react-icons/fa';
+import { FaUser, FaTrophy, FaFire, FaStar, FaMedal, FaChartLine, FaChevronRight } from 'react-icons/fa';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
-
-// Dados falsos para simular o ranking
-const fakeUsers = [
-  {
-    uid: 'fake1',
-    displayName: 'Carlos Mendes',
-    photoURL: 'https://randomuser.me/api/portraits/men/32.jpg',
-    score: 1107,
-    postCount: 26,
-    position: 1
-  },
-  {
-    uid: 'fake2',
-    displayName: 'Ana Beatriz',
-    photoURL: 'https://randomuser.me/api/portraits/women/44.jpg',
-    score: 984,
-    postCount: 24,
-    position: 2
-  },
-  {
-    uid: 'fake3',
-    displayName: 'Rodrigo Lima',
-    photoURL: 'https://randomuser.me/api/portraits/men/67.jpg',
-    score: 861,
-    postCount: 22,
-    position: 3
-  },
-  {
-    uid: 'fake4',
-    displayName: 'Juliana Costa',
-    photoURL: 'https://randomuser.me/api/portraits/women/12.jpg',
-    score: 738,
-    postCount: 19,
-    position: 4
-  },
-  {
-    uid: 'fake5',
-    displayName: 'Pedro Almeida',
-    photoURL: 'https://randomuser.me/api/portraits/men/23.jpg',
-    score: 615,
-    postCount: 15,
-    position: 5
-  },
-  {
-    uid: 'fake6',
-    displayName: 'Clara Santos',
-    photoURL: 'https://randomuser.me/api/portraits/women/89.jpg',
-    score: 584,
-    postCount: 18,
-    position: 6
-  },
-  {
-    uid: 'fake7',
-    displayName: 'Felipe Oliveira',
-    photoURL: 'https://randomuser.me/api/portraits/men/45.jpg',
-    score: 532,
-    postCount: 14,
-    position: 7
-  },
-  {
-    uid: 'fake8',
-    displayName: 'Mariana Silva',
-    photoURL: 'https://randomuser.me/api/portraits/women/75.jpg',
-    score: 498,
-    postCount: 16,
-    position: 8
-  },
-  {
-    uid: 'fake9',
-    displayName: 'Roberto Gomes',
-    photoURL: 'https://randomuser.me/api/portraits/men/55.jpg',
-    score: 473,
-    postCount: 12,
-    position: 9
-  },
-  {
-    uid: 'fake10',
-    displayName: 'Camila Ferreira',
-    photoURL: 'https://randomuser.me/api/portraits/women/62.jpg',
-    score: 442,
-    postCount: 11,
-    position: 10
-  }
-];
-
-// Mais dados falsos para outros períodos de tempo
-const fakeUsersMonth = [
-  {
-    uid: 'fake11',
-    displayName: 'Leonardo Dias',
-    photoURL: 'https://randomuser.me/api/portraits/men/72.jpg',
-    score: 894,
-    postCount: 18,
-    position: 1
-  },
-  {
-    uid: 'fake12',
-    displayName: 'Bianca Martins',
-    photoURL: 'https://randomuser.me/api/portraits/women/33.jpg',
-    score: 762,
-    postCount: 15,
-    position: 2
-  },
-  {
-    uid: 'fake1',
-    displayName: 'Carlos Mendes',
-    photoURL: 'https://randomuser.me/api/portraits/men/32.jpg',
-    score: 695,
-    postCount: 14,
-    position: 3
-  },
-  {
-    uid: 'fake13',
-    displayName: 'Raquel Souza',
-    photoURL: 'https://randomuser.me/api/portraits/women/58.jpg',
-    score: 621,
-    postCount: 12,
-    position: 4
-  },
-  {
-    uid: 'fake14',
-    displayName: 'Gabriel Campos',
-    photoURL: 'https://randomuser.me/api/portraits/men/28.jpg',
-    score: 587,
-    postCount: 10,
-    position: 5
-  }
-];
-
-const fakeUsersWeek = [
-  {
-    uid: 'fake15',
-    displayName: 'Tiago Pereira',
-    photoURL: 'https://randomuser.me/api/portraits/men/18.jpg',
-    score: 354,
-    postCount: 6,
-    position: 1
-  },
-  {
-    uid: 'fake11',
-    displayName: 'Leonardo Dias',
-    photoURL: 'https://randomuser.me/api/portraits/men/72.jpg',
-    score: 283,
-    postCount: 5,
-    position: 2
-  },
-  {
-    uid: 'fake16',
-    displayName: 'Maria Eduarda',
-    photoURL: 'https://randomuser.me/api/portraits/women/22.jpg',
-    score: 214,
-    postCount: 4,
-    position: 3
-  },
-  {
-    uid: 'fake17',
-    displayName: 'Bruno Costa',
-    photoURL: 'https://randomuser.me/api/portraits/men/37.jpg',
-    score: 176,
-    postCount: 3,
-    position: 4
-  },
-  {
-    uid: 'fake12',
-    displayName: 'Bianca Martins',
-    photoURL: 'https://randomuser.me/api/portraits/women/33.jpg',
-    score: 158,
-    postCount: 3,
-    position: 5
-  }
-];
+import { generateRealPersonAvatar } from '@/utils/avatarUtils';
+import { calculateLevel } from '@/lib/scoring';
 
 interface RankingUser {
-  uid: string;
+  id: string;
   displayName: string;
+  username: string;
   photoURL: string | null;
   score: number;
-  postCount: number;
+  level: number;
+  title: string;
+  totalPosts: number;
+  battleWins: number;
   position: number;
 }
+
+type RankingPeriod = 'daily' | 'weekly' | 'monthly' | 'all-time';
 
 export default function UserRanking() {
   const [users, setUsers] = useState<RankingUser[]>([]);
   const [loading, setLoading] = useState(true);
-  const [timeRange, setTimeRange] = useState<'all' | 'month' | 'week'>('all');
+  const [period, setPeriod] = useState<RankingPeriod>('all-time');
+  const [currentUserPosition, setCurrentUserPosition] = useState<RankingUser | null>(null);
 
   useEffect(() => {
     const fetchRanking = async () => {
       setLoading(true);
       
-      // Simular tempo de carregamento
-      setTimeout(() => {
-        let rankingData: RankingUser[] = [];
-        
-        // Selecionar dados baseados no período de tempo
-        switch (timeRange) {
-          case 'all':
-            rankingData = fakeUsers;
-            break;
-          case 'month':
-            rankingData = fakeUsersMonth;
-            break;
-          case 'week':
-            rankingData = fakeUsersWeek;
-            break;
+      try {
+        // Buscar ranking geral
+        const response = await fetch(`/api/users/ranking?period=${period}&limit=50`);
+        const data = await response.json();
+
+        if (data.success && data.users) {
+          const formattedUsers = data.users.map((user: any, index: number) => {
+            const levelInfo = calculateLevel(user.pontuacaoTotal || user.score || 0);
+            
+            return {
+              id: user.id,
+              displayName: user.display_name || user.username,
+              username: user.username,
+              photoURL: user.image || user.photo_url || generateRealPersonAvatar(['men', 'women'][Math.random() < 0.5 ? 0 : 1]),
+              score: user.pontuacaoTotal || user.score || 0,
+              level: user.level || levelInfo.level,
+              title: user.title || levelInfo.title,
+              totalPosts: user.totalPosts || 0,
+              battleWins: user.battleWins || 0,
+              position: user.position || index + 1
+            };
+          });
+          
+          setUsers(formattedUsers);
         }
+
+        // Tentar obter posição do usuário atual
+        const currentUserId = localStorage.getItem('userId');
+        if (currentUserId) {
+          const userResponse = await fetch(`/api/users/ranking?userId=${currentUserId}&period=${period}`);
+          const userData = await userResponse.json();
+          if (userData) {
+            setCurrentUserPosition(userData);
+          }
+        }
+      } catch (error) {
+        console.error('Erro ao carregar ranking:', error);
         
-        setUsers(rankingData);
+        // Mock data para desenvolvimento
+        const mockUsers = Array.from({ length: 10 }, (_, i) => {
+          const score = 5000 - (i * 400);
+          const levelInfo = calculateLevel(score);
+          
+          return {
+            id: `user-${i + 1}`,
+            displayName: ['João Silva', 'Maria Santos', 'Pedro Costa', 'Ana Oliveira', 'Carlos Ferreira', 
+                         'Juliana Mendes', 'Roberto Lima', 'Beatriz Alves', 'Fernando Souza', 'Patricia Ribeiro'][i],
+            username: ['joaosilva', 'mariasantos', 'pedrocosta', 'anaoliveira', 'carlosferreira',
+                      'julianamendes', 'robertolima', 'beatrizalves', 'fernandosouza', 'patriciaribeiro'][i],
+            photoURL: generateRealPersonAvatar(['men', 'women'][i % 2 === 0 ? 0 : 1]),
+            score,
+            level: levelInfo.level,
+            title: levelInfo.title,
+            totalPosts: 50 - (i * 3),
+            battleWins: 20 - (i * 2),
+            position: i + 1
+          };
+        });
+        
+        setUsers(mockUsers);
+      } finally {
         setLoading(false);
-      }, 500);
+      }
     };
     
     fetchRanking();
-  }, [timeRange]);
+  }, [period]);
   
-  const getTrophyColor = (rank: number) => {
-    switch (rank) {
-      case 1: return 'text-yellow-500'; // Ouro
-      case 2: return 'text-gray-400';   // Prata
-      case 3: return 'text-amber-700';  // Bronze
-      default: return 'text-purple-600';
+  const getTrophyComponent = (position: number) => {
+    switch (position) {
+      case 1: 
+        return <FaTrophy className="text-2xl text-yellow-500" />;
+      case 2: 
+        return <FaMedal className="text-2xl text-gray-400" />;
+      case 3: 
+        return <FaMedal className="text-2xl text-amber-700" />;
+      default: 
+        return <span className="text-lg font-bold text-gray-600">#{position}</span>;
+    }
+  };
+  
+  const getPositionStyles = (position: number) => {
+    switch (position) {
+      case 1:
+        return 'bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20';
+      case 2:
+        return 'bg-gradient-to-r from-gray-50 to-slate-50 dark:from-gray-900/20 dark:to-slate-900/20';
+      case 3:
+        return 'bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20';
+      default:
+        return '';
     }
   };
   
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden">
-      <div className="bg-purple-700 text-white p-4">
-        <h2 className="text-lg font-semibold">Ranking de Mentirosos</h2>
-        <p className="text-sm text-purple-200">Os usuários com as mentiras mais populares</p>
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+      <div className="bg-gradient-to-r from-purple-600 to-purple-700 text-white p-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h2 className="text-2xl font-bold mb-2">Ranking Global</h2>
+            <p className="text-purple-200">Os maiores mentirosos da plataforma</p>
+          </div>
+          <FaTrophy className="text-4xl text-yellow-400" />
+        </div>
       </div>
       
-      <div className="px-4 py-3 border-b border-gray-200">
-        <div className="flex space-x-2">
-          <button
-            onClick={() => setTimeRange('all')}
-            className={`px-3 py-1 rounded-full text-sm font-medium ${
-              timeRange === 'all' 
-                ? 'bg-purple-100 text-purple-700' 
-                : 'text-gray-600 hover:bg-gray-100'
-            }`}
+      <div className="p-4 bg-gray-50 dark:bg-gray-700/50 border-b dark:border-gray-700">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center space-x-3">
+            <FaChartLine className="text-purple-600 dark:text-purple-400" />
+            <label className="font-medium text-gray-700 dark:text-gray-300">Período:</label>
+          </div>
+          <select
+            value={period}
+            onChange={(e) => setPeriod(e.target.value as RankingPeriod)}
+            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300"
           >
-            Todos os tempos
-          </button>
-          <button
-            onClick={() => setTimeRange('month')}
-            className={`px-3 py-1 rounded-full text-sm font-medium ${
-              timeRange === 'month' 
-                ? 'bg-purple-100 text-purple-700' 
-                : 'text-gray-600 hover:bg-gray-100'
-            }`}
-          >
-            Este mês
-          </button>
-          <button
-            onClick={() => setTimeRange('week')}
-            className={`px-3 py-1 rounded-full text-sm font-medium ${
-              timeRange === 'week' 
-                ? 'bg-purple-100 text-purple-700' 
-                : 'text-gray-600 hover:bg-gray-100'
-            }`}
-          >
-            Esta semana
-          </button>
+            <option value="daily">Hoje</option>
+            <option value="weekly">Esta Semana</option>
+            <option value="monthly">Este Mês</option>
+            <option value="all-time">Todos os Tempos</option>
+          </select>
         </div>
+        
+        {currentUserPosition && currentUserPosition.position > 10 && (
+          <div className="bg-purple-100 dark:bg-purple-900/30 rounded-lg p-3 mb-4">
+            <p className="text-sm text-purple-800 dark:text-purple-300">
+              Sua posição: <strong>#{currentUserPosition.position}</strong> com {currentUserPosition.score} pontos
+            </p>
+          </div>
+        )}
       </div>
       
       {loading ? (
-        <div className="p-6 flex justify-center">
+        <div className="p-8 flex justify-center">
           <LoadingSpinner />
         </div>
       ) : users.length === 0 ? (
-        <div className="p-6 text-center text-gray-500">
+        <div className="p-8 text-center text-gray-500 dark:text-gray-400">
           Nenhum usuário encontrado para este período.
         </div>
       ) : (
-        <div className="divide-y divide-gray-100">
+        <div className="divide-y divide-gray-100 dark:divide-gray-700">
           {users.map((user) => (
-            <div
-              key={user.uid}
-              className="flex items-center p-4 hover:bg-gray-50 transition-colors"
-            >
-              <div className="flex items-center justify-center w-8 h-8 mr-3">
-                <FaTrophy className={`${getTrophyColor(user.position)} text-lg`} />
-              </div>
-              
-              <div className="h-10 w-10 rounded-full bg-purple-200 flex items-center justify-center mr-3 overflow-hidden">
-                {user.photoURL ? (
-                  <img 
-                    src={user.photoURL} 
-                    alt={user.displayName} 
-                    className="h-full w-full object-cover" 
-                  />
-                ) : (
-                  <FaUser className="text-purple-600" />
-                )}
-              </div>
-              
-              <div className="flex-1">
-                <h3 className="font-medium text-gray-800">{user.displayName}</h3>
-                <div className="flex text-xs text-gray-500 space-x-2">
-                  <span>{user.postCount} mentiras</span>
+            <Link href={`/perfil/${user.id}`} key={user.id}>
+              <div
+                className={`flex items-center p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer ${getPositionStyles(user.position)}`}
+              >
+                <div className="flex items-center justify-center w-16 mr-4">
+                  {getTrophyComponent(user.position)}
                 </div>
+                
+                <div className="relative">
+                  <img 
+                    src={user.photoURL || generateRealPersonAvatar(['men', 'women'][Math.random() < 0.5 ? 0 : 1])} 
+                    alt={user.displayName} 
+                    className="w-14 h-14 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600" 
+                  />
+                  {user.level >= 5 && (
+                    <div className="absolute -bottom-1 -right-1 bg-purple-600 rounded-full p-1">
+                      <FaStar className="text-white text-xs" />
+                    </div>
+                  )}
+                </div>
+                
+                <div className="flex-1 ml-4">
+                  <h3 className="font-semibold text-gray-800 dark:text-white">{user.displayName}</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">@{user.username}</p>
+                  <p className="text-xs text-purple-600 dark:text-purple-400 mt-1">
+                    {user.title} • Nível {user.level}
+                  </p>
+                  <div className="flex space-x-4 text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    <span>{user.totalPosts} mentiras</span>
+                    <span>{user.battleWins} vitórias</span>
+                  </div>
+                </div>
+                
+                <div className="text-right">
+                  <div className="flex items-center text-2xl font-bold text-purple-700 dark:text-purple-400">
+                    <FaFire className="mr-2 text-amber-500" />
+                    {user.score.toLocaleString()}
+                  </div>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">pontos</p>
+                </div>
+                
+                <FaChevronRight className="ml-4 text-gray-400" />
               </div>
-              
-              <div className="ml-4 flex items-center text-lg font-bold text-purple-700">
-                <FaFire className="mr-1 text-amber-500" />
-                {user.score}
-              </div>
-            </div>
+            </Link>
           ))}
+        </div>
+      )}
+      
+      {!loading && users.length > 0 && (
+        <div className="p-4 bg-gray-50 dark:bg-gray-700/50 text-center">
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Mostrando top {users.length} mentirosos
+          </p>
         </div>
       )}
     </div>
   );
-} 
+}

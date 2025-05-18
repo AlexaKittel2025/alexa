@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { User } from '../../types';
 import { useAuth } from '../../context/AuthContext';
 import * as userApi from '../../services/userApi';
+import { FaCamera, FaTrash } from 'react-icons/fa';
+import { Camera } from '@heroicons/react/24/outline';
 
 interface ProfileSettingsProps {
   currentUser: User;
@@ -21,6 +23,12 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ currentUser }) => {
   const [work, setWork] = useState<string>(user?.work || '');
   const [education, setEducation] = useState<string>(user?.education || '');
   
+  // Estados para upload de imagem
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string>(user?.photoURL || currentUser?.photoURL || '');
+  const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [coverPreview, setCoverPreview] = useState<string>(user?.coverImage || currentUser?.coverImage || '');
+  
   // Carregar dados iniciais
   useEffect(() => {
     if (currentUser) {
@@ -31,8 +39,51 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ currentUser }) => {
       setRelationship(currentUser.relationship || '');
       setWork(currentUser.work || '');
       setEducation(currentUser.education || '');
+      setAvatarPreview(currentUser.photoURL || '');
+      setCoverPreview(currentUser.coverImage || '');
     }
   }, [currentUser]);
+
+  // Funções de manipulação de imagem
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'avatar' | 'cover') => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validar tipo de arquivo
+    if (!file.type.startsWith('image/')) {
+      setMessage('Por favor, selecione apenas arquivos de imagem.');
+      return;
+    }
+
+    // Validar tamanho (máximo 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setMessage('A imagem deve ter no máximo 5MB.');
+      return;
+    }
+
+    // Criar preview
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      if (type === 'avatar') {
+        setAvatarFile(file);
+        setAvatarPreview(reader.result as string);
+      } else {
+        setCoverFile(file);
+        setCoverPreview(reader.result as string);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const removeImage = (type: 'avatar' | 'cover') => {
+    if (type === 'avatar') {
+      setAvatarFile(null);
+      setAvatarPreview(user?.photoURL || '');
+    } else {
+      setCoverFile(null);
+      setCoverPreview(user?.coverImage || '');
+    }
+  };
   
   const handleSave = async () => {
     setIsLoading(true);
@@ -41,6 +92,20 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ currentUser }) => {
     try {
       if (!user?.id) {
         throw new Error('Usuário não autenticado');
+      }
+      
+      let newAvatarUrl = user.photoURL;
+      let newCoverUrl = user.coverImage;
+      
+      // Upload de imagens se houver arquivos selecionados
+      if (avatarFile) {
+        // Para demonstração, vamos salvar como base64 no localStorage
+        newAvatarUrl = avatarPreview;
+      }
+      
+      if (coverFile) {
+        // Para demonstração, vamos salvar como base64 no localStorage
+        newCoverUrl = coverPreview;
       }
       
       // Preparar dados do perfil para salvar
@@ -56,7 +121,9 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ currentUser }) => {
         website,
         relationship,
         work,
-        education
+        education,
+        photoURL: newAvatarUrl,
+        coverImage: newCoverUrl
       };
       
       // Chamar API para salvar configurações
@@ -197,6 +264,85 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ currentUser }) => {
                 onChange={(e) => setEducation(e.target.value)}
                 className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               />
+            </div>
+
+            {/* Avatar Upload */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Foto de perfil
+              </label>
+              <div className="mt-2 flex items-center space-x-4">
+                <div className="relative">
+                  <img
+                    src={avatarPreview || user?.avatar || '/images/avatar-placeholder.jpg'}
+                    alt="Avatar preview"
+                    className="w-20 h-20 rounded-full object-cover"
+                  />
+                  <label className="absolute bottom-0 right-0 bg-blue-500 text-white rounded-full p-2 cursor-pointer hover:bg-blue-600">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleImageChange(e, 'avatar')}
+                      className="hidden"
+                    />
+                    <Camera className="w-4 h-4" />
+                  </label>
+                </div>
+                {avatarFile && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAvatarFile(null);
+                      setAvatarPreview(user?.photoURL || '');
+                    }}
+                    className="text-red-500 hover:text-red-600"
+                  >
+                    Remover
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Cover Image Upload */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Imagem de capa
+              </label>
+              <div className="mt-2">
+                <div className="relative w-full h-48 bg-gray-200 dark:bg-gray-700 rounded-lg overflow-hidden">
+                  {(coverPreview || user?.coverImage) && (
+                    <img
+                      src={coverPreview || user?.coverImage}
+                      alt="Cover preview"
+                      className="w-full h-full object-cover"
+                    />
+                  )}
+                  <label className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 cursor-pointer hover:bg-opacity-50">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleImageChange(e, 'cover')}
+                      className="hidden"
+                    />
+                    <div className="text-white text-center">
+                      <Camera className="w-8 h-8 mx-auto mb-2" />
+                      <span>{coverPreview || user?.coverImage ? 'Alterar capa' : 'Adicionar capa'}</span>
+                    </div>
+                  </label>
+                </div>
+                {coverFile && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCoverFile(null);
+                      setCoverPreview(user?.coverImage || '');
+                    }}
+                    className="mt-2 text-red-500 hover:text-red-600"
+                  >
+                    Remover capa
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>

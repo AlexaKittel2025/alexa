@@ -45,20 +45,43 @@ export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
     
-    // Verificar autenticação
-    if (!session?.user) {
-      return NextResponse.json(
-        { error: 'Não autorizado' },
-        { status: 401 }
-      );
+    // Verificar se o usuário está autenticado (permite posts anônimos)
+    const userId = session?.user?.id || 'anonymous';
+    
+    // Verificar se é FormData (upload de arquivo) ou JSON
+    const contentType = req.headers.get('content-type');
+    let title, content, imageUrl, tags;
+    
+    if (contentType?.includes('multipart/form-data')) {
+      const formData = await req.formData();
+      content = formData.get('content') as string;
+      tags = formData.get('tags') ? JSON.parse(formData.get('tags') as string) : [];
+      
+      // Se houver arquivo, fazer upload
+      const file = formData.get('image') as File;
+      if (file) {
+        const uploadFormData = new FormData();
+        uploadFormData.append('file', file);
+        
+        const uploadResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/upload`, {
+          method: 'POST',
+          body: uploadFormData
+        });
+        
+        if (uploadResponse.ok) {
+          const uploadData = await uploadResponse.json();
+          imageUrl = uploadData.url;
+        }
+      }
+      
+      title = content.substring(0, 50); // Título como primeira parte do conteúdo
+    } else {
+      const body = await req.json();
+      ({ title, content, imageUrl, tags } = body);
     }
     
-    const userId = session.user.id;
-    const body = await req.json();
-    const { title, content, imageUrl, tags } = body;
-    
     const post = await PostApiService.createPost({
-      title,
+      title: title || content.substring(0, 50),
       content,
       imageUrl,
       tags,
@@ -67,7 +90,8 @@ export async function POST(req: Request) {
     
     return NextResponse.json(post);
   } catch (error) {
-
+    console.error('Erro ao criar post:', error);
+    
     // Verificar se é erro de validação
     if (error instanceof Error && error.message.includes('obrigatórios')) {
       return NextResponse.json(

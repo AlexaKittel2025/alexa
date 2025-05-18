@@ -9,9 +9,13 @@ import CoinSystem from '@/components/profile/CoinSystem';
 import Achievements from '@/components/profile/Achievements';
 import AchievementsSystem from '@/components/AchievementsSystem';
 import UserLevelProgress from '@/components/profile/UserLevelProgress';
+import FollowButton from '@/components/FollowButton';
+import FollowModal from '@/components/FollowModal';
 import Image from 'next/image';
-import { FaUser, FaCalendarAlt, FaTrophy, FaHeart } from 'react-icons/fa';
+import { FaUser, FaCalendarAlt, FaTrophy, FaHeart, FaUsers, FaUserFriends } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
+import { generateRealPersonAvatar } from '@/utils/avatarUtils';
 
 interface UserData {
   uid: string;
@@ -21,6 +25,9 @@ interface UserData {
   createdAt: any;
   rank?: number;
   score?: number;
+  bio?: string;
+  followersCount?: number;
+  followingCount?: number;
 }
 
 interface Post {
@@ -45,30 +52,56 @@ interface PageProps {
 
 export default function PerfilPage({ params }: PageProps) {
   const router = useRouter();
+  const { user: currentUser } = useAuth();
   const [id, setId] = useState<string>('');
   
   useEffect(() => {
     params.then(p => setId(p.id));
   }, [params]);
+  
   const [user, setUser] = useState<UserData | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'posts' | 'sobre' | 'conquistas' | 'moedas'>('posts');
+  const [followersCount, setFollowersCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
+  const [showFollowModal, setShowFollowModal] = useState(false);
+  const [followModalType, setFollowModalType] = useState<'followers' | 'following'>('followers');
+  const [followModalTitle, setFollowModalTitle] = useState('');
 
   useEffect(() => {
+    if (!id) return;
+    
     const fetchUserData = async () => {
       try {
-        const userDoc = await getDoc(doc(db, 'users', id));
+        // Buscar dados do usuário
+        const response = await fetch(`/api/users/${id}`);
+        const userData = await response.json();
         
-        if (!userDoc.exists()) {
+        if (!userData) {
           router.push('/');
           return;
         }
         
         setUser({
-          uid: userDoc.id,
-          ...userDoc.data()
-        } as UserData);
+          uid: userData.id,
+          displayName: userData.display_name || userData.username,
+          photoURL: userData.avatar || userData.image || generateRealPersonAvatar(['men', 'women'][Math.random() < 0.5 ? 0 : 1]),
+          email: userData.email,
+          createdAt: userData.createdAt,
+          rank: userData.rank,
+          score: userData.pontuacaoTotal || userData.score || 0,
+          bio: userData.bio
+        });
+        
+        // Buscar contadores de follow
+        const followResponse = await fetch(`/api/users/${id}/follow`);
+        const followData = await followResponse.json();
+        
+        if (followData) {
+          setFollowersCount(followData.followersCount || 0);
+          setFollowingCount(followData.followingCount || 0);
+        }
         
         // Buscar postagens do usuário
         const postsQuery = query(
@@ -100,7 +133,7 @@ export default function PerfilPage({ params }: PageProps) {
         setPosts(userPosts);
         setLoading(false);
       } catch (error) {
-        
+        console.error('Erro ao buscar dados:', error);
         setLoading(false);
       }
     };
@@ -108,70 +141,114 @@ export default function PerfilPage({ params }: PageProps) {
     fetchUserData();
   }, [id, router]);
 
+  const handleFollowChange = (isFollowing: boolean, counts: { followersCount: number; followingCount: number }) => {
+    setFollowersCount(counts.followersCount);
+    setFollowingCount(counts.followingCount);
+  };
+
+  const openFollowModal = (type: 'followers' | 'following') => {
+    setFollowModalType(type);
+    setFollowModalTitle(type === 'followers' ? 'Seguidores' : 'Seguindo');
+    setShowFollowModal(true);
+  };
+
   if (loading) {
     return (
-        <div className="flex justify-center items-center min-h-[60vh]">
-          <div className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
-        </div>
+      <div className="flex justify-center items-center min-h-[60vh]">
+        <div className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+      </div>
     );
   }
 
   if (!user) {
     return (
-        <div className="container mx-auto px-4 py-8">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold text-gray-800">Usuário não encontrado</h1>
-            <p className="mt-2 text-gray-600">O perfil que você está procurando não existe.</p>
-          </div>
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-800">Usuário não encontrado</h1>
+          <p className="mt-2 text-gray-600">O perfil que você está procurando não existe.</p>
         </div>
+      </div>
     );
   }
 
   return (
+    <div className="max-w-4xl mx-auto px-4 py-8">
       {/* Header do perfil com foto, nome, etc. */}
-      <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden mb-6">
         <div className="relative h-48 bg-gradient-to-r from-purple-600 to-indigo-600">
           <div className="absolute -bottom-16 left-8">
-            <div className="h-32 w-32 rounded-full border-4 border-white bg-white overflow-hidden">
+            <div className="h-32 w-32 rounded-full border-4 border-white dark:border-gray-800 bg-white dark:bg-gray-800 overflow-hidden">
               {user.photoURL ? (
-                <Image 
+                <img
                   src={user.photoURL}
                   alt={user.displayName}
-                  width={128}
-                  height={128}
                   className="h-full w-full object-cover"
                 />
               ) : (
-                <div className="h-full w-full bg-purple-200 flex items-center justify-center">
-                  <FaUser className="text-purple-600 text-4xl" />
+                <div className="h-full w-full bg-purple-200 dark:bg-purple-800 flex items-center justify-center">
+                  <FaUser className="text-purple-600 dark:text-purple-400 text-4xl" />
                 </div>
               )}
             </div>
           </div>
+          
+          {/* Botão de seguir */}
+          {currentUser && currentUser.id !== id && (
+            <div className="absolute top-4 right-4">
+              <FollowButton
+                userId={id}
+                username={user.displayName}
+                onFollowChange={handleFollowChange}
+                size="md"
+              />
+            </div>
+          )}
         </div>
         
         <div className="pt-20 pb-6 px-8">
-          <h1 className="text-2xl font-bold text-gray-800">{user.displayName}</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{user.displayName}</h1>
+          
+          {user.bio && (
+            <p className="text-gray-600 dark:text-gray-400 mt-2">{user.bio}</p>
+          )}
           
           <div className="mt-4 flex flex-wrap gap-6">
-            <div className="flex items-center text-gray-600">
+            <button
+              onClick={() => openFollowModal('followers')}
+              className="flex items-center text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+            >
+              <FaUsers className="mr-2" />
+              <span className="font-semibold">{followersCount}</span>
+              <span className="ml-1">seguidores</span>
+            </button>
+            
+            <button
+              onClick={() => openFollowModal('following')}
+              className="flex items-center text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+            >
+              <FaUserFriends className="mr-2" />
+              <span className="font-semibold">{followingCount}</span>
+              <span className="ml-1">seguindo</span>
+            </button>
+            
+            <div className="flex items-center text-gray-600 dark:text-gray-400">
               <FaCalendarAlt className="mr-2" />
               <span>
-                Membro desde {user.createdAt?.toDate 
-                  ? new Date(user.createdAt.toDate()).toLocaleDateString('pt-BR') 
+                Membro desde {user.createdAt 
+                  ? new Date(user.createdAt).toLocaleDateString('pt-BR') 
                   : 'data desconhecida'}
               </span>
             </div>
             
             {user.rank && (
-              <div className="flex items-center text-gray-600">
+              <div className="flex items-center text-gray-600 dark:text-gray-400">
                 <FaTrophy className="mr-2 text-yellow-500" />
                 <span>Ranking #{user.rank}</span>
               </div>
             )}
             
-            {user.score !== undefined && (
-              <div className="flex items-center text-gray-600">
+            {typeof user.score === 'number' && (
+              <div className="flex items-center text-gray-600 dark:text-gray-400">
                 <FaHeart className="mr-2 text-red-500" />
                 <span>{user.score} pontos</span>
               </div>
@@ -182,13 +259,13 @@ export default function PerfilPage({ params }: PageProps) {
 
       {/* Tabs de navegação */}
       <div className="mb-6">
-        <div className="flex border-b border-gray-200">
+        <div className="flex border-b border-gray-200 dark:border-gray-700">
           <button
             onClick={() => setActiveTab('posts')}
             className={`py-2 px-4 ${
               activeTab === 'posts'
-                ? 'border-b-2 border-purple-500 text-purple-700 font-medium'
-                : 'text-gray-500 hover:text-gray-700'
+                ? 'border-b-2 border-purple-500 text-purple-700 dark:text-purple-400 font-medium'
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
             }`}
           >
             Mentiras
@@ -197,8 +274,8 @@ export default function PerfilPage({ params }: PageProps) {
             onClick={() => setActiveTab('sobre')}
             className={`py-2 px-4 ${
               activeTab === 'sobre'
-                ? 'border-b-2 border-purple-500 text-purple-700 font-medium'
-                : 'text-gray-500 hover:text-gray-700'
+                ? 'border-b-2 border-purple-500 text-purple-700 dark:text-purple-400 font-medium'
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
             }`}
           >
             Sobre
@@ -207,8 +284,8 @@ export default function PerfilPage({ params }: PageProps) {
             onClick={() => setActiveTab('conquistas')}
             className={`py-2 px-4 ${
               activeTab === 'conquistas'
-                ? 'border-b-2 border-purple-500 text-purple-700 font-medium'
-                : 'text-gray-500 hover:text-gray-700'
+                ? 'border-b-2 border-purple-500 text-purple-700 dark:text-purple-400 font-medium'
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
             }`}
           >
             Conquistas
@@ -217,8 +294,8 @@ export default function PerfilPage({ params }: PageProps) {
             onClick={() => setActiveTab('moedas')}
             className={`py-2 px-4 ${
               activeTab === 'moedas'
-                ? 'border-b-2 border-purple-500 text-purple-700 font-medium'
-                : 'text-gray-500 hover:text-gray-700'
+                ? 'border-b-2 border-purple-500 text-purple-700 dark:text-purple-400 font-medium'
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
             }`}
           >
             Moedas
@@ -234,8 +311,8 @@ export default function PerfilPage({ params }: PageProps) {
               <PostCard key={post.id} {...post} />
             ))
           ) : (
-            <div className="bg-white rounded-lg shadow-md p-6 text-center">
-              <p className="text-gray-600">Este usuário ainda não compartilhou nenhuma mentira.</p>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 text-center">
+              <p className="text-gray-600 dark:text-gray-400">Este usuário ainda não compartilhou nenhuma mentira.</p>
             </div>
           )}
         </div>
@@ -259,5 +336,15 @@ export default function PerfilPage({ params }: PageProps) {
           <CoinSystem userId={id} />
         </div>
       )}
+      
+      {/* Modal de seguidores/seguindo */}
+      <FollowModal
+        isOpen={showFollowModal}
+        onClose={() => setShowFollowModal(false)}
+        title={followModalTitle}
+        userId={id}
+        type={followModalType}
+      />
+    </div>
   );
-} 
+}

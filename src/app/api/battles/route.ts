@@ -1,65 +1,53 @@
 import { NextResponse, NextRequest } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { getCurrentUserId } from '@/lib/permissions';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth.config';
+import { BattleService } from '@/services/BattleService';
 
-// GET - Obter estatísticas de batalhas
+// GET - Obter informações de batalhas
 export async function GET(request: NextRequest) {
   try {
-    const userId = await getCurrentUserId(request);
+    const session = await getServerSession(authOptions);
     
-    if (!userId) {
+    if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'Não autorizado' },
         { status: 401 }
       );
     }
     
-    // Buscar estatísticas do usuário
-    const stats = await prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        battleWins: true,
-        totalBattles: true,
-        currentStreak: true,
-        bestStreak: true,
-        lastBattle: true
-      }
-    });
+    const searchParams = request.nextUrl.searchParams;
+    const type = searchParams.get('type');
     
-    if (!stats) {
-      return NextResponse.json({
-        battleWins: 0,
-        totalBattles: 0,
-        currentStreak: 0,
-        bestStreak: 0,
-        lastBattle: null,
-        winRate: 0
-      });
+    // Obter batalha ativa
+    if (type === 'active') {
+      const activeBattle = await BattleService.getActiveBattle();
+      return NextResponse.json(activeBattle);
     }
     
-    const winRate = stats.totalBattles > 0 
-      ? Math.round((stats.battleWins / stats.totalBattles) * 100) 
-      : 0;
+    // Obter histórico de batalhas
+    if (type === 'history') {
+      const history = await BattleService.getUserBattleHistory(session.user.id);
+      return NextResponse.json(history);
+    }
     
-    return NextResponse.json({
-      ...stats,
-      winRate
-    });
+    // Obter estatísticas do usuário (padrão)
+    const stats = await BattleService.getUserBattleStats(session.user.id);
+    return NextResponse.json(stats);
   } catch (error) {
-    
+    console.error('Erro ao buscar dados de batalhas:', error);
     return NextResponse.json(
-      { error: 'Erro ao buscar estatísticas' },
+      { error: 'Erro ao buscar dados de batalhas' },
       { status: 500 }
     );
   }
 }
 
-// POST - Registrar voto em batalha
+// POST - Criar ou entrar em batalha
 export async function POST(request: NextRequest) {
   try {
-    const userId = await getCurrentUserId(request);
+    const session = await getServerSession(authOptions);
     
-    if (!userId) {
+    if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'Não autorizado' },
         { status: 401 }
@@ -67,143 +55,36 @@ export async function POST(request: NextRequest) {
     }
     
     const body = await request.json();
-    const { winnerPostId, loserPostId } = body;
+    const { action, content, imageUrl } = body;
     
-    if (!winnerPostId || !loserPostId) {
-      return NextResponse.json(
-        { error: 'IDs dos posts são obrigatórios' },
-        { status: 400 }
+    // Criar ou entrar em batalha
+    if (action === 'create' || action === 'join') {
+      if (!content) {
+        return NextResponse.json(
+          { error: 'Conteúdo é obrigatório' },
+          { status: 400 }
+        );
+      }
+      
+      const battle = await BattleService.createOrJoinBattle(
+        session.user.id,
+        content,
+        imageUrl
       );
+      
+      return NextResponse.json(battle);
     }
-    
-    // Buscar os posts
-    const [winnerPost, loserPost] = await Promise.all([
-      prisma.post.findUnique({
-        where: { id: winnerPostId },
-        include: { author: true }
-      }),
-      prisma.post.findUnique({
-        where: { id: loserPostId },
-        include: { author: true }
-      })
-    ]);
-    
-    if (!winnerPost || !loserPost) {
-      return NextResponse.json(
-        { error: 'Posts não encontrados' },
-        { status: 404 }
-      );
-    }
-    
-    // Atualizar estatísticas em uma transação
-    await prisma.$transaction(async (tx) => {
-      // Atualizar pontuação do post vencedor
-      await tx.post.update({
-        where: { id: winnerPostId },
-        data: {
-          battleScore: { increment: 1 }
-        }
-      });
-      
-      // Atualizar estatísticas do autor vencedor
-      const winnerStats = await tx.user.findUnique({
-        where: { id: winnerPost.authorId },
-        select: {
-          battleWins: true,
-          currentStreak: true,
-          bestStreak: true
-        }
-      });
-      
-      const newStreak = (winnerStats?.currentStreak || 0) + 1;
-      const bestStreak = Math.max(newStreak, winnerStats?.bestStreak || 0);
-      
-      await tx.user.update({
-        where: { id: winnerPost.authorId },
-        data: {
-          battleWins: { increment: 1 },
-          currentStreak: newStreak,
-          bestStreak: bestStreak
-        }
-      });
-      
-      // Resetar sequência do perdedor
-      await tx.user.update({
-        where: { id: loserPost.authorId },
-        data: {
-          currentStreak: 0
-        }
-      });
-      
-      // Atualizar estatísticas do votante
-      await tx.user.update({
-        where: { id: userId },
-        data: {
-          totalBattles: { increment: 1 },
-          lastBattle: new Date()
-        }
-      });
-      
-      // Criar registro da batalha
-      await tx.battle.create({
-        data: {
-          voterId: userId,
-          winnerPostId,
-          loserPostId,
-          winnerAuthorId: winnerPost.authorId,
-          loserAuthorId: loserPost.authorId
-        }
-      });
-    });
-    
-    return NextResponse.json({ success: true });
-  } catch (error) {
     
     return NextResponse.json(
-      { error: 'Erro ao registrar voto' },
+      { error: 'Ação inválida' },
+      { status: 400 }
+    );
+  } catch (error) {
+    console.error('Erro ao processar batalha:', error);
+    return NextResponse.json(
+      { error: 'Erro ao processar batalha' },
       { status: 500 }
     );
   }
 }
 
-// GET - Obter histórico de batalhas
-// Função auxiliar para obter histórico (não exportada diretamente)
-async function getHistory(request: NextRequest) {
-  try {
-    const userId = await getCurrentUserId(request);
-    
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'Não autorizado' },
-        { status: 401 }
-      );
-    }
-    
-    const battles = await prisma.battle.findMany({
-      where: {
-        OR: [
-          { winnerAuthorId: userId },
-          { loserAuthorId: userId }
-        ]
-      },
-      include: {
-        winnerPost: {
-          include: { author: true }
-        },
-        loserPost: {
-          include: { author: true }
-        }
-      },
-      orderBy: { createdAt: 'desc' },
-      take: 20
-    });
-    
-    return NextResponse.json(battles);
-  } catch (error) {
-    
-    return NextResponse.json(
-      { error: 'Erro ao buscar histórico' },
-      { status: 500 }
-    );
-  }
-}

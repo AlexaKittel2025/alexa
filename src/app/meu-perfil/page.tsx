@@ -4,9 +4,12 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { FaCamera, FaEdit, FaSave, FaTimes, FaUser, FaEnvelope, FaLink, FaMapMarkerAlt } from 'react-icons/fa';
 import { generateRealPersonAvatar } from '@/utils/avatarUtils';
+import FollowModal from '@/components/FollowModal';
+import { useSession } from 'next-auth/react';
 
 export default function MeuPerfilPage() {
   const router = useRouter();
+  const { data: session } = useSession();
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
@@ -15,6 +18,9 @@ export default function MeuPerfilPage() {
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [showLevelModal, setShowLevelModal] = useState(false);
+  const [showFollowModal, setShowFollowModal] = useState(false);
+  const [followModalType, setFollowModalType] = useState<'followers' | 'following'>('followers');
+  const [followModalTitle, setFollowModalTitle] = useState('');
   
   // Refs para os inputs de arquivo
   const avatarInputRef = useRef<HTMLInputElement>(null);
@@ -61,6 +67,13 @@ export default function MeuPerfilPage() {
   const [followers, setFollowers] = useState(initialFollowers);
   const [following, setFollowing] = useState(initialFollowing);
 
+  // Estado real de seguidores e seguindo
+  const [realFollowers, setRealFollowers] = useState<any[]>([]);
+  const [realFollowing, setRealFollowing] = useState<any[]>([]);
+  const [followersCount, setFollowersCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
+  const [loadingFollowData, setLoadingFollowData] = useState(false);
+
   // Dados mock para as seções
   const mockPosts = [
     {
@@ -96,91 +109,118 @@ export default function MeuPerfilPage() {
     { id: '5', description: 'Primeira mentira do dia', points: 20, date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000) }
   ];
   
+  // Carregar dados reais do usuário logado
   useEffect(() => {
-    // Carregar dados do localStorage
-    const savedProfile = localStorage.getItem('userProfile');
-    const savedFollowers = localStorage.getItem('userFollowers');
-    const savedFollowing = localStorage.getItem('userFollowing');
-    
-    if (savedProfile) {
+    const loadUserProfile = async () => {
+      if (!session?.user?.id) return;
+      
       try {
-        const profileData = JSON.parse(savedProfile);
-        setProfile(profileData);
-        setEditingProfile(profileData);
-      } catch (e) {
-        
+        // Buscar dados do perfil do usuário atual
+        const response = await fetch(`/api/users/me`);
+        if (response.ok) {
+          const userData = await response.json();
+          const profileData = {
+            id: userData.id,
+            name: userData.name || userData.displayName || userData.username,
+            username: userData.username,
+            email: userData.email,
+            bio: userData.bio || '',
+            avatar: userData.avatar || userData.image || generateRealPersonAvatar(['men', 'women'][Math.random() < 0.5 ? 0 : 1]),
+            coverImage: userData.coverImage || 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1500&q=80',
+            website: userData.website || '',
+            location: userData.location || '',
+            level: userData.level || 1,
+            points: userData.pontuacaoTotal || userData.score || 0,
+            isPro: userData.isPro || false,
+            followers: 0,
+            following: 0,
+            posts: userData.postsCount || 0
+          };
+          setProfile(profileData);
+          setEditingProfile(profileData);
+          
+          // Buscar contadores de follow
+          const followResponse = await fetch(`/api/users/${userData.id}/follow`);
+          if (followResponse.ok) {
+            const followData = await followResponse.json();
+            setFollowersCount(followData.followersCount || 0);
+            setFollowingCount(followData.followingCount || 0);
+            setProfile(prev => ({
+              ...prev,
+              followers: followData.followersCount || 0,
+              following: followData.followingCount || 0
+            }));
+          }
+        }
+      } catch (error) {
+        console.error('Erro ao carregar perfil:', error);
       }
-    } else {
-      // Se não houver dados salvos, salva o perfil inicial
-      localStorage.setItem('userProfile', JSON.stringify(profile));
+    };
+    
+    if (session?.user?.id) {
+      loadUserProfile();
     }
     
-    if (savedFollowers) {
-      try {
-        const followersData = JSON.parse(savedFollowers);
-        setFollowers(followersData);
-      } catch (e) {
-        
-      }
-    } else {
-      // Se não houver dados salvos, salva os seguidores iniciais
-      localStorage.setItem('userFollowers', JSON.stringify(initialFollowers));
-    }
-    
-    if (savedFollowing) {
-      try {
-        const followingData = JSON.parse(savedFollowing);
-        setFollowing(followingData);
-      } catch (e) {
-        
-      }
-    } else {
-      // Se não houver dados salvos, salva os seguindo iniciais
-      localStorage.setItem('userFollowing', JSON.stringify(initialFollowing));
-    }
-    
-    // Marca como inicializado após carregar os dados
     setIsInitialized(true);
-  }, []);
+  }, [session]);
 
-  // Salvar followers sempre que mudar (após inicialização)
-  useEffect(() => {
-    if (isInitialized && followers.length > 0) {
-      localStorage.setItem('userFollowers', JSON.stringify(followers));
+  // Carregar seguidores e seguindo quando abrir modal
+  const loadFollowData = async (type: 'followers' | 'following') => {
+    if (!session?.user?.id || loadingFollowData) return;
+    
+    setLoadingFollowData(true);
+    try {
+      const endpoint = type === 'followers' 
+        ? `/api/users/${session.user.id}/followers`
+        : `/api/users/${session.user.id}/following`;
+        
+      const response = await fetch(endpoint);
+      if (response.ok) {
+        const data = await response.json();
+        if (type === 'followers') {
+          setRealFollowers(data);
+        } else {
+          setRealFollowing(data);
+        }
+      }
+    } catch (error) {
+      console.error(`Erro ao carregar ${type}:`, error);
+    } finally {
+      setLoadingFollowData(false);
     }
-  }, [followers, isInitialized]);
-
-  // Salvar following sempre que mudar (após inicialização)
-  useEffect(() => {
-    if (isInitialized && following.length >= 0) { // >= 0 porque pode ficar vazio
-      localStorage.setItem('userFollowing', JSON.stringify(following));
-    }
-  }, [following, isInitialized]);
-
-  // Salvar perfil sempre que mudar (após inicialização)
-  useEffect(() => {
-    if (isInitialized) {
-      localStorage.setItem('userProfile', JSON.stringify(profile));
-    }
-  }, [profile, isInitialized]);
+  };
   
   const handleSave = async () => {
     setLoading(true);
     setMessage('');
     
     try {
-      // Simular salvamento
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Fazer requição real para atualizar o perfil
+      const response = await fetch('/api/users/me', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: editingProfile.name,
+          username: editingProfile.username,
+          email: editingProfile.email,
+          bio: editingProfile.bio,
+          avatar: editingProfile.avatar,
+          coverImage: editingProfile.coverImage,
+          website: editingProfile.website,
+          location: editingProfile.location
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error('Erro ao atualizar perfil');
+      }
+      
+      const updatedUser = await response.json();
       
       // Atualizar perfil
       setProfile(editingProfile);
-      
-      // Salvar no localStorage
-      const updatedUser = {
-        ...editingProfile,
-        id: profile.id
-      };
-      localStorage.setItem('userProfile', JSON.stringify(updatedUser));
       
       setMessage('Perfil atualizado com sucesso!');
       setIsEditing(false);
@@ -191,6 +231,7 @@ export default function MeuPerfilPage() {
       window.dispatchEvent(new Event('profileUpdated'));
     } catch (error) {
       setMessage('Erro ao salvar o perfil. Tente novamente.');
+      console.error('Erro ao salvar perfil:', error);
     } finally {
       setLoading(false);
     }
@@ -288,75 +329,22 @@ export default function MeuPerfilPage() {
     }
   };
 
-  const handleFollowToggle = (userId: string, list: 'followers' | 'following') => {
-    if (list === 'followers') {
-      // Encontra o usuário atual para verificar o estado
-      const currentUser = followers.find(f => f.id === userId);
-      if (!currentUser) return;
-      
-      const wasFollowing = currentUser.isFollowing;
-      const isNowFollowing = !wasFollowing;
-      
-      setFollowers(prev => prev.map(follower => {
-        if (follower.id === userId) {
-          return { ...follower, isFollowing: isNowFollowing };
-        }
-        return follower;
-      }));
-      
-      // Se começou a seguir, adiciona à lista de seguindo
-      if (isNowFollowing) {
-        const userToFollow = { ...currentUser, isFollowing: true };
-        setFollowing(prev => {
-          if (!prev.find(u => u.id === userId)) {
-            return [...prev, userToFollow];
-          }
-          return prev;
-        });
-        
-        // Atualiza contadores
-        setProfile(prev => ({ ...prev, following: prev.following + 1 }));
-        setEditingProfile(prev => ({ ...prev, following: prev.following + 1 }));
-        
-        // Mensagem de feedback
-        setMessage(`Agora você está seguindo ${currentUser.name}`);
-        setTimeout(() => setMessage(''), 3000);
-      } else {
-        // Se deixou de seguir, remove da lista de seguindo
-        setFollowing(prev => prev.filter(u => u.id !== userId));
-        
-        // Atualiza contadores
-        setProfile(prev => ({ ...prev, following: prev.following - 1 }));
-        setEditingProfile(prev => ({ ...prev, following: prev.following - 1 }));
-        
-        // Mensagem de feedback
-        setMessage(`Você deixou de seguir ${currentUser.name}`);
-        setTimeout(() => setMessage(''), 3000);
-      }
-    } else if (list === 'following') {
-      // Encontra o usuário para o feedback
-      const userToUnfollow = following.find(u => u.id === userId);
-      
-      // Remove da lista de seguindo
-      setFollowing(prev => prev.filter(user => user.id !== userId));
-      
-      // Atualiza o status na lista de seguidores, se existir
-      setFollowers(prev => prev.map(follower => {
-        if (follower.id === userId) {
-          return { ...follower, isFollowing: false };
-        }
-        return follower;
-      }));
-      
-      // Atualiza contadores
-      setProfile(prev => ({ ...prev, following: prev.following - 1 }));
-      setEditingProfile(prev => ({ ...prev, following: prev.following - 1 }));
-      
-      // Mensagem de feedback
-      if (userToUnfollow) {
-        setMessage(`Você deixou de seguir ${userToUnfollow.name}`);
-        setTimeout(() => setMessage(''), 3000);
-      }
+  const openFollowModal = (type: 'followers' | 'following') => {
+    setFollowModalType(type);
+    setFollowModalTitle(type === 'followers' ? 'Seguidores' : 'Seguindo');
+    setShowFollowModal(true);
+  };
+
+  const handleFollowChange = () => {
+    // Recarregar contadores quando houver mudança
+    if (session?.user?.id) {
+      fetch(`/api/users/${session.user.id}/follow`)
+        .then(res => res.json())
+        .then(data => {
+          setFollowersCount(data.followersCount || 0);
+          setFollowingCount(data.followingCount || 0);
+        })
+        .catch(console.error);
     }
   };
   
@@ -569,21 +557,23 @@ export default function MeuPerfilPage() {
               <p className="text-sm text-gray-600 dark:text-gray-400">Publicações</p>
             </button>
             <button
-              onClick={() => handleSectionToggle('followers')}
-              className={`bg-gray-100 dark:bg-gray-800 rounded-lg p-4 text-center hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors ${
-                activeSection === 'followers' ? 'ring-2 ring-purple-500' : ''
-              }`}
+              onClick={() => {
+                openFollowModal('followers');
+                loadFollowData('followers');
+              }}
+              className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 text-center hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors cursor-pointer"
             >
-              <p className="text-2xl font-bold text-purple-600">{profile.followers.toLocaleString()}</p>
+              <p className="text-2xl font-bold text-purple-600">{followersCount.toLocaleString()}</p>
               <p className="text-sm text-gray-600 dark:text-gray-400">Seguidores</p>
             </button>
             <button
-              onClick={() => handleSectionToggle('following')}
-              className={`bg-gray-100 dark:bg-gray-800 rounded-lg p-4 text-center hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors ${
-                activeSection === 'following' ? 'ring-2 ring-purple-500' : ''
-              }`}
+              onClick={() => {
+                openFollowModal('following');
+                loadFollowData('following');
+              }}
+              className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 text-center hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors cursor-pointer"
             >
-              <p className="text-2xl font-bold text-purple-600">{profile.following}</p>
+              <p className="text-2xl font-bold text-purple-600">{followingCount}</p>
               <p className="text-sm text-gray-600 dark:text-gray-400">Seguindo</p>
             </button>
             <button
@@ -643,63 +633,9 @@ export default function MeuPerfilPage() {
                 </div>
               )}
               
-              {/* Followers Section */}
-              {activeSection === 'followers' && (
-                <div className="space-y-4">
-                  {followers.map(follower => (
-                    <div key={follower.id} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                      <div className="flex items-center gap-4">
-                        <img 
-                          src={follower.avatar} 
-                          alt={follower.name}
-                          className="w-14 h-14 rounded-full object-cover"
-                        />
-                        <div>
-                          <p className="font-medium text-gray-900 dark:text-white">{follower.name}</p>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">@{follower.username}</p>
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => handleFollowToggle(follower.id, 'followers')}
-                        className={`px-5 py-2 rounded-lg text-sm font-medium transition-colors ${
-                          follower.isFollowing
-                            ? 'bg-gray-200 text-gray-900 hover:bg-gray-300'
-                            : 'bg-purple-600 text-white hover:bg-purple-700'
-                        }`}
-                      >
-                        {follower.isFollowing ? 'Seguindo' : 'Seguir'}
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
+              {/* Followers Section - removida, agora usa o modal */}
               
-              {/* Following Section */}
-              {activeSection === 'following' && (
-                <div className="space-y-4">
-                  {following.map(user => (
-                    <div key={user.id} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                      <div className="flex items-center gap-4">
-                        <img 
-                          src={user.avatar} 
-                          alt={user.name}
-                          className="w-14 h-14 rounded-full object-cover"
-                        />
-                        <div>
-                          <p className="font-medium text-gray-900 dark:text-white">{user.name}</p>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">@{user.username}</p>
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => handleFollowToggle(user.id, 'following')}
-                        className="px-5 py-2 bg-gray-200 text-gray-900 hover:bg-gray-300 rounded-lg text-sm font-medium transition-colors"
-                      >
-                        Deixar de seguir
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
+              {/* Following Section - removida, agora usa o modal */}
               
               {/* Points Section */}
               {activeSection === 'points' && (
@@ -823,6 +759,15 @@ export default function MeuPerfilPage() {
           accept="image/*"
           onChange={handleCoverUpload}
           className="hidden"
+        />
+        
+        {/* Modal de seguidores/seguindo */}
+        <FollowModal
+          isOpen={showFollowModal}
+          onClose={() => setShowFollowModal(false)}
+          title={followModalTitle}
+          userId={session?.user?.id || ''}
+          type={followModalType}
         />
     </div>
   );

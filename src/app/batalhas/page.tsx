@@ -8,7 +8,7 @@ import { loadUserStats, saveUserStats } from '@/utils/persistenceUtils';
 import Link from 'next/link';
 
 // Lazy load do componente BattleMentiras
-const BattleMentiras = dynamic(() => import('@/components/Game/BattleMentiras'), {
+const BattleMentiras = dynamic(() => import('@/components/Game/BattleMentirasNew'), {
   loading: () => <div className="flex justify-center items-center h-96"><span className="text-xl">Carregando batalha...</span></div>,
   ssr: false
 });

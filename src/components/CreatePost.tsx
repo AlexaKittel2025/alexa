@@ -1,8 +1,9 @@
 ;
 
 ;
-import { BadgeCheckIcon, CurrencyDollarIcon, LockClosedIcon, SparklesIcon, TagIcon } from '@heroicons/react/outline';
-import React, { useState } from 'react';import ProPaymentModal from './ProPaymentModal';
+import { BadgeCheckIcon, CurrencyDollarIcon, LockClosedIcon, SparklesIcon, TagIcon, PhotographIcon } from '@heroicons/react/outline';
+import React, { useState, useRef } from 'react';
+import ProPaymentModal from './ProPaymentModal';
 
 interface CreatePostProps {
   onSubmit: (content: string, imageURL?: string, tags?: string[]) => void;
@@ -69,13 +70,41 @@ const CreatePost: React.FC<CreatePostProps> = ({ onSubmit, onGeneratePost, isPro
     setTags(tags.filter(tag => tag !== tagToRemove));
   };
   
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Em uma implementação real, isso seria feito através de upload para um serviço de armazenamento
-      // Por enquanto, usamos URL.createObjectURL para simular
-      const objectUrl = URL.createObjectURL(file);
-      setImageURL(objectUrl);
+      // Validar tipo de arquivo
+      if (!file.type.startsWith('image/')) {
+        alert('Por favor, selecione apenas arquivos de imagem.');
+        return;
+      }
+
+      // Validar tamanho (máximo 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('A imagem deve ter no máximo 5MB.');
+        return;
+      }
+
+      // Fazer upload da imagem
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      try {
+        const response = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          setImageURL(data.url);
+        } else {
+          alert('Erro ao fazer upload da imagem');
+        }
+      } catch (error) {
+        console.error('Erro no upload:', error);
+        alert('Erro ao fazer upload da imagem');
+      }
     }
   };
   

@@ -1,39 +1,46 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { FaTimes } from 'react-icons/fa';
+import { FaTimes, FaSpinner } from 'react-icons/fa';
 import Link from 'next/link';
-import { getUserProfileLink } from '@/utils/userUtils';
+import FollowButton from './FollowButton';
+import { generateRealPersonAvatar } from '@/utils/avatarUtils';
 
 interface User {
   id: string;
-  name: string;
+  displayName: string;
   username: string;
-  avatar: string;
+  avatar?: string;
+  bio?: string;
   isFollowing?: boolean;
+  isPro?: boolean;
+  level?: number;
 }
 
 interface FollowModalProps {
   isOpen: boolean;
   onClose: () => void;
   title: string;
-  users: User[];
-  emptyMessage?: string;
+  userId: string;
+  type: 'followers' | 'following';
 }
 
 export default function FollowModal({ 
   isOpen, 
   onClose, 
   title, 
-  users, 
-  emptyMessage = 'Nenhum usuário encontrado' 
+  userId,
+  type
 }: FollowModalProps) {
-  const [usersState, setUsersState] = useState<User[]>(users);
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
-    setUsersState(users);
-  }, [users]);
+    if (isOpen) {
+      loadUsers();
+    }
+  }, [isOpen, userId, type]);
 
   // Prevenir scroll quando o modal está aberto
   useEffect(() => {
@@ -48,20 +55,33 @@ export default function FollowModal({
     };
   }, [isOpen]);
 
-  if (!isOpen) return null;
-
-  const handleFollowToggle = (userId: string) => {
-    setUsersState(prevUsers =>
-      prevUsers.map(user =>
-        user.id === userId
-          ? { ...user, isFollowing: !user.isFollowing }
-          : user
-      )
-    );
+  const loadUsers = async () => {
+    setLoading(true);
+    try {
+      const endpoint = type === 'followers' 
+        ? `/api/users/${userId}/followers`
+        : `/api/users/${userId}/following`;
+        
+      const response = await fetch(endpoint);
+      const data = await response.json();
+      
+      if (data.success && Array.isArray(data[type])) {
+        setUsers(data[type].map((user: any) => ({
+          ...user,
+          avatar: user.avatar || generateRealPersonAvatar(['men', 'women'][Math.random() < 0.5 ? 0 : 1])
+        })));
+      }
+    } catch (error) {
+      console.error('Erro ao carregar usuários:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const filteredUsers = usersState.filter(user =>
-    user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  if (!isOpen) return null;
+
+  const filteredUsers = users.filter(user =>
+    user.displayName.toLowerCase().includes(searchQuery.toLowerCase()) ||
     user.username.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -88,59 +108,74 @@ export default function FollowModal({
         </div>
 
         {/* Search */}
-        <div className="p-4 border-b dark:border-gray-700">
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Buscar usuários..."
-            className="w-full px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg outline-none text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
-          />
-        </div>
+        {!loading && users.length > 0 && (
+          <div className="p-4 border-b dark:border-gray-700">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Buscar usuários..."
+              className="w-full px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg outline-none text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+            />
+          </div>
+        )}
 
         {/* Lista de usuários */}
         <div className="flex-1 overflow-y-auto">
-          {filteredUsers.length > 0 ? (
+          {loading ? (
+            <div className="flex items-center justify-center h-32">
+              <FaSpinner className="animate-spin text-3xl text-purple-600" />
+            </div>
+          ) : filteredUsers.length > 0 ? (
             <div className="divide-y dark:divide-gray-700">
               {filteredUsers.map((user) => (
                 <div key={user.id} className="p-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                   <Link
-                    href={getUserProfileLink(user.username)}
-                    className="flex items-center gap-3"
+                    href={`/perfil/${user.id}`}
+                    className="flex items-center gap-3 flex-1"
                     onClick={onClose}
                   >
                     <img
-                      src={user.avatar}
-                      alt={user.name}
+                      src={user.avatar || generateRealPersonAvatar(['men', 'women'][Math.random() < 0.5 ? 0 : 1])}
+                      alt={user.displayName}
                       className="w-12 h-12 rounded-full object-cover"
                     />
-                    <div>
-                      <p className="font-medium text-gray-900 dark:text-white">
-                        {user.name}
-                      </p>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium text-gray-900 dark:text-white">
+                          {user.displayName}
+                        </p>
+                        {user.isPro && (
+                          <span className="text-xs bg-purple-600 text-white px-2 py-0.5 rounded">
+                            PRO
+                          </span>
+                        )}
+                      </div>
                       <p className="text-sm text-gray-500 dark:text-gray-400">
                         @{user.username}
                       </p>
+                      {user.bio && (
+                        <p className="text-xs text-gray-600 dark:text-gray-300 mt-1 line-clamp-1">
+                          {user.bio}
+                        </p>
+                      )}
                     </div>
                   </Link>
                   
-                  <button
-                    onClick={() => handleFollowToggle(user.id)}
-                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                      user.isFollowing
-                        ? 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-600'
-                        : 'bg-purple-600 text-white hover:bg-purple-700'
-                    }`}
-                  >
-                    {user.isFollowing ? 'Seguindo' : 'Seguir'}
-                  </button>
+                  <FollowButton
+                    userId={user.id}
+                    username={user.username}
+                    initialIsFollowing={user.isFollowing || false}
+                    size="sm"
+                    showIcon={false}
+                  />
                 </div>
               ))}
             </div>
           ) : (
-            <div className="flex items-center justify-center h-full p-8">
+            <div className="flex items-center justify-center h-32">
               <p className="text-gray-500 dark:text-gray-400 text-center">
-                {emptyMessage}
+                {searchQuery ? 'Nenhum usuário encontrado' : `Nenhum ${type === 'followers' ? 'seguidor' : 'seguindo'} ainda`}
               </p>
             </div>
           )}
