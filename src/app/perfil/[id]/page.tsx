@@ -11,6 +11,7 @@ import AchievementsSystem from '@/components/AchievementsSystem';
 import UserLevelProgress from '@/components/profile/UserLevelProgress';
 import FollowButton from '@/components/FollowButton';
 import FollowModal from '@/components/FollowModal';
+import PrivateChatButton from '@/components/Chat/PrivateChatButton';
 import Image from 'next/image';
 import { FaUser, FaCalendarAlt, FaTrophy, FaHeart, FaUsers, FaUserFriends } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
@@ -192,14 +193,18 @@ export default function PerfilPage({ params }: PageProps) {
             </div>
           </div>
           
-          {/* Botão de seguir */}
+          {/* Botões de seguir e chat */}
           {currentUser && currentUser.id !== id && (
-            <div className="absolute top-4 right-4">
+            <div className="absolute top-4 right-4 flex gap-3">
               <FollowButton
                 userId={id}
                 username={user.displayName}
                 onFollowChange={handleFollowChange}
                 size="md"
+              />
+              <PrivateChatButton
+                userId={id}
+                username={user.displayName}
               />
             </div>
           )}

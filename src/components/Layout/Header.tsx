@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { FaHome, FaHeart, FaPlus, FaComment } from 'react-icons/fa';
 import { FaHome as FaHomeSolid } from 'react-icons/fa';
 import { usePathname } from 'next/navigation';
+import MessageIndicator from './MessageIndicator';
 
 export default function Header() {
   const pathname = usePathname();
@@ -31,8 +32,9 @@ export default function Header() {
               <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
             </Link>
             
-            <Link href="/chat" className="p-1 hover:scale-110 transition-transform">
+            <Link href="/chat" className="p-1 relative hover:scale-110 transition-transform">
               <FaComment className="w-6 h-6 text-gray-900 dark:text-gray-100" />
+              <MessageIndicator />
             </Link>
           </nav>
         </div>
